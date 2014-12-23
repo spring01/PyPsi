@@ -1,0 +1,49 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+mexext = $(shell mexext)
+PSITARGET = $(top_objdir)/MatPsi2/MatPsi2_mex.$(mexext)
+
+LDLIBS += $(LAPACK) $(BLAS) $(BOOST_FILESYSTEM_LIB) $(BOOST_REGEX_LIB) $(BOOST_SERIALIZATION_LIB) $(BOOST_SYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_LDFLAGS) -lpthread 
+CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
+
+# gfortranbegin contains main, so we can't link it in or we'll get a linker freakout
+FILTEREDLDLIBS = $(filter-out -lgfortranbegin -mkl,$(LDLIBS))
+
+ifeq ($(CXX),icpc)
+   CFLAGS+= -mkl
+   CXXFLAGS+= -mkl
+   LDFLAGS+= -mkl
+endif
+
+# NOTE: Keep PSI_parallel last in the PSI library list (but before boost). It contains the fprintf override.
+PSILIBS = \
+-lPSI_scf_solver -lPSI_fock \
+-lPSI_functional -lPSI_3index \
+-lPSI_mints -lPSI_trans -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt \
+-lPSI_ciomr -lPSI_options -lPSI_util \
+-lPSI_deriv -lPSI_int -lPSI_diis \
+-lPSI_parallel 
+
+LIBDIRS += -L$(top_objdir)/lib
+
+ifeq ($(TARGET_OS),linux-gnu)
+   START_EXPORT = -Wl,--whole-archive
+   END_EXPORT   = -Wl,--no-whole-archive
+endif
+
+TRUECXXSRC = MatPsi2.cc
+MEXSRC = MatPsi2_mex.cpp
+DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
+LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
+MEXOBJ = $(MEXSRC:%.cpp=%.o)
+
+include ../MakeRules
+
+
+install:: $(PSITARGET)
+	$(MKDIRS) $(prefix)
+	-cp `dirname $(PSITARGET)`/@MatPsi2 $(prefix) -r

@@ -1,0 +1,116 @@
+
+#
+# Targets which don't generate files should be listed as dependencies
+# of the special target .PHONY
+#
+
+.PHONY:	all default install install_inc install_target
+.PHONY:	 clean oclean dclean target_clean
+
+#
+# This should be the first rule.  It will create a library without
+# installing it.
+#
+
+default:: $(PSITARGET)
+
+all: default
+
+#
+# run compilers or utilities
+#
+
+## compile 
+%.o : %.F
+
+%.$(F77SUF): %.F
+	$(PSIPP) $(FDEF) $(FINC) -o $@ $<
+
+%.$(OBJSUF): %.c
+	$(CC) $(CFLAGS) -c $< $(OUTPUT_OPTION)
+
+%.$(OBJSUF): %.$(F77SUF)
+	$(FC) $(FFLAGS) -c $< $(OUTPUT_OPTION)
+
+%.$(OBJSUF): %.C
+	$(CXX) $(CXXFLAGS) $(CXXINCLUDE) -c $< $(OUTPUT_OPTION)
+
+%.$(OBJSUF): %.cc
+	$(CXX) $(CXXFLAGS) $(CXXINCLUDE) -c $< $(OUTPUT_OPTION)
+
+%.$(OBJSUF): %.cpp
+	$(MEX) -c $< $(MEXFLAGS) $(CXXINCLUDE) $(OUTPUT_OPTION)
+
+## link 
+$(PSITARGET): $(MEXOBJ) $(LIBOBJ) 
+	$(MEX) $< $(LIBOBJ) $(MEXFLAGS) $(LIBDIRS) $(START_EXPORT) $(PSILIBS) $(END_EXPORT) $(FILTEREDLDLIBS) $(CXXINCLUDE) 
+	$(MKDIRS) `dirname $(PSITARGET)`
+	-cp $(top_srcdir)/@MatPsi2 `dirname $(PSITARGET)` -r
+	$(INSTALL) *.mex* `dirname $(PSITARGET)`/@MatPsi2
+
+#
+# clean up
+#
+
+clean:: oclean dclean targetclean
+
+oclean:
+	-rm -f *.mex*
+	-rm -f *.o
+
+dclean:
+	-rm -f *.d
+
+targetclean:
+	-rm -f basename $(PSITARGET)
+
+#
+# dependencies
+#
+
+ifneq ($(CCDEPENDSUF),none)
+%.d: %.c
+	$(CCDEPEND) $(CCDEPENDFLAGS) $(CPPFLAGS) $(CFLAGS) $< > /dev/null
+	sed 's/^$*.o/$*.$(OBJSUF) $*.d/g' < $(*F).$(CCDEPENDSUF) > $(@F)
+	/bin/rm -f $(*F).$(CCDEPENDSUF)
+else
+%.d: %.c
+	$(CCDEPEND) $(CCDEPENDFLAGS) $(CPPFLAGS) $(CFLAGS) $< | sed 's/^$*.o/$*.$(OBJSUF) $*.d/g' > $(@F); \
+cp $(@F) $(*F).tmp; \
+sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+    -e '/^$$/ d' -e 's/$$/ :/' < $(*F).tmp >> $(@F); \
+rm -f $(*F).tmp
+endif
+
+ifneq ($(CXXDEPENDSUF),none)
+%.d: %.cc
+	$(CXXDEPEND) $(CXXDEPENDFLAGS) $(CPPFLAGS) $(CXXFLAGS) $< > /dev/null
+	sed 's/^$*.o/$*.$(OBJSUF) $*.d/g' < $(*F).$(CXXDEPENDSUF) > $(@F)
+	/bin/rm -f $(*F).$(CXXDEPENDSUF)
+else
+%.d: %.cc
+	$(CXXDEPEND) $(CXXDEPENDFLAGS) $(CPPFLAGS) $(CXXFLAGS) $< | sed 's/^$*.o/$*.$(OBJSUF) $*.d/g' > $(@F); \
+cp $(@F) $(*F).tmp; \
+sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+    -e '/^$$/ d' -e 's/$$/ :/' < $(*F).tmp >> $(@F); \
+rm -f $(*F).tmp
+endif
+
+#
+# keep the configuration information and makefiles up-to-date
+#
+
+$(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
+	cd $(top_srcdir) && autoconf
+
+$(top_objdir)/config.status: $(top_srcdir)/configure
+	cd $(top_objdir) && ./config.status --recheck
+
+Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=src/bin/`basename $(srcdir)`/Makefile ./config.status
+
+../MakeVars: $(top_srcdir)/src/bin/MakeVars.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=src/bin/MakeVars ./config.status
+
+../MakeRules: $(top_srcdir)/src/bin/MakeRules.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=src/bin/MakeRules ./config.status
