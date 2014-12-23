@@ -162,6 +162,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputScalar(plhs[0], MatPsi_obj->Molecule_NuclearRepulsionEnergy());
         return;
     }
+    if (!strcmp("Molecule_SetCharge", cmd)) {
+        if ( nrhs!=3 || !mxIsDouble(prhs[2]))
+            mexErrMsgTxt("Molecule_SetCharge(charge): Integer input expected.");
+        MatPsi_obj->Molecule_SetCharge((int)InputScalar(prhs[2]));
+        return;
+    }
     
     //*** BasisSet 
     if (!strcmp("BasisSet_SetBasisSet", cmd)) {

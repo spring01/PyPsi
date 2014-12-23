@@ -94,6 +94,9 @@ classdef MatPsi2 < handle
         function varargout = Molecule_NuclearRepulsionEnergy(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_NuclearRepulsionEnergy', this.objectHandle, varargin{:});
         end
+        function varargout = Molecule_SetCharge(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_SetCharge', this.objectHandle, varargin{:});
+        end
         
         function varargout = BasisSet_SetBasisSet(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_SetBasisSet', this.objectHandle, varargin{:});
