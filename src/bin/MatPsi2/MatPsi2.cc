@@ -85,6 +85,8 @@ void MatPsi2::common_init() {
     
     // create molecule object and set its basis set name 
     molecule_ = psi::Molecule::create_molecule_from_string(process_environment_, molstring_);
+    molecule_->set_com_fixed();
+    molecule_->set_orientation_fixed();
     molecule_->set_basis_all_atoms(basisname_);
     process_environment_.set_molecule(molecule_);
     
