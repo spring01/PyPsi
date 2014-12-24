@@ -1,10 +1,17 @@
 classdef MatPsi2 < handle
+
     properties (SetAccess = private)
+    
         basisSetPath;
+        
     end
+    
     properties (Access = private, Transient = true)
+    
         objectHandle; % Handle to the underlying C++ class instance
+        
     end
+    
     methods
         %% Constructor - Create a new C++ class instance  
         function this = MatPsi2(varargin)
@@ -26,15 +33,13 @@ classdef MatPsi2 < handle
                     throw(MException('MatPsi2:MatPsi2','MatPsi2 cannot find basis set files.'));
                 end
             end
-            if(nargin > 3 && isfloat(varargin{4}))
-                varargin{4} = num2str(varargin{4});
+            if(nargin < 3)
+                varargin{3} = 0;
             end
-            this.objectHandle = MatPsi2.MatPsi2_mex('new', varargin{:}, this.basisSetPath);
-        end
-        
-        %% Copy Constructor
-        function this2 = MatPsi2Copy(this, varargin)
-            this2 = MatPsi2(this.InputInfo_MoleculeString(), this.InputInfo_BasisSet());
+            if(nargin < 4)
+                varargin{4} = 1;
+            end
+            this.objectHandle = MatPsi2.MatPsi2_mex('new', this.basisSetPath, varargin{:});
         end
         
         %% Destructor - Destroy the C++ class instance 
@@ -50,6 +55,18 @@ classdef MatPsi2 < handle
         
         function varargout = InputInfo_BasisSet(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('InputInfo_BasisSet', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = Settings_MaxNumCPUCores(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Settings_MaxNumCPUCores', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = Settings_MaxMemoryInGB(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Settings_MaxMemoryInGB', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = Settings_TempDir(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Settings_TempDir', this.objectHandle, varargin{:});
         end
         
         function varargout = Settings_SetMaxNumCPUCores(this, varargin)

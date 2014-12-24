@@ -19,19 +19,13 @@ using namespace boost;
 
 class MatPsi2 {
 protected:
-
-    int ncores_;
-    unsigned long int memory_;
     
     std::string molstring_;
     std::string basisname_;
-    std::string path_;
 
     Process::Environment process_environment_;
     boost::shared_ptr<worldcomm> worldcomm_;
     
-    std::string matpsi_id;
-    std::string matpsi_tempdir_str;
     boost::shared_ptr<PSIO> psio_;
     
     boost::shared_ptr<Molecule> molecule_;
@@ -42,9 +36,6 @@ protected:
     boost::shared_ptr<JK> jk_;
     boost::shared_ptr<scf::RHF> rhf_;
     
-    // common initializer for constructors 
-    void common_init();
-    
     // create basis object 
     void create_basis();
     
@@ -53,8 +44,8 @@ protected:
     
 public:
     // constructor; takes in 2 strings and parse them 
-    MatPsi2(const std::string& molstring, const std::string& basisname, 
-        int ncores, const std::string& memory_str, const std::string& path);
+    MatPsi2(const std::string& path, const std::string& molstring, const std::string& basisname, 
+        int charge = 0, int multiplicity = 1);
     
     // destructor 
     virtual ~MatPsi2();
@@ -64,6 +55,9 @@ public:
     std::string& InputInfo_BasisSet() { return basisname_; } // basis set name string 
     
     // CPU and memory controll 
+    int Settings_MaxNumCPUCores() { return process_environment_.get_n_threads(); }
+    double Settings_MaxMemoryInGB() { return (double)process_environment_.get_memory() / 1E+9; }
+    std::string Settings_TempDir() { return psio_->_psio_manager_->get_file_path(0); }
     void Settings_SetMaxNumCPUCores(int ncores);
     void Settings_SetMaxMemory(std::string);
     

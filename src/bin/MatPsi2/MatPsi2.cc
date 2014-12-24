@@ -38,21 +38,16 @@ unsigned long int parse_memory_str(const std::string& memory_str) {
 }
 
 // Constructor
-MatPsi2::MatPsi2(const std::string& molstring, const std::string& basisname, int ncores, const std::string& memory_str, const std::string& path)
-    : molstring_(molstring), basisname_(basisname), path_(path)
+MatPsi2::MatPsi2(const std::string& path, const std::string& molstring, const std::string& basisname, int charge, int multiplicity)
+    : molstring_(molstring), basisname_(basisname)
 {
-    ncores_ = ncores;
-    memory_ = parse_memory_str(memory_str);
-    common_init();
-}
-
-void MatPsi2::common_init() {
+    
     // some necessary initializations
     process_environment_.initialize();
     
     // set cores and memory 
-    process_environment_.set_n_threads(ncores_);
-    process_environment_.set_memory(memory_);
+    process_environment_.set_n_threads(1);
+    process_environment_.set_memory(parse_memory_str("1000mb"));
     worldcomm_ = initialize_communicator(0, NULL, process_environment_);
     process_environment_.set_worldcomm(worldcomm_);
     
@@ -60,16 +55,16 @@ void MatPsi2::common_init() {
     process_environment_.options.set_read_globals(true);
     read_options("", process_environment_.options, true);
     process_environment_.options.set_read_globals(false);
-    process_environment_.set("PSIDATADIR", path_);
+    process_environment_.set("PSIDATADIR", path);
     process_environment_.options.set_global_int("MAXITER", 100);
     
     Wavefunction::initialize_singletons();
     
     // initialize psio 
     boost::filesystem::path uniqname = boost::filesystem::unique_path();
-    matpsi_id = uniqname.string();
+    std::string matpsi_id = uniqname.string();
     boost::filesystem::path tempdir = boost::filesystem::temp_directory_path();
-    matpsi_tempdir_str = tempdir.string();
+    std::string matpsi_tempdir_str = tempdir.string();
     matpsi_tempdir_str += "/matpsi2.temp.";
     matpsi_tempdir_str += matpsi_id;
     psio_ = boost::shared_ptr<PSIO>(new PSIO);
@@ -85,16 +80,17 @@ void MatPsi2::common_init() {
     
     // create molecule object and set its basis set name 
     molecule_ = psi::Molecule::create_molecule_from_string(process_environment_, molstring_);
+    molecule_->set_molecular_charge(charge);
+    molecule_->set_multiplicity(multiplicity);
     molecule_->set_com_fixed();
     molecule_->set_orientation_fixed();
+    molecule_->update_geometry();
+    molecule_->set_reinterpret_coordentry(false);
     molecule_->set_basis_all_atoms(basisname_);
     process_environment_.set_molecule(molecule_);
     
     // create basis object and one & two electron integral factories & rhf 
     create_basis_and_integral_factories();
-    RHF_Reset();
-    rhf_->extern_finalize(); // after this finalize() rhf_ seems to be stable and does not crash after RHF() or set_basis() 
-    rhf_.reset();
     
     // create matrix factory object 
     int nbf[] = { basis_->nbf() };
@@ -130,21 +126,19 @@ MatPsi2::~MatPsi2() {
     if(jk_ != NULL)
         jk_->finalize();
     psio_->_psio_manager_->psiclean();
-    boost::filesystem::remove_all(matpsi_tempdir_str);
+    boost::filesystem::remove_all(psio_->_psio_manager_->get_file_path(0));
 }
 
 void MatPsi2::Settings_SetMaxNumCPUCores(int ncores) {
     // set cores and update worldcomm_ 
-    ncores_ = ncores;
-    process_environment_.set_n_threads(ncores_);
+    process_environment_.set_n_threads(ncores);
     worldcomm_ = initialize_communicator(0, NULL, process_environment_);
     process_environment_.set_worldcomm(worldcomm_);
 }
 
 void MatPsi2::Settings_SetMaxMemory(std::string memory_str) {
     // set memory and update worldcomm_ 
-    memory_ = parse_memory_str(memory_str);
-    process_environment_.set_memory(memory_);
+    process_environment_.set_memory(parse_memory_str(memory_str));
     worldcomm_ = initialize_communicator(0, NULL, process_environment_);
     process_environment_.set_worldcomm(worldcomm_);
 }
@@ -156,17 +150,11 @@ void MatPsi2::Molecule_Fix() {
 }
 
 void MatPsi2::Molecule_Free() {
-    // done by re-generating a new molecule object (and basis object etc.) while retaining the geometry 
-    SharedMatrix oldgeom = molecule_->geometry().clone();
-    molecule_ = psi::Molecule::create_molecule_from_string(process_environment_, molstring_);
-    molecule_->set_basis_all_atoms(basisname_);
-    process_environment_.set_molecule(molecule_);
-    create_basis(); // the molecule object isn't complete before we create the basis object, according to psi4 documentation 
-    molecule_->set_geometry(*(oldgeom.get()));
-    create_basis_and_integral_factories();
-    RHF_Reset();
-    rhf_->extern_finalize();
-    rhf_.reset();
+    molecule_->set_orientation_fixed(false);
+    molecule_->set_com_fixed(false);
+    molecule_->set_reinterpret_coordentry(true);
+    molecule_->activate_all_fragments(); // a trick to set lock_frame_ = false;
+    molecule_->update_geometry();
 }
 
 void MatPsi2::Molecule_SetGeometry(SharedMatrix newGeom) {
@@ -177,29 +165,21 @@ void MatPsi2::Molecule_SetGeometry(SharedMatrix newGeom) {
     
     // determine whether the new geometry will cause a problem (typically 2 atoms are at the same point) 
     Matrix distmat = molecule_->distance_matrix();
-    bool nonbreak = true;
-    for(int i = 0; i < molecule_->natom() && nonbreak; i++) {
+    for(int i = 0; i < molecule_->natom(); i++) {
         for(int j = 0; j < i - 1; j++) {
             if(distmat.get(i, j) == 0) {
                 molecule_->set_geometry(oldgeom);
-                cout<<"set_geom: Geometry is too crazy; keeping the old one."<<endl;
-                nonbreak = false;
-                break;
+                throw PSIEXCEPTION("Molecule_SetGeometry: The new geometry has (at least) two atoms at the same spot.");
             }
         }
     }
     
     // update other objects 
-    if(nonbreak) {
-        if(jk_ != NULL)
-            jk_->finalize();
-        psio_->_psio_manager_->psiclean();
-        jk_.reset();
-        create_basis_and_integral_factories();
-        RHF_Reset();
-        rhf_->extern_finalize();
-        rhf_.reset();
-    }
+    if(jk_ != NULL)
+        jk_->finalize();
+    psio_->_psio_manager_->psiclean();
+    jk_.reset();
+    create_basis_and_integral_factories();
 }
 
 SharedVector MatPsi2::Molecule_AtomicNumbers() {
@@ -230,9 +210,6 @@ void MatPsi2::BasisSet_SetBasisSet(const std::string& basisname) {
     
     // create basis object and one & two electron integral factories & rhf 
     create_basis_and_integral_factories();
-    RHF_Reset();
-    rhf_->extern_finalize();
-    rhf_.reset();
     
     // create matrix factory object 
     int nbf[] = { basis_->nbf() };
@@ -475,6 +452,8 @@ void MatPsi2::Integrals_IndicesForExchange(double* indices1, double* indices2) {
 void MatPsi2::JK_Initialize(std::string jktype) {
     if(jk_ != NULL)
         jk_->finalize();
+    if(process_environment_.wavefunction() == NULL)
+        RHF_Reset();
     if(boost::iequals(jktype, "PKJK")) {
         jk_ = boost::shared_ptr<JK>(new PKJK(process_environment_, basis_, psio_));
     //~ } else if(boost::iequals(jktype, "DFJK")) {
@@ -535,6 +514,8 @@ SharedMatrix MatPsi2::JK_DensityToK(SharedMatrix Density) {
 void MatPsi2::RHF_Reset() {
     rhf_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
     process_environment_.set_wavefunction(rhf_);
+    rhf_->extern_finalize();
+    rhf_.reset();
 }
 
 void MatPsi2::RHF_EnableMOM(int mom_start) {
@@ -564,6 +545,8 @@ void MatPsi2::RHF_GuessCore() {
 }
 
 double MatPsi2::RHF_DoSCF() {
+    if(Molecule_NumElectrons() % 2)
+        throw PSIEXCEPTION("RHF_DoSCF: RHF can only handle singlets.");
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     rhf_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, process_environment_.options, jk_, psio_));

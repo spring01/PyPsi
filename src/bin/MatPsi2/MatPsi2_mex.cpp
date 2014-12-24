@@ -61,17 +61,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         // Check parameters
         if (nlhs != 1)
             mexErrMsgTxt("MatPsi2 Constructor: One output expected.");
-        if ( (nrhs!=4 && nrhs!=6) || !mxIsChar(prhs[1]) || !mxIsChar(prhs[2]))
-            mexErrMsgTxt("MatPsi2 Constructor: MatPsi(mol_string, basis_name) input expected.");
-        if (nrhs == 4){
-            plhs[0] = convertPtr2Mat<MatPsi2>(new MatPsi2((std::string)mxArrayToString(prhs[1]) 
-                , (std::string)mxArrayToString(prhs[2]), 1, "1000mb", (std::string)mxArrayToString(prhs[3]) + "/"));
-            return;
-        }
+        if ( nrhs!=6 || !mxIsChar(prhs[1]) || !mxIsChar(prhs[2]) || !mxIsChar(prhs[3]) || !mxIsDouble(prhs[4]) ||!mxIsDouble(prhs[5]) )
+            mexErrMsgTxt("MatPsi2 Constructor: MatPsi(mol_string, basis_name, charge, multiplicity) input expected.");
         // Return a handle to a new C++ instance
-        plhs[0] = convertPtr2Mat<MatPsi2>(new MatPsi2((std::string)mxArrayToString(prhs[1]) 
-            , (std::string)mxArrayToString(prhs[2]), (int)InputScalar(prhs[3])
-            , (std::string)mxArrayToString(prhs[4]), (std::string)mxArrayToString(prhs[5]) + "/" ));
+        plhs[0] = convertPtr2Mat<MatPsi2>(new MatPsi2(
+            ((std::string)mxArrayToString(prhs[1]) + "/"), 
+            (std::string)mxArrayToString(prhs[2]), 
+            (std::string)mxArrayToString(prhs[3]), 
+            (int)InputScalar(prhs[4]), 
+            (int)InputScalar(prhs[5])));
         return;
     }
     
@@ -102,6 +100,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     if (!strcmp("InputInfo_BasisSet", cmd)) {
         plhs[0] = mxCreateString((MatPsi_obj->InputInfo_BasisSet()).c_str());
+        return;
+    }
+    if (!strcmp("Settings_MaxNumCPUCores", cmd)) {
+        OutputScalar(plhs[0], (double)MatPsi_obj->Settings_MaxNumCPUCores());
+        return;
+    }
+    if (!strcmp("Settings_MaxMemoryInGB", cmd)) {
+        OutputScalar(plhs[0], MatPsi_obj->Settings_MaxMemoryInGB());
+        return;
+    }
+    if (!strcmp("Settings_TempDir", cmd)) {
+        plhs[0] = mxCreateString((MatPsi_obj->Settings_TempDir()).c_str());
         return;
     }
     if (!strcmp("Settings_SetMaxNumCPUCores", cmd)) {
