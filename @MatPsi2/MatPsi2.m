@@ -1,10 +1,4 @@
 classdef MatPsi2 < handle
-
-    properties (SetAccess = private)
-    
-        basisSetPath;
-        
-    end
     
     properties (Access = private, Transient = true)
     
@@ -14,32 +8,35 @@ classdef MatPsi2 < handle
     
     methods
         %% Constructor - Create a new C++ class instance  
-        function this = MatPsi2(varargin)
-            if(exist('./@MatPsi2/basis', 'file'))
-                this.basisSetPath = [pwd, '/@MatPsi2'] ;
-            else
-                currpath = path();
-                paths_num = length(regexp(currpath, ':', 'match')) + 1;
-                for i = 1:paths_num
-                    toppath = regexp(currpath, '[^:]*', 'match', 'once');
-                    if(exist([toppath, '/@MatPsi2/basis'], 'file'))
-                        this.basisSetPath = [toppath, '/@MatPsi2'];
-                        break;
-                    else
-                        currpath = currpath(length(toppath)+2:end);
-                    end
-                end
-                if(i>=paths_num)
-                    throw(MException('MatPsi2:MatPsi2','MatPsi2 cannot find basis set files.'));
-                end
-            end
+        function this = MatPsi2(molStr, basisSet, charge, multiplicity, psiDataPath)
             if(nargin < 3)
-                varargin{3} = 0;
+                charge = 0;
             end
             if(nargin < 4)
-                varargin{4} = 1;
+                multiplicity = 1;
             end
-            this.objectHandle = MatPsi2.MatPsi2_mex('new', this.basisSetPath, varargin{:});
+            if(nargin < 5)
+                if(exist('./@MatPsi2/basis', 'file'))
+                    psiDataPath = [pwd, '/@MatPsi2'] ;
+                else
+                    currpath = path();
+                    paths_num = length(regexp(currpath, ':', 'match')) + 1;
+                    for i = 1:paths_num
+                        toppath = regexp(currpath, '[^:]*', 'match', 'once');
+                        if(exist([toppath, '/@MatPsi2/basis'], 'file'))
+                            psiDataPath = [toppath, '/@MatPsi2'];
+                            break;
+                        else
+                            currpath = currpath(length(toppath)+2:end);
+                        end
+                    end
+                    if(i>=paths_num)
+                        throw(MException('MatPsi2:MatPsi2','MatPsi2 cannot find basis set files.'));
+                    end
+                end
+            end
+            
+            this.objectHandle = MatPsi2.MatPsi2_mex('new', psiDataPath, molStr, basisSet, charge, multiplicity);
         end
         
         %% Destructor - Destroy the C++ class instance 
@@ -63,6 +60,10 @@ classdef MatPsi2 < handle
         
         function varargout = Settings_MaxMemoryInGB(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Settings_MaxMemoryInGB', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = Settings_PsiDataDir(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Settings_PsiDataDir', this.objectHandle, varargin{:});
         end
         
         function varargout = Settings_TempDir(this, varargin)

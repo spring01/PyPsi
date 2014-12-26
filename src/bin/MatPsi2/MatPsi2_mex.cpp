@@ -110,6 +110,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputScalar(plhs[0], MatPsi_obj->Settings_MaxMemoryInGB());
         return;
     }
+    if (!strcmp("Settings_PsiDataDir", cmd)) {
+        plhs[0] = mxCreateString((MatPsi_obj->Settings_PsiDataDir()).c_str());
+        return;
+    }
     if (!strcmp("Settings_TempDir", cmd)) {
         plhs[0] = mxCreateString((MatPsi_obj->Settings_TempDir()).c_str());
         return;

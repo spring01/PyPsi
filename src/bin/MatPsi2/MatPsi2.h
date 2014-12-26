@@ -57,6 +57,7 @@ public:
     // CPU and memory controll 
     int Settings_MaxNumCPUCores() { return process_environment_.get_n_threads(); }
     double Settings_MaxMemoryInGB() { return (double)process_environment_.get_memory() / 1E+9; }
+    std::string Settings_PsiDataDir() { return process_environment_("PSIDATADIR"); }
     std::string Settings_TempDir() { return psio_->_psio_manager_->get_file_path(0); }
     void Settings_SetMaxNumCPUCores(int ncores);
     void Settings_SetMaxMemory(std::string);
