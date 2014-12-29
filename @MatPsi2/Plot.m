@@ -1,24 +1,60 @@
 function Plot(obj)
+
 cartesian = [reshape(obj.Molecule_AtomicNumbers(), [], 1), ...
     obj.Molecule_Geometry() .* 0.529177249];
 
+bonds = Bonds(cartesian);
+
+% A figure with white background and 3-d view
+figure();
+set(gcf,'color','w');
+axis vis3d;
+axis off;
+hold;
+
+% Draw bonds
+for i = 1:length(bonds)
+    line(bonds{i}(:, 1), bonds{i}(:, 2), bonds{i}(:, 3), 'LineWidth', 4);
+end
+
+% Draw atoms
+allShapes = 4000 .* [ ...
+    1             1 ...
+    3 3 2 2 2 2 2 2 ...
+    4 4 3 3 3 3 3 3 ...
+    5 5];
+allColors = 0.12 .* [ ...
+    [8 8 8];                                                       [8 7 7]; ...
+    [0 8 8]; [8 0 8]; [8 8 0]; [5 5 5]; [0 0 8]; [8 0 0]; [0 8 0]; [6 5 5]; ...
+    [0 6 6]; [6 0 6]; [6 6 0]; [3 3 3]; [0 0 6]; [6 0 0]; [0 6 0]; [4 3 3]; ...
+    [0 4 4]; [4 0 4];];
+scatter3(cartesian(:, 2), cartesian(:, 3), cartesian(:, 4), ...
+    allShapes(cartesian(:, 1)), allColors(cartesian(:, 1), :), 'fill');
+
+end
+
+
+function bonds = Bonds(cartesian)
 distMat = dist(cartesian(:, 2:end)');
 numAtoms = size(cartesian, 1);
 
-maxBonds = zeros(numAtoms, 1);
+maxNumBonds = zeros(numAtoms, 1);
 for iAtom = 1:numAtoms
-    maxBonds(iAtom) = MaxNumBonds(cartesian(iAtom, 1));
+    maxNumBonds(iAtom) = MaxNumBonds(cartesian(iAtom, 1));
 end
 
 numBondsMat = zeros(numAtoms);
-for iter = [1 100]
+for maxAllowedNumBonds = [1 inf]
     for iAtom = 1:numAtoms
         [~, tempOrder] = sort(distMat(iAtom, :));
         for jAtom = tempOrder(2:end)
-            if(sum(numBondsMat(iAtom, :)) < maxBonds(iAtom) ...
-                    && sum(numBondsMat(jAtom,:)) < maxBonds(jAtom))
-                maxBetween = min(maxBonds(iAtom), maxBonds(jAtom));
-                numBonds = min(min(NumBonds(cartesian, iAtom, jAtom), maxBetween), iter);
+            if(sum(numBondsMat(iAtom, :)) < maxNumBonds(iAtom) ...
+                    && sum(numBondsMat(jAtom,:)) < maxNumBonds(jAtom))
+                numBonds = min([ ...
+                    NumBonds(cartesian, iAtom, jAtom), ...
+                    maxNumBonds(iAtom), ...
+                    maxNumBonds(jAtom), ...
+                    maxAllowedNumBonds]);
                 numBondsMat(iAtom, jAtom) = numBonds;
                 numBondsMat(jAtom, iAtom) = numBonds;
             end
@@ -26,57 +62,44 @@ for iter = [1 100]
     end
 end
 
-bondLines = {};
+bonds = {};
 for iAtom = 1:numAtoms
     iPos = cartesian(iAtom, 2:end);
     for jAtom = iAtom+1:numAtoms
         jPos = cartesian(jAtom, 2:end);
-        numBonds = numBondsMat(iAtom, jAtom);
-        vector = iPos - jPos;
-        normVec = ones(1, 3);
-        normVec(3) = -(vector(1) + vector(2))/vector(3);
+        
+        [~, sortedInds] = sort(distMat(iAtom, :));
+        sortedInds = sortedInds(sortedInds~=jAtom);
+        if(length(sortedInds) >= 2)
+            kPos = cartesian(sortedInds(2), 2:end); % closest atom to i except j
+        else
+            kPos = rand(1, 3);
+        end
+        
+        bondVec = jPos - iPos;
+        planeNormVec = cross(bondVec, kPos - iPos);
+        temp = planeNormVec*bondVec' - planeNormVec(1);
+        normVec = [ ...
+            planeNormVec(2)*bondVec(3) - bondVec(2)*planeNormVec(3), ...
+            bondVec(3)*temp + planeNormVec(3)*bondVec(1), ...
+            -bondVec(2)*temp - planeNormVec(2)*bondVec(1)];
         normVec = normVec ./ norm(normVec);
+        shifts = 0.05 .* [normVec; normVec];
         ijVecs = [iPos; jPos];
-        normVecs = 0.05 .* [normVec; normVec];
-        switch(numBonds)
+        switch(numBondsMat(iAtom, jAtom))
             case(1) % single bond
-                bondLines{end+1} = ijVecs;
+                bonds{end+1} = ijVecs; %#ok
             case(2) % double bond
-                bondLines{end+1} = ijVecs - normVecs;
-                bondLines{end+1} = ijVecs + normVecs;
+                bonds{end+1} = ijVecs - shifts; %#ok
+                bonds{end+1} = ijVecs + shifts; %#ok
             case(3)% triple bond
-                bondLines{end+1} = ijVecs;
-                bondLines{end+1} = ijVecs - normVecs;
-                bondLines{end+1} = ijVecs + normVecs;
+                bonds{end+1} = ijVecs; %#ok
+                bonds{end+1} = ijVecs - shifts; %#ok
+                bonds{end+1} = ijVecs + shifts; %#ok
         end
     end
 end
-
-figure();
-set(gcf,'color','w');
-axis vis3d;
-axis off;
-hold;
-for i = 1:length(bondLines)
-    line(bondLines{i}(:, 1), bondLines{i}(:, 2), bondLines{i}(:, 3), 'LineWidth', 4);
 end
-
-allShapes = 4000 .* [ ...
-    1             1 ...
-    3 3 2 2 2 2 2 2 ...
-    4 4 3 3 3 3 3 3 ...
-    5 5];
-allColors = 0.12 .* [ ...
-    [7 7 7];                                                       [8 7 7]; ...
-    [0 8 8]; [8 0 8]; [8 8 0]; [5 5 5]; [0 0 8]; [8 0 0]; [0 8 0]; [6 5 5];
-    [0 6 6]; [6 0 6]; [6 6 0]; [3 3 3]; [0 0 6]; [6 0 0]; [0 6 0]; [4 3 3];
-    [0 4 4]; [4 0 4];];
-
-scatter3(cartesian(:, 2), cartesian(:, 3), cartesian(:, 4), ...
-    allShapes(cartesian(:, 1)), allColors(cartesian(:, 1), :), 'fill');
-
-end
-
 
 function maxNumBonds = MaxNumBonds(atomicNum)
 [~, col, rowMax] = FromAtomicNumber(atomicNum);
