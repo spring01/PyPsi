@@ -224,6 +224,22 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_DensityToK', this.objectHandle, varargin{:});
         end
         
+        function varargout = JK_OrbitalToJ(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OrbitalToJ', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = JK_OrbitalToK(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OrbitalToK', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = JK_OccupiedOrbitalToJ(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OccupiedOrbitalToJ', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = JK_OccupiedOrbitalToK(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OccupiedOrbitalToK', this.objectHandle, varargin{:});
+        end
+        
         function varargout = RHF_DoSCF(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_DoSCF', this.objectHandle, varargin{:});
         end

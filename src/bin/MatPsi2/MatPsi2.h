@@ -116,7 +116,11 @@ public:
     
     // methods computing J/K/G 
     SharedMatrix JK_DensityToJ(SharedMatrix);
-    SharedMatrix JK_DensityToK(SharedMatrix); 
+    SharedMatrix JK_DensityToK(SharedMatrix);
+    SharedMatrix JK_OrbitalToJ(SharedMatrix);
+    SharedMatrix JK_OrbitalToK(SharedMatrix);
+    SharedMatrix JK_OccupiedOrbitalToJ(SharedMatrix);
+    SharedMatrix JK_OccupiedOrbitalToK(SharedMatrix);
     
     
     //*** SCF related

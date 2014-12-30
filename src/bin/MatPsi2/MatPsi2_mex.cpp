@@ -356,7 +356,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if (!strcmp("JK_DensityToJ", cmd)) {
         // Check parameters
         if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) != nbf)
-            mexErrMsgTxt("JK_DensityToJ(Density): nbf by nbf matrix input expected.");
+            mexErrMsgTxt("JK_DensityToJ(density): nbf by nbf matrix input expected.");
         // Call the method
         OutputMatrix(plhs[0], MatPsi_obj->JK_DensityToJ(InputMatrix(prhs[2])));
         return;
@@ -364,9 +364,41 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if (!strcmp("JK_DensityToK", cmd)) {
         // Check parameters
         if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) != nbf)
-            mexErrMsgTxt("JK_DensityToK(Density): nbf by nbf matrix input expected.");
+            mexErrMsgTxt("JK_DensityToK(density): nbf by nbf matrix input expected.");
         // Call the method
         OutputMatrix(plhs[0], MatPsi_obj->JK_DensityToK(InputMatrix(prhs[2])));
+        return;
+    }
+    if (!strcmp("JK_OrbitalToJ", cmd)) {
+        // Check parameters
+        if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) < MatPsi_obj->Molecule_NumElectrons()/2)
+            mexErrMsgTxt("JK_OrbitalToJ(orbital): nbf by (at least numElec/2) matrix input expected.");
+        // Call the method
+        OutputMatrix(plhs[0], MatPsi_obj->JK_OrbitalToJ(InputMatrix(prhs[2])));
+        return;
+    }
+    if (!strcmp("JK_OrbitalToK", cmd)) {
+        // Check parameters
+        if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) < MatPsi_obj->Molecule_NumElectrons()/2)
+            mexErrMsgTxt("JK_OrbitalToK(orbital): nbf by (at least numElec/2) matrix input expected.");
+        // Call the method
+        OutputMatrix(plhs[0], MatPsi_obj->JK_OrbitalToK(InputMatrix(prhs[2])));
+        return;
+    }
+    if (!strcmp("JK_OccupiedOrbitalToJ", cmd)) {
+        // Check parameters
+        if (nrhs!=3 || mxGetM(prhs[2]) != nbf)
+            mexErrMsgTxt("JK_OrbitalToJ(occupiedOrbital): nbf by any matrix input expected.");
+        // Call the method
+        OutputMatrix(plhs[0], MatPsi_obj->JK_OccupiedOrbitalToJ(InputMatrix(prhs[2])));
+        return;
+    }
+    if (!strcmp("JK_OccupiedOrbitalToK", cmd)) {
+        // Check parameters
+        if (nrhs!=3 || mxGetM(prhs[2]) != nbf)
+            mexErrMsgTxt("JK_OrbitalToK(occupiedOrbital): nbf by any matrix input expected.");
+        // Call the method
+        OutputMatrix(plhs[0], MatPsi_obj->JK_OccupiedOrbitalToK(InputMatrix(prhs[2])));
         return;
     }
     

@@ -456,12 +456,12 @@ void MatPsi2::JK_Initialize(std::string jktype) {
         RHF_Reset();
     if(boost::iequals(jktype, "PKJK")) {
         jk_ = boost::shared_ptr<JK>(new PKJK(process_environment_, basis_, psio_));
-    //~ } else if(boost::iequals(jktype, "DFJK")) {
-        //~ boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-        //~ molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
-        //~ boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(process_environment_, parser, molecule_, "DF_BASIS_SCF");
-        //~ jk_ = boost::shared_ptr<JK>(new DFJK(process_environment_, basis_, auxiliary, psio_));
-        //~ molecule_->set_basis_all_atoms(basisname_);
+    } else if(boost::iequals(jktype, "DFJK")) {
+        boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+        molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
+        boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(process_environment_, parser, molecule_, "DF_BASIS_SCF");
+        jk_ = boost::shared_ptr<JK>(new DFJK(process_environment_, basis_, auxiliary, psio_));
+        molecule_->set_basis_all_atoms(basisname_);
     } else if(boost::iequals(jktype, "ICJK")) {
         jk_ = boost::shared_ptr<JK>(new ICJK(process_environment_, basis_));
     } else if(boost::iequals(jktype, "DirectJK")) {
@@ -479,14 +479,17 @@ const std::string& MatPsi2::JK_Type() {
     return jk_->JKtype();
 }
 
-SharedMatrix MatPsi2::JK_DensityToJ(SharedMatrix Density) {
+SharedMatrix MatPsi2::JK_DensityToJ(SharedMatrix density) {
     if(jk_ == NULL) {
         JK_Initialize("PKJK");
+    }
+    if(boost::iequals(jk_->JKtype(), "DFJK")) {
+        throw PSIEXCEPTION("JK_DensityToJ: DensityToJ cannot be used with DFJK.");
     }
     jk_->set_do_K(false);
     jk_->C_left().clear();
     jk_->D().clear();
-    jk_->D().push_back(Density);
+    jk_->D().push_back(density);
     
     jk_->compute_from_D();
     SharedMatrix Jnew = jk_->J()[0];
@@ -495,16 +498,65 @@ SharedMatrix MatPsi2::JK_DensityToJ(SharedMatrix Density) {
     return Jnew;
 }
 
-SharedMatrix MatPsi2::JK_DensityToK(SharedMatrix Density) {
+SharedMatrix MatPsi2::JK_DensityToK(SharedMatrix density) {
+    if(jk_ == NULL) {
+        JK_Initialize("PKJK");
+    }
+    if(boost::iequals(jk_->JKtype(), "DFJK")) {
+        throw PSIEXCEPTION("JK_DensityToK: DensityToK cannot be used with DFJK.");
+    }
+    jk_->set_do_J(false);
+    jk_->C_left().clear();
+    jk_->D().clear();
+    jk_->D().push_back(density);
+    
+    jk_->compute_from_D();
+    SharedMatrix Knew = jk_->K()[0];
+    Knew->hermitivitize();
+    jk_->set_do_J(true);
+    return Knew;
+}
+
+SharedMatrix MatPsi2::JK_OrbitalToJ(SharedMatrix orbital) {
+    SharedMatrix occupiedOrbital(new Matrix(orbital->nrow(), Molecule_NumElectrons()/2));
+    for(int i = 0; i < Molecule_NumElectrons()/2; i++) {
+        occupiedOrbital->set_column(0, i, orbital->get_column(0, i));
+    }
+    return JK_OccupiedOrbitalToJ(occupiedOrbital);
+}
+
+SharedMatrix MatPsi2::JK_OrbitalToK(SharedMatrix orbital) {
+    SharedMatrix occupiedOrbital(new Matrix(orbital->nrow(), Molecule_NumElectrons()/2));
+    for(int i = 0; i < Molecule_NumElectrons()/2; i++) {
+        occupiedOrbital->set_column(0, i, orbital->get_column(0, i));
+    }
+    return JK_OccupiedOrbitalToK(occupiedOrbital);
+}
+
+SharedMatrix MatPsi2::JK_OccupiedOrbitalToJ(SharedMatrix occupiedOrbital) {
+    if(jk_ == NULL) {
+        JK_Initialize("PKJK");
+    }
+    jk_->set_do_K(false);
+    jk_->C_left().clear();
+    jk_->C_left().push_back(occupiedOrbital);
+    
+    jk_->compute();
+    SharedMatrix Jnew = jk_->J()[0];
+    Jnew->hermitivitize();
+    jk_->set_do_K(true);
+    return Jnew;
+}
+
+SharedMatrix MatPsi2::JK_OccupiedOrbitalToK(SharedMatrix occupiedOrbital) {
     if(jk_ == NULL) {
         JK_Initialize("PKJK");
     }
     jk_->set_do_J(false);
     jk_->C_left().clear();
-    jk_->D().clear();
-    jk_->D().push_back(Density);
+    jk_->C_left().push_back(occupiedOrbital);
     
-    jk_->compute_from_D();
+    jk_->compute();
     SharedMatrix Knew = jk_->K()[0];
     Knew->hermitivitize();
     jk_->set_do_J(true);

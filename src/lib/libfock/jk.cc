@@ -50,6 +50,7 @@ namespace psi {
 JK::JK(Process::Environment& process_environment_in, boost::shared_ptr<BasisSet> primary) :
     process_environment_(process_environment_in), primary_(primary)
 {
+    JKtype_ = "";
     common_init();
 }
 JK::~JK()
@@ -1851,6 +1852,7 @@ void PKJK::postiterations()
 DirectJK::DirectJK(Process::Environment& process_environment_in, boost::shared_ptr<BasisSet> primary) :
    JK(process_environment_in, primary)
 {
+    JKtype_ = "DirectJK";
     common_init();
 }
 DirectJK::~DirectJK()
@@ -2378,6 +2380,7 @@ DFJK::DFJK(Process::Environment& process_environment_in, boost::shared_ptr<Basis
    boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<PSIO> psio_in) :
    JK(process_environment_in, primary), auxiliary_(auxiliary)
 {
+    JKtype_ = "DFJK";
     psio_ = psio_in;
     common_init();
 }
@@ -4279,6 +4282,7 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
 CDJK::CDJK(Process::Environment& process_environment_in, boost::shared_ptr<BasisSet> primary, double cholesky_tolerance, boost::shared_ptr<PSIO> psio_in):
     DFJK(process_environment_in, primary,primary, psio_in), cholesky_tolerance_(cholesky_tolerance)
 {
+    JKtype_ = "CDJK";
 }
 CDJK::~CDJK()
 {
@@ -4378,6 +4382,7 @@ FastDFJK::FastDFJK(Process::Environment& process_environment_in, boost::shared_p
    boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<PSIO> psio_in) :
    JK(process_environment_in, primary), auxiliary_(auxiliary)
 {
+    JKtype_ = "FastDFJK";
     psio_ = psio_in;
     common_init();
 }
