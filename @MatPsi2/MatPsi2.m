@@ -240,6 +240,10 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OccupiedOrbitalToK', this.objectHandle, varargin{:});
         end
         
+        function varargout = DFJK_Qmn(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_Qmn', this.objectHandle, varargin{:});
+        end
+        
         function varargout = RHF_DoSCF(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_DoSCF', this.objectHandle, varargin{:});
         end

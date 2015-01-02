@@ -121,6 +121,7 @@ public:
     SharedMatrix JK_OrbitalToK(SharedMatrix);
     SharedMatrix JK_OccupiedOrbitalToJ(SharedMatrix);
     SharedMatrix JK_OccupiedOrbitalToK(SharedMatrix);
+    SharedMatrix DFJK_Qmn();
     
     
     //*** SCF related

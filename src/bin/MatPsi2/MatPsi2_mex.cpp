@@ -401,6 +401,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputMatrix(plhs[0], MatPsi_obj->JK_OccupiedOrbitalToK(InputMatrix(prhs[2])));
         return;
     }
+    if (!strcmp("DFJK_Qmn", cmd)) {
+        // Call the method
+        OutputMatrix(plhs[0], MatPsi_obj->DFJK_Qmn());
+        return;
+    }
     
     //*** SCF related 
     if (!strcmp("RHF_DoSCF", cmd)) {

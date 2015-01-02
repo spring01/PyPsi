@@ -563,6 +563,16 @@ SharedMatrix MatPsi2::JK_OccupiedOrbitalToK(SharedMatrix occupiedOrbital) {
     return Knew;
 }
 
+SharedMatrix MatPsi2::DFJK_Qmn() {
+    if(jk_ == NULL) {
+        JK_Initialize("DFJK");
+    }
+    if(!boost::iequals(jk_->JKtype(), "DFJK")) {
+        throw PSIEXCEPTION("DFJK_Qmn: Can only be used with DFJK.");
+    }
+    return boost::static_pointer_cast<DFJK>(jk_)->Qmn();
+}
+
 void MatPsi2::RHF_Reset() {
     rhf_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
     process_environment_.set_wavefunction(rhf_);

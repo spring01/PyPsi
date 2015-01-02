@@ -779,6 +779,8 @@ public:
     void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
 
     // => Accessors <= //
+    
+    SharedMatrix Qmn() { return Qmn_; }
 
     /**
     * Print header information regarding JK
