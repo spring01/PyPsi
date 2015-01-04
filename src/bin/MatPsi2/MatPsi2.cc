@@ -38,7 +38,7 @@ unsigned long int parse_memory_str(const std::string& memory_str) {
 }
 
 // Constructor
-MatPsi2::MatPsi2(const std::string& path, const std::string& molstring, const std::string& basisname, int charge, int multiplicity)
+MatPsi2::MatPsi2(const std::string& molstring, const std::string& basisname, int charge, int multiplicity, const std::string& path)
     : molstring_(molstring), basisname_(basisname)
 {
     

@@ -47,8 +47,8 @@ protected:
     
 public:
     // constructor; takes in 2 strings and parse them 
-    MatPsi2(const std::string& path, const std::string& molstring, const std::string& basisname, 
-        int charge = 0, int multiplicity = 1);
+    MatPsi2(const std::string& molstring, const std::string& basisname, 
+        int charge, int multiplicity, const std::string& path);
     
     // destructor 
     virtual ~MatPsi2();
@@ -64,6 +64,7 @@ public:
     std::string Settings_TempDir() { return psio_->_psio_manager_->get_file_path(0); }
     void Settings_SetMaxNumCPUCores(int ncores);
     void Settings_SetMaxMemory(std::string);
+    void Settings_SetPsiDataDir(std::string path) { process_environment_.set("PSIDATADIR", path); }
     
     
     

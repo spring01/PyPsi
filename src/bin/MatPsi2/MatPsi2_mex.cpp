@@ -61,15 +61,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         // Check parameters
         if (nlhs != 1)
             mexErrMsgTxt("MatPsi2 Constructor: One output expected.");
-        if ( nrhs!=6 || !mxIsChar(prhs[1]) || !mxIsChar(prhs[2]) || !mxIsChar(prhs[3]) || !mxIsDouble(prhs[4]) ||!mxIsDouble(prhs[5]) )
+        if ( nrhs!=6 || !mxIsChar(prhs[1]) || !mxIsChar(prhs[2]) || !mxIsDouble(prhs[3]) ||!mxIsDouble(prhs[4]) || !mxIsChar(prhs[5]) )
             mexErrMsgTxt("MatPsi2 Constructor: MatPsi(mol_string, basis_name, charge, multiplicity) input expected.");
         // Return a handle to a new C++ instance
         plhs[0] = convertPtr2Mat<MatPsi2>(new MatPsi2(
-            ((std::string)mxArrayToString(prhs[1]) + "/"), 
+            (std::string)mxArrayToString(prhs[1]), 
             (std::string)mxArrayToString(prhs[2]), 
-            (std::string)mxArrayToString(prhs[3]), 
-            (int)InputScalar(prhs[4]), 
-            (int)InputScalar(prhs[5])));
+            (int)InputScalar(prhs[3]), 
+            (int)InputScalar(prhs[4]),
+            (std::string)mxArrayToString(prhs[5]) + "/"));
         return;
     }
     
@@ -136,6 +136,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         if (nrhs!=3 || !mxIsChar(prhs[2]))
             mexErrMsgTxt("Settings_SetMaxMemory(\"memory\"): String input expected.");
         MatPsi_obj->Settings_SetMaxMemory((std::string)mxArrayToString(prhs[2]));
+        return;
+    }
+    if (!strcmp("Settings_SetPsiDataDir", cmd)) {
+        if (nrhs!=3 || !mxIsChar(prhs[2]))
+            mexErrMsgTxt("Settings_SetPsiDataDir(\"psiDataDir\"): String input expected.");
+        MatPsi_obj->Settings_SetPsiDataDir((std::string)mxArrayToString(prhs[2]));
         return;
     }
     

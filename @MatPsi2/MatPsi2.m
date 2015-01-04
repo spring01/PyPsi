@@ -1,5 +1,11 @@
 classdef MatPsi2 < handle
     
+    properties (SetAccess = private)
+    
+        pathMatPsi2; % Path of @MatPsi2 folder
+        
+    end
+    
     properties (Access = private, Transient = true)
     
         objectHandle; % Handle to the underlying C++ class instance
@@ -8,35 +14,37 @@ classdef MatPsi2 < handle
     
     methods
         %% Constructor - Create a new C++ class instance  
-        function this = MatPsi2(molStr, basisSet, charge, multiplicity, psiDataPath)
+        function this = MatPsi2(molStr, basisSet, charge, multiplicity, psiDataDir)
             if(nargin < 3)
                 charge = 0;
             end
             if(nargin < 4)
                 multiplicity = 1;
             end
-            if(nargin < 5)
-                if(exist('./@MatPsi2/basis', 'file'))
-                    psiDataPath = [pwd, '/@MatPsi2'] ;
-                else
-                    currpath = path();
-                    paths_num = length(regexp(currpath, ':', 'match')) + 1;
-                    for i = 1:paths_num
-                        toppath = regexp(currpath, '[^:]*', 'match', 'once');
-                        if(exist([toppath, '/@MatPsi2/basis'], 'file'))
-                            psiDataPath = [toppath, '/@MatPsi2'];
-                            break;
-                        else
-                            currpath = currpath(length(toppath)+2:end);
-                        end
-                    end
-                    if(i>=paths_num)
-                        throw(MException('MatPsi2:MatPsi2','MatPsi2 cannot find basis set files.'));
+            if(exist('./@MatPsi2', 'file'))
+                pathMatPsi2 = [pwd(), '/@MatPsi2'] ;
+            else
+                currpath = path();
+                paths_num = length(regexp(currpath, ':', 'match')) + 1;
+                for i = 1:paths_num
+                    toppath = regexp(currpath, '[^:]*', 'match', 'once');
+                    if(exist([toppath, '/@MatPsi2'], 'file'))
+                        pathMatPsi2 = [toppath, '/@MatPsi2'];
+                        break;
+                    else
+                        currpath = currpath(length(toppath)+2:end);
                     end
                 end
+                if(i>=paths_num)
+                    disp('MatPsi2 cannot find itself; an exception might be thrown soon.');
+                    pathMatPsi2 = [];
+                end
             end
-            
-            this.objectHandle = MatPsi2.MatPsi2_mex('new', psiDataPath, molStr, basisSet, charge, multiplicity);
+            if(nargin < 5)
+                psiDataDir = pathMatPsi2;
+            end
+            this.pathMatPsi2 = pathMatPsi2;
+            this.objectHandle = MatPsi2.MatPsi2_mex('new', molStr, basisSet, charge, multiplicity, psiDataDir);
         end
         
         %% Destructor - Destroy the C++ class instance 
@@ -79,6 +87,10 @@ classdef MatPsi2 < handle
                 varargin{1} = num2str(varargin{1});
             end
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Settings_SetMaxMemory', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = Settings_SetPsiDataDir(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Settings_SetPsiDataDir', this.objectHandle, varargin{:});
         end
         
         function varargout = Molecule_Fix(this, varargin)
