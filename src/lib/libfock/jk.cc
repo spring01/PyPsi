@@ -2866,6 +2866,11 @@ void DFJK::initialize_JK_core()
             }
         }
     }
+    
+    // record (A|mn); added by spring
+    Amn_ = SharedMatrix(new Matrix("Amn (Fitted Integrals)",
+        auxiliary_->nbf(), ntri));
+    Amn_->copy(Qmn_);
 
     //~ timer_off("JK: (A|mn)");
 
@@ -2877,6 +2882,10 @@ void DFJK::initialize_JK_core()
     boost::shared_ptr<FittingMetric> Jinv(new FittingMetric(auxiliary_, true));
     Jinv->form_eig_inverse();
     double** Jinvp = Jinv->get_metric()->pointer();
+    
+    JHalfInv_ = SharedMatrix(new Matrix("Jinv (Fitting metric)",
+        auxiliary_->nbf(), auxiliary_->nbf()));
+    JHalfInv_->copy(Jinv->get_metric());
 
     //~ timer_off("JK: (A|Q)^-1/2");
 

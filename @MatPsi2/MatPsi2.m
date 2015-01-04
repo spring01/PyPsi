@@ -240,12 +240,24 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OccupiedOrbitalToK', this.objectHandle, varargin{:});
         end
         
-        function varargout = DFJK_QmnMatrixUnique(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_QmnMatrixUnique', this.objectHandle, varargin{:});
+        function varargout = DFJK_mnQMatrixUnique(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_mnQMatrixUnique', this.objectHandle, varargin{:});
         end
         
         function varargout = DFJK_mnQTensorFull(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_mnQTensorFull', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = DFJK_mnAMatrixUnique(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_mnAMatrixUnique', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = DFJK_mnATensorFull(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_mnATensorFull', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = DFJK_JHalfInvMetric(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_JHalfInvMetric', this.objectHandle, varargin{:});
         end
         
         function varargout = RHF_DoSCF(this, varargin)

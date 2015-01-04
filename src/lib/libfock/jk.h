@@ -677,6 +677,11 @@ protected:
     SharedMatrix Qlmn_;
     /// (Q|w|mn) for wK (or chunk for disk-based)
     SharedMatrix Qrmn_;
+    
+    /// Main (A|mn) Tensor; added by spring
+    SharedMatrix Amn_;
+    /// J^(-1/2) metric; added by spring
+    SharedMatrix JHalfInv_;
 
     // => Temps (built/destroyed in compute_JK) <= //
     boost::shared_ptr<Vector> J_temp_;
@@ -780,7 +785,10 @@ public:
 
     // => Accessors <= //
     
-    SharedMatrix Qmn() { return Qmn_; }
+    SharedMatrix GetAmn() { return Amn_; }
+    SharedMatrix GetJHalfInv() { return JHalfInv_; }
+    SharedMatrix GetQmn() { return Qmn_; }
+    bool IsCore() { return is_core_; }
 
     /**
     * Print header information regarding JK

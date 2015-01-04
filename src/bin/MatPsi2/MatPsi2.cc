@@ -450,7 +450,7 @@ void MatPsi2::Integrals_IndicesForExchange(double* indices1, double* indices2) {
     }
 }
 
-void MatPsi2::JK_Initialize(std::string jktype) {
+void MatPsi2::JK_Initialize(std::string jktype, std::string auxiliaryBasisSetName) {
     if(jk_ != NULL)
         jk_->finalize();
     if(process_environment_.wavefunction() == NULL)
@@ -459,7 +459,7 @@ void MatPsi2::JK_Initialize(std::string jktype) {
         jk_ = boost::shared_ptr<JK>(new PKJK(process_environment_, basis_, psio_));
     } else if(boost::iequals(jktype, "DFJK")) {
         boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-        molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
+        molecule_->set_basis_all_atoms(auxiliaryBasisSetName, "DF_BASIS_SCF");
         boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(process_environment_, parser, molecule_, "DF_BASIS_SCF");
         jk_ = boost::shared_ptr<JK>(new DFJK(process_environment_, basis_, auxiliary, psio_));
         molecule_->set_basis_all_atoms(basisname_);
@@ -562,30 +562,53 @@ SharedMatrix MatPsi2::JK_OccupiedOrbitalToK(SharedMatrix occupiedOrbital) {
     return Knew;
 }
 
-SharedMatrix MatPsi2::DFJK_QmnMatrixUnique() {
+void MatPsi2::DFJKException(std::string functionName) {
     if(jk_ == NULL) {
         JK_Initialize("DFJK");
     }
     if(!boost::iequals(jk_->JKtype(), "DFJK")) {
-        throw PSIEXCEPTION("DFJK_QmnMatrixUnique: Can only be used with DFJK.");
+        throw PSIEXCEPTION(functionName + ": Can only be used with DFJK.");
     }
-    return boost::static_pointer_cast<DFJK>(jk_)->Qmn();
+    if(!boost::static_pointer_cast<DFJK>(jk_)->IsCore()) {
+        throw PSIEXCEPTION(functionName + ": Can only be used with DFJK.");
+    }
+}
+
+SharedMatrix MatPsi2::DFJK_mnQMatrixUnique() {
+    DFJKException("DFJK_mnQMatrixUnique");
+    return boost::static_pointer_cast<DFJK>(jk_)->GetQmn()->transpose();
 }
 
 std::vector<SharedMatrix> MatPsi2::DFJK_mnQTensorFull() {
-    if(jk_ == NULL) {
-        JK_Initialize("DFJK");
-    }
-    if(!boost::iequals(jk_->JKtype(), "DFJK")) {
-        throw PSIEXCEPTION("DFJK_mnQTensorFull: Can only be used with DFJK.");
-    }
-    SharedMatrix QmnUnique = boost::static_pointer_cast<DFJK>(jk_)->Qmn();
+    DFJKException("DFJK_mnQTensorFull");
+    SharedMatrix QmnUnique = boost::static_pointer_cast<DFJK>(jk_)->GetQmn();
     std::vector<SharedMatrix> mnQFull;
     for(int Q = 0; Q < QmnUnique->nrow(); Q++) {
         mnQFull.push_back(SharedMatrix(new Matrix(basis_->nbf(), basis_->nbf())));
         mnQFull[Q]->set(QmnUnique->const_pointer()[Q]);
     }
     return mnQFull;
+}
+
+SharedMatrix MatPsi2::DFJK_mnAMatrixUnique() {
+    DFJKException("DFJK_mnAMatrixUnique");
+    return boost::static_pointer_cast<DFJK>(jk_)->GetAmn()->transpose();
+}
+
+std::vector<SharedMatrix> MatPsi2::DFJK_mnATensorFull() {
+    DFJKException("DFJK_mnATensorFull");
+    SharedMatrix AmnUnique = boost::static_pointer_cast<DFJK>(jk_)->GetAmn();
+    std::vector<SharedMatrix> mnAFull;
+    for(int aux = 0; aux < AmnUnique->nrow(); aux++) {
+        mnAFull.push_back(SharedMatrix(new Matrix(basis_->nbf(), basis_->nbf())));
+        mnAFull[aux]->set(AmnUnique->const_pointer()[aux]);
+    }
+    return mnAFull;
+}
+
+SharedMatrix MatPsi2::DFJK_JHalfInvMetric() {
+    DFJKException("DFJK_JHalfInvMetric");
+    return boost::static_pointer_cast<DFJK>(jk_)->GetJHalfInv();
 }
 
 void MatPsi2::RHF_Reset() {

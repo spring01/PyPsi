@@ -42,6 +42,9 @@ protected:
     // create basis object and one & two electron integral factories 
     void create_basis_and_integral_factories();
     
+    // exception function for DFJK utilities
+    void DFJKException(std::string functionName);
+    
 public:
     // constructor; takes in 2 strings and parse them 
     MatPsi2(const std::string& path, const std::string& molstring, const std::string& basisname, 
@@ -111,7 +114,7 @@ public:
     
     //*** JK related
     // use different types of JK 
-    void JK_Initialize(std::string jktype);
+    void JK_Initialize(std::string jktype, std::string auxiliaryBasisSetName = "CC-PVDZ-JKFIT");
     const std::string& JK_Type();
     
     // methods computing J/K/G 
@@ -121,8 +124,13 @@ public:
     SharedMatrix JK_OrbitalToK(SharedMatrix);
     SharedMatrix JK_OccupiedOrbitalToJ(SharedMatrix);
     SharedMatrix JK_OccupiedOrbitalToK(SharedMatrix);
-    SharedMatrix DFJK_QmnMatrixUnique();
+    
+    // specially for density-fitting JK
+    SharedMatrix DFJK_mnQMatrixUnique();
     std::vector<SharedMatrix> DFJK_mnQTensorFull();
+    SharedMatrix DFJK_mnAMatrixUnique();
+    std::vector<SharedMatrix> DFJK_mnATensorFull();
+    SharedMatrix DFJK_JHalfInvMetric();
     
     
     //*** SCF related

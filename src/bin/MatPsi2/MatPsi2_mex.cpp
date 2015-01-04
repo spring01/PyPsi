@@ -310,7 +310,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         int ind[4];
         for(int i = 0; i < 4; i++) {
             ind[i] = (int)mxGetScalar(prhs[2+i]) - 1; // -1 convert Matlab convention to C++ convention
-        if(ind[i] < 0 || ind[i] >= nbf)
+            if(ind[i] < 0 || ind[i] >= nbf)
                 mexErrMsgTxt("Integrals_ijkl: Required index not within scale.");
         }
         OutputScalar(plhs[0], MatPsi_obj->Integrals_ijkl(ind[0], ind[1], ind[2], ind[3]));
@@ -344,9 +344,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     
     //*** JK related  
     if (!strcmp("JK_Initialize", cmd)) {
-        if ( nrhs!=3 || !mxIsChar(prhs[2]))
+        if ( (nrhs!=3 && nrhs!=4) || !mxIsChar(prhs[2]) )
             mexErrMsgTxt("JK_Initialize(\"jktype\"): String input expected.");
-        MatPsi_obj->JK_Initialize((std::string)mxArrayToString(prhs[2]));
+        std::string auxiliaryBasisSetName;
+        if (nrhs==3) {
+            MatPsi_obj->JK_Initialize((std::string)mxArrayToString(prhs[2]));
+        }else {
+            MatPsi_obj->JK_Initialize((std::string)mxArrayToString(prhs[2]), (std::string)mxArrayToString(prhs[3]));
+        }
         return;
     }
     if (!strcmp("JK_Type", cmd)) {
@@ -401,9 +406,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputMatrix(plhs[0], MatPsi_obj->JK_OccupiedOrbitalToK(InputMatrix(prhs[2])));
         return;
     }
-    if (!strcmp("DFJK_QmnMatrixUnique", cmd)) {
+    if (!strcmp("DFJK_mnQMatrixUnique", cmd)) {
         // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->DFJK_QmnMatrixUnique());
+        OutputMatrix(plhs[0], MatPsi_obj->DFJK_mnQMatrixUnique());
         return;
     }
     if (!strcmp("DFJK_mnQTensorFull", cmd)) {
@@ -420,6 +425,32 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                 matlab_pt[iaux*ncol*nrow + i] = tmp_pt[i];
             }
         }
+        return;
+    }
+    if (!strcmp("DFJK_mnAMatrixUnique", cmd)) {
+        // Call the method
+        OutputMatrix(plhs[0], MatPsi_obj->DFJK_mnAMatrixUnique());
+        return;
+    }
+    if (!strcmp("DFJK_mnATensorFull", cmd)) {
+        std::vector<SharedMatrix> mnAFull = MatPsi_obj->DFJK_mnATensorFull();
+        int ncol = mnAFull[0]->ncol();
+        int nrow = mnAFull[0]->nrow();
+        int naux = mnAFull.size();
+        mwSize dims[3] = {ncol, nrow, naux};
+        plhs[0] = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
+        double* matlab_pt = mxGetPr(plhs[0]);
+        for(int iaux = 0; iaux < naux; iaux++) {
+            double* tmp_pt = mnAFull[iaux]->get_pointer();
+            for(int i = 0; i < ncol * nrow; i++) {
+                matlab_pt[iaux*ncol*nrow + i] = tmp_pt[i];
+            }
+        }
+        return;
+    }
+    if (!strcmp("DFJK_JHalfInvMetric", cmd)) {
+        // Call the method
+        OutputMatrix(plhs[0], MatPsi_obj->DFJK_JHalfInvMetric());
         return;
     }
     
