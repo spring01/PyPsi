@@ -240,8 +240,12 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OccupiedOrbitalToK', this.objectHandle, varargin{:});
         end
         
-        function varargout = DFJK_Qmn(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_Qmn', this.objectHandle, varargin{:});
+        function varargout = DFJK_QmnMatrixUnique(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_QmnMatrixUnique', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = DFJK_mnQTensorFull(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_mnQTensorFull', this.objectHandle, varargin{:});
         end
         
         function varargout = RHF_DoSCF(this, varargin)

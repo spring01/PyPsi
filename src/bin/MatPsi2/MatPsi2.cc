@@ -332,13 +332,13 @@ std::vector<SharedMatrix> MatPsi2::Integrals_Dipole() {
 }
 
 std::vector<SharedMatrix> MatPsi2::Integrals_PotentialEachCore() {
-    int natom_ = molecule_->natom();
+    int natom = molecule_->natom();
     std::vector<SharedMatrix> viMatVec;
     boost::shared_ptr<OneBodyAOInt> viOBI(intfac_->ao_potential());
     boost::shared_ptr<PotentialInt> viPtI = boost::static_pointer_cast<PotentialInt>(viOBI);
     SharedMatrix Zxyz = viPtI->charge_field();
     SharedMatrix Zxyz_rowi(new Matrix(1, 4));
-    for( int i = 0; i < natom_; i++) {
+    for( int i = 0; i < natom; i++) {
         SharedVector Zxyz_rowi_vec = Zxyz->get_row(0, i);
         Zxyz_rowi->set_row(0, 0, Zxyz_rowi_vec);
         viPtI->set_charge_field(Zxyz_rowi);
@@ -387,7 +387,8 @@ inline int ij2I(int i, int j) {
 }
 
 int MatPsi2::Integrals_NumUniqueTEIs() {
-    return ( basis_->nbf() * ( basis_->nbf() + 1 ) * ( basis_->nbf() * basis_->nbf() + basis_->nbf() + 2 ) ) / 8;
+    int nbf = basis_->nbf();
+    return ( nbf * ( nbf + 1 ) * ( nbf * nbf + nbf + 2 ) ) / 8;
 }
 
 void MatPsi2::Integrals_AllUniqueTEIs(double* matpt) {
@@ -407,7 +408,7 @@ void MatPsi2::Integrals_AllUniqueTEIs(double* matpt) {
 
 void MatPsi2::Integrals_AllTEIs(double* matpt) {
     AOShellCombinationsIterator shellIter = intfac_->shells_iterator();
-    int nbf_ = basis_->nbf();
+    int nbf = basis_->nbf();
     const double *buffer = eri_->buffer();
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
         // Compute quartet
@@ -419,14 +420,14 @@ void MatPsi2::Integrals_AllTEIs(double* matpt) {
             int j = intIter.j();
             int k = intIter.k();
             int l = intIter.l();
-            matpt[ l+nbf_*(k+nbf_*(j+nbf_*i)) ] = buffer[intIter.index()];
-            matpt[ l+nbf_*(k+nbf_*(i+nbf_*j)) ] = buffer[intIter.index()];
-            matpt[ k+nbf_*(l+nbf_*(j+nbf_*i)) ] = buffer[intIter.index()];
-            matpt[ k+nbf_*(l+nbf_*(i+nbf_*j)) ] = buffer[intIter.index()];
-            matpt[ j+nbf_*(i+nbf_*(l+nbf_*k)) ] = buffer[intIter.index()];
-            matpt[ j+nbf_*(i+nbf_*(k+nbf_*l)) ] = buffer[intIter.index()];
-            matpt[ i+nbf_*(j+nbf_*(l+nbf_*k)) ] = buffer[intIter.index()];
-            matpt[ i+nbf_*(j+nbf_*(k+nbf_*l)) ] = buffer[intIter.index()];
+            matpt[ l+nbf*(k+nbf*(j+nbf*i)) ] = buffer[intIter.index()];
+            matpt[ l+nbf*(k+nbf*(i+nbf*j)) ] = buffer[intIter.index()];
+            matpt[ k+nbf*(l+nbf*(j+nbf*i)) ] = buffer[intIter.index()];
+            matpt[ k+nbf*(l+nbf*(i+nbf*j)) ] = buffer[intIter.index()];
+            matpt[ j+nbf*(i+nbf*(l+nbf*k)) ] = buffer[intIter.index()];
+            matpt[ j+nbf*(i+nbf*(k+nbf*l)) ] = buffer[intIter.index()];
+            matpt[ i+nbf*(j+nbf*(l+nbf*k)) ] = buffer[intIter.index()];
+            matpt[ i+nbf*(j+nbf*(k+nbf*l)) ] = buffer[intIter.index()];
         }
     }
 }
@@ -470,6 +471,7 @@ void MatPsi2::JK_Initialize(std::string jktype) {
         throw PSIEXCEPTION("JK_Initialize: JK type not recognized.");
     }
     jk_->set_memory(process_environment_.get_memory());
+    jk_->set_cutoff(0.0);
     jk_->initialize();
 }
 
@@ -482,9 +484,6 @@ const std::string& MatPsi2::JK_Type() {
 SharedMatrix MatPsi2::JK_DensityToJ(SharedMatrix density) {
     if(jk_ == NULL) {
         JK_Initialize("PKJK");
-    }
-    if(boost::iequals(jk_->JKtype(), "DFJK")) {
-        throw PSIEXCEPTION("JK_DensityToJ: DensityToJ cannot be used with DFJK.");
     }
     jk_->set_do_K(false);
     jk_->C_left().clear();
@@ -563,14 +562,30 @@ SharedMatrix MatPsi2::JK_OccupiedOrbitalToK(SharedMatrix occupiedOrbital) {
     return Knew;
 }
 
-SharedMatrix MatPsi2::DFJK_Qmn() {
+SharedMatrix MatPsi2::DFJK_QmnMatrixUnique() {
     if(jk_ == NULL) {
         JK_Initialize("DFJK");
     }
     if(!boost::iequals(jk_->JKtype(), "DFJK")) {
-        throw PSIEXCEPTION("DFJK_Qmn: Can only be used with DFJK.");
+        throw PSIEXCEPTION("DFJK_QmnMatrixUnique: Can only be used with DFJK.");
     }
     return boost::static_pointer_cast<DFJK>(jk_)->Qmn();
+}
+
+std::vector<SharedMatrix> MatPsi2::DFJK_mnQTensorFull() {
+    if(jk_ == NULL) {
+        JK_Initialize("DFJK");
+    }
+    if(!boost::iequals(jk_->JKtype(), "DFJK")) {
+        throw PSIEXCEPTION("DFJK_mnQTensorFull: Can only be used with DFJK.");
+    }
+    SharedMatrix QmnUnique = boost::static_pointer_cast<DFJK>(jk_)->Qmn();
+    std::vector<SharedMatrix> mnQFull;
+    for(int Q = 0; Q < QmnUnique->nrow(); Q++) {
+        mnQFull.push_back(SharedMatrix(new Matrix(basis_->nbf(), basis_->nbf())));
+        mnQFull[Q]->set(QmnUnique->const_pointer()[Q]);
+    }
+    return mnQFull;
 }
 
 void MatPsi2::RHF_Reset() {
@@ -608,7 +623,7 @@ void MatPsi2::RHF_GuessCore() {
 
 double MatPsi2::RHF_DoSCF() {
     if(Molecule_NumElectrons() % 2)
-        throw PSIEXCEPTION("RHF_DoSCF: RHF can only handle singlets.");
+        throw PSIEXCEPTION("RHF_DoSCF: RHF can handle singlets only.");
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     rhf_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, process_environment_.options, jk_, psio_));

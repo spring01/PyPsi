@@ -401,9 +401,25 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputMatrix(plhs[0], MatPsi_obj->JK_OccupiedOrbitalToK(InputMatrix(prhs[2])));
         return;
     }
-    if (!strcmp("DFJK_Qmn", cmd)) {
+    if (!strcmp("DFJK_QmnMatrixUnique", cmd)) {
         // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->DFJK_Qmn());
+        OutputMatrix(plhs[0], MatPsi_obj->DFJK_QmnMatrixUnique());
+        return;
+    }
+    if (!strcmp("DFJK_mnQTensorFull", cmd)) {
+        std::vector<SharedMatrix> mnQFull = MatPsi_obj->DFJK_mnQTensorFull();
+        int ncol = mnQFull[0]->ncol();
+        int nrow = mnQFull[0]->nrow();
+        int naux = mnQFull.size();
+        mwSize dims[3] = {ncol, nrow, naux};
+        plhs[0] = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
+        double* matlab_pt = mxGetPr(plhs[0]);
+        for(int iaux = 0; iaux < naux; iaux++) {
+            double* tmp_pt = mnQFull[iaux]->get_pointer();
+            for(int i = 0; i < ncol * nrow; i++) {
+                matlab_pt[iaux*ncol*nrow + i] = tmp_pt[i];
+            }
+        }
         return;
     }
     
