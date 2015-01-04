@@ -681,7 +681,7 @@ protected:
     /// Main (A|mn) Tensor; added by spring
     SharedMatrix Amn_;
     /// J^(-1/2) metric; added by spring
-    SharedMatrix JHalfInv_;
+    SharedMatrix invJHalf_;
 
     // => Temps (built/destroyed in compute_JK) <= //
     boost::shared_ptr<Vector> J_temp_;
@@ -786,7 +786,7 @@ public:
     // => Accessors <= //
     
     SharedMatrix GetAmn() { return Amn_; }
-    SharedMatrix GetJHalfInv() { return JHalfInv_; }
+    SharedMatrix GetInvJHalf() { return invJHalf_; }
     SharedMatrix GetQmn() { return Qmn_; }
     bool IsCore() { return is_core_; }
 

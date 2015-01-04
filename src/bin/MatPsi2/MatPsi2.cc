@@ -606,9 +606,9 @@ std::vector<SharedMatrix> MatPsi2::DFJK_mnATensorFull() {
     return mnAFull;
 }
 
-SharedMatrix MatPsi2::DFJK_JHalfInvMetric() {
-    DFJKException("DFJK_JHalfInvMetric");
-    return boost::static_pointer_cast<DFJK>(jk_)->GetJHalfInv();
+SharedMatrix MatPsi2::DFJK_InverseJHalfMetric() {
+    DFJKException("DFJK_InverseJHalfMetric");
+    return boost::static_pointer_cast<DFJK>(jk_)->GetInvJHalf();
 }
 
 void MatPsi2::RHF_Reset() {

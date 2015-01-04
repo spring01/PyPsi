@@ -130,7 +130,7 @@ public:
     std::vector<SharedMatrix> DFJK_mnQTensorFull();
     SharedMatrix DFJK_mnAMatrixUnique();
     std::vector<SharedMatrix> DFJK_mnATensorFull();
-    SharedMatrix DFJK_JHalfInvMetric();
+    SharedMatrix DFJK_InverseJHalfMetric();
     
     
     //*** SCF related

@@ -256,8 +256,8 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_mnATensorFull', this.objectHandle, varargin{:});
         end
         
-        function varargout = DFJK_JHalfInvMetric(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_JHalfInvMetric', this.objectHandle, varargin{:});
+        function varargout = DFJK_InverseJHalfMetric(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_InverseJHalfMetric', this.objectHandle, varargin{:});
         end
         
         function varargout = RHF_DoSCF(this, varargin)

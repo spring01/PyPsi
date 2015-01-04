@@ -448,9 +448,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         }
         return;
     }
-    if (!strcmp("DFJK_JHalfInvMetric", cmd)) {
+    if (!strcmp("DFJK_InverseJHalfMetric", cmd)) {
         // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->DFJK_JHalfInvMetric());
+        OutputMatrix(plhs[0], MatPsi_obj->DFJK_InverseJHalfMetric());
         return;
     }
     
