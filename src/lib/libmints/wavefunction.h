@@ -233,9 +233,9 @@ private:
     void common_init();
 
 public:
-    
-    /// Use "global" psio 
-    Wavefunction(Process::Environment& process_environment_in);
+        
+    /// Use "global" psio and a specified basis set object; added by spring
+    Wavefunction(Process::Environment& process_environment_in, boost::shared_ptr<BasisSet> basisset_in);
     
     /// Set the PSIO object.
     Wavefunction(Process::Environment& process_environment_in, Options & options, boost::shared_ptr<PSIO> psio);

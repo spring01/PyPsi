@@ -62,12 +62,19 @@ using namespace std;
 
 namespace psi { namespace scf {
 
-RHF::RHF(Process::Environment& process_environment_in, boost::shared_ptr<JK> jk_in)
+RHF::RHF(Process::Environment& process_environment_in, boost::shared_ptr<BasisSet> basisset_in) // construct a fake rhf object
+    : HF(process_environment_in, basisset_in)
+{
+    common_init();
+}
+
+RHF::RHF(Process::Environment& process_environment_in, boost::shared_ptr<JK> jk_in) // construct a usable rhf object
     : HF(process_environment_in, jk_in)
 {
     common_init();
 }
 
+// I'm not using these
 RHF::RHF(Process::Environment& process_environment_in, Options& options, boost::shared_ptr<JK> jk_in, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
     : HF(process_environment_in, options, jk_in, psio, chkpt)
 {

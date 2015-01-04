@@ -56,8 +56,11 @@ double df[MAX_DF];
 double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
-Wavefunction::Wavefunction(Process::Environment& process_environment_in) :
-    process_environment_(process_environment_in), options_(process_environment_in.options), psio_(process_environment_in.psio())
+Wavefunction::Wavefunction(Process::Environment& process_environment_in, boost::shared_ptr<BasisSet> basisset_in) :
+    process_environment_(process_environment_in), 
+    options_(process_environment_in.options), 
+    psio_(process_environment_in.psio()), 
+    basisset_(basisset_in)
 {
     common_init();
 }
@@ -144,9 +147,11 @@ void Wavefunction::common_init()
     // Take the molecule from the environment
     molecule_ = process_environment_.molecule();
 
-    // Load in the basis set
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    basisset_ = BasisSet::construct(process_environment_, parser, molecule_, "BASIS");
+    if(basisset_ == NULL) {
+        // Load in the basis set
+        boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+        basisset_ = BasisSet::construct(process_environment_, parser, molecule_, "BASIS");
+    }
 
     // Check the point group of the molecule. If it is not set, set it.
     if (!molecule_->point_group()) {

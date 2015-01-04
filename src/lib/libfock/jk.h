@@ -442,6 +442,8 @@ public:
     }
     
     const std::string& JKtype() { return JKtype_; }
+    boost::shared_ptr<BasisSet> GetPrimary() { return primary_; }
+    
     
 };
 

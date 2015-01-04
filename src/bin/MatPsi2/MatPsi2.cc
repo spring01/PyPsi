@@ -612,7 +612,7 @@ SharedMatrix MatPsi2::DFJK_InverseJHalfMetric() {
 }
 
 void MatPsi2::RHF_Reset() {
-    rhf_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
+    rhf_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, basis_));
     process_environment_.set_wavefunction(rhf_);
     rhf_->extern_finalize();
     rhf_.reset();
@@ -649,7 +649,7 @@ double MatPsi2::RHF_DoSCF() {
         throw PSIEXCEPTION("RHF_DoSCF: RHF can handle singlets only.");
     if(jk_ == NULL)
         JK_Initialize("PKJK");
-    rhf_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, process_environment_.options, jk_, psio_));
+    rhf_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
     process_environment_.set_wavefunction(rhf_);
     return rhf_->compute_energy();
 }
