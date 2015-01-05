@@ -92,6 +92,7 @@ public:
     SharedVector BasisSet_ShellNumFunctions();
     SharedVector BasisSet_ShellToCenter();
     SharedVector BasisSet_FunctionToCenter(); // map basis function number to the number of atom it is centred on 
+    SharedVector BasisSet_FunctionToShell();
     SharedVector BasisSet_FunctionToAngularMomentum(); // map basis function number to its angular momentum 
     SharedVector BasisSet_PrimitiveExponents();
     SharedVector BasisSet_PrimitiveCoefficients();

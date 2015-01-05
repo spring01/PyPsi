@@ -164,6 +164,10 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_FunctionToCenter', this.objectHandle, varargin{:});
         end
         
+        function varargout = BasisSet_FunctionToShell(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_FunctionToShell', this.objectHandle, varargin{:});
+        end
+        
         function varargout = BasisSet_FunctionToAngularMomentum(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_FunctionToAngularMomentum', this.objectHandle, varargin{:});
         end

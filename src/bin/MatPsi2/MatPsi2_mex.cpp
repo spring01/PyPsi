@@ -234,6 +234,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputVector(plhs[0], func2centerVec);
         return;
     }
+    if (!strcmp("BasisSet_FunctionToShell", cmd)) {
+        SharedVector func2shellVec = MatPsi_obj->BasisSet_FunctionToShell();
+        for(int i = 0; i < func2shellVec->dim(); i++)
+            func2shellVec->add(i, 1.0); // + 1 convert C++ convention to Matlab convention 
+        OutputVector(plhs[0], func2shellVec);
+        return;
+    }
     if (!strcmp("BasisSet_FunctionToAngularMomentum", cmd)) {
         OutputVector(plhs[0], MatPsi_obj->BasisSet_FunctionToAngularMomentum());
         return;

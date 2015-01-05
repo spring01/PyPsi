@@ -257,6 +257,14 @@ SharedVector MatPsi2::BasisSet_FunctionToCenter() {
     return func2centerVec;
 }
 
+SharedVector MatPsi2::BasisSet_FunctionToShell() {
+    SharedVector func2shellVec(new Vector(basis_->nbf()));
+    for(int i = 0; i < basis_->nbf(); i++) {
+        func2shellVec->set(i, (double)basis_->function_to_shell(i));
+    }
+    return func2shellVec;
+}
+
 SharedVector MatPsi2::BasisSet_FunctionToAngularMomentum() {
     SharedVector func2amVec(new Vector(basis_->nbf()));
     for(int i = 0; i < basis_->nbf(); i++) {
