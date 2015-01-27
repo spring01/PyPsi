@@ -109,7 +109,7 @@ public:
     virtual ~SuperFunctional(); 
 
     static boost::shared_ptr<SuperFunctional> current(Options& options, int max_points = -1, int deriv = 1);
-    //~ static boost::shared_ptr<SuperFunctional> build(const std::string& alias, int max_points = 5000, int deriv = 1); 
+    static boost::shared_ptr<SuperFunctional> build(const std::string& alias, int max_points = 5000, int deriv = 1); 
     static boost::shared_ptr<SuperFunctional> blank();
 
     // Allocate values (MUST be called after adding new functionals to the superfunctional)

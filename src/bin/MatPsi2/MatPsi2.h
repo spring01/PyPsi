@@ -6,6 +6,7 @@
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <libscf_solver/rhf.h>
+#include <libscf_solver/ks.h>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
@@ -35,6 +36,8 @@ protected:
     boost::shared_ptr<MatrixFactory> matfac_;
     boost::shared_ptr<JK> jk_;
     boost::shared_ptr<scf::RHF> rhf_;
+    
+    boost::shared_ptr<scf::RKS> rks_;
     
     // create basis object 
     void create_basis();
@@ -159,5 +162,7 @@ public:
     SharedMatrix RHF_JMatrix();   // Coulomb interaction matrix J 
     SharedMatrix RHF_KMatrix();   // exchange interaction matrix K
     SharedMatrix RHF_FockMatrix();   // entire Fock matrix 
+    
+    double RKS_DoSCF();       // restricted Hartree-Fock energy 
     
 };

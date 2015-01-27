@@ -51,6 +51,15 @@ using namespace boost;
 
 namespace psi { namespace scf {
 
+// added by spring
+KS::KS(Process::Environment& process_environment_in) :
+    process_environment_(process_environment_in), 
+    options_(process_environment_in.options), 
+    psio_(process_environment_in.psio())
+{
+    common_init();
+}
+
 KS::KS(Process::Environment& process_environment_in, Options & options, boost::shared_ptr<PSIO> psio) :
     process_environment_(process_environment_in), options_(options), psio_(psio)
 {
@@ -78,6 +87,14 @@ void KS::common_init()
     potential_->print_header();
 
 }
+
+// added by spring
+RKS::RKS(Process::Environment& process_environment_in, boost::shared_ptr<JK> jk_in) :
+    RHF(process_environment_in, jk_in), KS(process_environment_in)
+{
+    common_init();
+}
+
 RKS::RKS(Process::Environment& process_environment_in, Options & options, boost::shared_ptr<JK> jk_in, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     RHF(process_environment_in, options, jk_in, psio, chkpt), KS(process_environment_in, options,psio)
 {

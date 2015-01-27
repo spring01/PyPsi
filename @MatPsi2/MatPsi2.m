@@ -347,6 +347,10 @@ classdef MatPsi2 < handle
         function varargout = RHF_FockMatrix(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_FockMatrix', this.objectHandle, varargin{:});
         end
+        
+        function varargout = RKS_DoSCF(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RKS_DoSCF', this.objectHandle, varargin{:});
+        end
 
     end
     

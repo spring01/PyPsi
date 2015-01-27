@@ -718,3 +718,18 @@ SharedMatrix MatPsi2::RHF_FockMatrix() {
     return rhf_->Fa(); 
 }
 
+
+double MatPsi2::RKS_DoSCF() {
+    if(Molecule_NumElectrons() % 2)
+        throw PSIEXCEPTION("RKS_DoSCF: RKS can handle singlets only.");
+    if(jk_ == NULL)
+        JK_Initialize("PKJK");
+    jk_->set_do_wK(true);
+    process_environment_.options.set_global_str("REFERENCE", "RKS");
+    process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
+    rks_ = boost::shared_ptr<scf::RKS>(new scf::RKS(process_environment_, jk_));
+    process_environment_.set_wavefunction(rks_);
+    return rks_->compute_energy();
+}
+
+

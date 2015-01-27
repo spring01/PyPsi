@@ -553,6 +553,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         return;
     }
     
+    //*** DFT related 
+    if (!strcmp("RKS_DoSCF", cmd)) {
+        OutputScalar(plhs[0], MatPsi_obj->RKS_DoSCF());
+        return;
+    }
+    
     // Got here, so command not recognized
     mexErrMsgTxt("Command not recognized.");
 }
