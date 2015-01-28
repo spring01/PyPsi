@@ -14,7 +14,7 @@ classdef MatPsi2 < handle
     
     methods
         %% Constructor - Create a new C++ class instance  
-        function this = MatPsi2(molStr, basisSet, charge, multiplicity, psiDataDir)
+        function this = MatPsi2(cartesian, basisSet, charge, multiplicity, psiDataDir)
             if(nargin < 3)
                 charge = 0;
             end
@@ -44,7 +44,7 @@ classdef MatPsi2 < handle
                 psiDataDir = pathMatPsi2;
             end
             this.pathMatPsi2 = pathMatPsi2;
-            this.objectHandle = MatPsi2.MatPsi2_mex('new', molStr, basisSet, charge, multiplicity, psiDataDir);
+            this.objectHandle = MatPsi2.MatPsi2_mex('new', cartesian, basisSet, charge, multiplicity, psiDataDir);
         end
         
         %% Destructor - Destroy the C++ class instance 
@@ -52,14 +52,6 @@ classdef MatPsi2 < handle
             if(~isempty(this.objectHandle))
                 MatPsi2.MatPsi2_mex('delete', this.objectHandle);
             end
-        end
-        
-        function varargout = InputInfo_MoleculeString(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('InputInfo_MoleculeString', this.objectHandle, varargin{:});
-        end
-        
-        function varargout = InputInfo_BasisSet(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('InputInfo_BasisSet', this.objectHandle, varargin{:});
         end
         
         function varargout = Settings_MaxNumCPUCores(this, varargin)
@@ -126,6 +118,10 @@ classdef MatPsi2 < handle
         end
         function varargout = Molecule_SetCharge(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_SetCharge', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = BasisSet_Name(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_Name', this.objectHandle, varargin{:});
         end
         
         function varargout = BasisSet_SetBasisSet(this, varargin)

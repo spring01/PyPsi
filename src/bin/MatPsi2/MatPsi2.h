@@ -21,7 +21,6 @@ using namespace boost;
 class MatPsi2 {
 protected:
     
-    std::string molstring_;
     std::string basisname_;
 
     Process::Environment process_environment_;
@@ -50,15 +49,11 @@ protected:
     
 public:
     // constructor; takes in 2 strings and parse them 
-    MatPsi2(const std::string& molstring, const std::string& basisname, 
+    MatPsi2(SharedMatrix cartesian, const std::string& basisname, 
         int charge, int multiplicity, const std::string& path);
     
     // destructor 
     virtual ~MatPsi2();
-    
-    // Construcing properties 
-    std::string& InputInfo_MoleculeString() { return molstring_; } // the string describing the molecule 
-    std::string& InputInfo_BasisSet() { return basisname_; } // basis set name string 
     
     // CPU and memory controll 
     int Settings_MaxNumCPUCores() { return process_environment_.get_n_threads(); }
@@ -86,6 +81,7 @@ public:
     
     
     //*** Basis set properties 
+    std::string& BasisSet_Name() { return basisname_; } // basis set name string 
     void BasisSet_SetBasisSet(const std::string& basisname); // set a new basis set 
     bool BasisSet_IsSpherical() { return basis_->has_puream(); }
     int BasisSet_NumFunctions() { return basis_->nbf(); } // number of basis functions 

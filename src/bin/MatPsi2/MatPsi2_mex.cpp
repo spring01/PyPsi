@@ -61,11 +61,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         // Check parameters
         if (nlhs != 1)
             mexErrMsgTxt("MatPsi2 Constructor: One output expected.");
-        if ( nrhs!=6 || !mxIsChar(prhs[1]) || !mxIsChar(prhs[2]) || !mxIsDouble(prhs[3]) ||!mxIsDouble(prhs[4]) || !mxIsChar(prhs[5]) )
-            mexErrMsgTxt("MatPsi2 Constructor: MatPsi(mol_string, basis_name, charge, multiplicity) input expected.");
+        if ( nrhs!=6 || !mxIsDouble(prhs[1]) || mxGetN(prhs[1]) != 4 || !mxIsChar(prhs[2]) || !mxIsDouble(prhs[3]) ||!mxIsDouble(prhs[4]) || !mxIsChar(prhs[5]) )
+            mexErrMsgTxt("MatPsi2 Constructor: MatPsi(cartesian, basis_name, charge, multiplicity) input expected.");
         // Return a handle to a new C++ instance
         plhs[0] = convertPtr2Mat<MatPsi2>(new MatPsi2(
-            (std::string)mxArrayToString(prhs[1]), 
+            InputMatrix(prhs[1]), 
             (std::string)mxArrayToString(prhs[2]), 
             (int)InputScalar(prhs[3]), 
             (int)InputScalar(prhs[4]),
@@ -93,15 +93,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     int nbf = MatPsi_obj->BasisSet_NumFunctions();
     
     //*** Call the various class methods 
-    //*** InputInfo and Settings 
-    if (!strcmp("InputInfo_MoleculeString", cmd)) {
-        plhs[0] = mxCreateString((MatPsi_obj->InputInfo_MoleculeString()).c_str());
-        return;
-    }
-    if (!strcmp("InputInfo_BasisSet", cmd)) {
-        plhs[0] = mxCreateString((MatPsi_obj->InputInfo_BasisSet()).c_str());
-        return;
-    }
+    //*** Settings 
     if (!strcmp("Settings_MaxNumCPUCores", cmd)) {
         OutputScalar(plhs[0], (double)MatPsi_obj->Settings_MaxNumCPUCores());
         return;
@@ -190,6 +182,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     
     //*** BasisSet 
+    if (!strcmp("BasisSet_Name", cmd)) {
+        plhs[0] = mxCreateString((MatPsi_obj->BasisSet_Name()).c_str());
+        return;
+    }
     if (!strcmp("BasisSet_SetBasisSet", cmd)) {
         if ( nrhs!=3 || !mxIsChar(prhs[2]))
             mexErrMsgTxt("BasisSet_SetBasisSet(\"basis\"): String input expected.");

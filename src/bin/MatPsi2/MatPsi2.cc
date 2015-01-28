@@ -38,10 +38,9 @@ unsigned long int parse_memory_str(const std::string& memory_str) {
 }
 
 // Constructor
-MatPsi2::MatPsi2(const std::string& molstring, const std::string& basisname, int charge, int multiplicity, const std::string& path)
-    : molstring_(molstring), basisname_(basisname)
+MatPsi2::MatPsi2(SharedMatrix cartesian, const std::string& basisname, int charge, int multiplicity, const std::string& path)
+    : basisname_(basisname)
 {
-    
     // some necessary initializations
     process_environment_.initialize();
     
@@ -79,12 +78,7 @@ MatPsi2::MatPsi2(const std::string& molstring, const std::string& basisname, int
     process_environment_.set_psio(psio_);
     
     // create molecule object and set its basis set name 
-    molecule_ = psi::Molecule::create_molecule_from_string(process_environment_, molstring_);
-    molecule_->set_molecular_charge(charge);
-    molecule_->set_multiplicity(multiplicity);
-    molecule_->set_com_fixed();
-    molecule_->set_orientation_fixed();
-    molecule_->update_geometry();
+    molecule_ = psi::Molecule::create_molecule_from_cartesian(process_environment_, cartesian, charge, multiplicity);
     molecule_->set_reinterpret_coordentry(false);
     molecule_->set_basis_all_atoms(basisname_);
     process_environment_.set_molecule(molecule_);

@@ -1135,6 +1135,63 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(Process::Envir
     return mol;
 }
 
+boost::shared_ptr<Molecule> Molecule::create_molecule_from_cartesian(Process::Environment& process_environment_in, SharedMatrix cartesian, int charge, int multiplicity)
+{
+
+    boost::shared_ptr<Molecule> mol(new Molecule);
+
+    mol->set_units(Angstrom);
+    mol->molecular_charge_ = charge;
+    mol->multiplicity_ = multiplicity;
+    
+    mol->set_com_fixed();
+    mol->set_orientation_fixed(true);
+    mol->move_to_com_ = false;
+
+    mol->input_units_to_au_ = 1.0 / pc_bohr2angstroms;
+
+    mol->lock_frame_ = false;
+    int atomNum;
+    double x, y, z;
+    double** cartPtr = cartesian->pointer();
+    
+    const char *periodicTable[] = { "NULL",
+         "H",                                                                                                  "He",
+         "Li", "Be",                                                             "B" , "C" , "N" , "O" , "F" , "Ne",
+         "Na", "Mg",                                                             "Al", "Si", "P" , "S" , "Cl", "Ar",
+         "K" , "Ca", "Sc", "Ti", "V" , "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr",
+         "Rb", "Sr", "Y" , "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I" , "Xe",
+         "Cs", "Ba", 
+                     "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu",
+                           "Hf", "Ta", "W" , "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn",
+         "Fr", "Ra",
+                     "Ac", "Th", "Pa", "U" , "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr",
+                           "Rf", "Db", "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn","Uut", "Fl","Uup", "Lv","Uus","Uuo"};
+    
+
+    int natom = cartesian->nrow();
+
+    for (int i=0; i<natom; ++i) {
+        atomNum = (int)cartPtr[i][0];
+        x = cartPtr[i][1];
+        y = cartPtr[i][2];
+        z = cartPtr[i][3];
+        
+        // Add it to the molecule.
+        mol->add_atom(atomNum, x, y, z, periodicTable[atomNum], an2masses[atomNum]);
+    }
+
+    // We need to make 1 fragment with all atoms
+    mol->fragments_.push_back(std::make_pair(0, natom));
+    mol->fragment_types_.push_back(Real);
+    mol->fragment_multiplicities_.push_back(mol->multiplicity_);
+    mol->fragment_charges_.push_back(mol->molecular_charge_);
+
+    mol->update_geometry();
+
+    return mol;
+}
+
 std::string Molecule::create_psi4_string_from_molecule() const
 {
     char buffer[120];

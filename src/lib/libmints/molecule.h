@@ -486,6 +486,14 @@ public:
      * @param text: a string providing the user's input
      */
     static boost::shared_ptr<Molecule> create_molecule_from_string(Process::Environment& process_environment_in, const std::string &geom);
+    
+    /**
+     * Given a cartesian matrix, builds a new molecule
+     * and wraps it in a smart pointer
+     *
+     * @param cartesian: 1st column is an array of atom numbers, 2nd~4th columns are xyz coordinates
+     */
+    static boost::shared_ptr<Molecule> create_molecule_from_cartesian(Process::Environment& process_environment_in, SharedMatrix cartesian, int charge, int multiplicity);
 
     /**
      * Regenerates a input file molecule specification string
