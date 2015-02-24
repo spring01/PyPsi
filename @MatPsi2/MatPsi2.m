@@ -292,7 +292,7 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_EnableDamping', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_isableDamping(this, varargin)
+        function varargout = RHF_DisableDamping(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_DisableDamping', this.objectHandle, varargin{:});
         end
         
