@@ -32,6 +32,7 @@
 #include <libpsio/config.h>
 #include <boost/shared_ptr.hpp>
 #include <vector>
+#include <libiwl/iwl.hpp>
 
 namespace psi {
 
@@ -241,6 +242,9 @@ enum pattern {abc, acb, cab, cba, bca, bac};
 class DPD{
 public:
 
+    // added by spring
+    boost::shared_ptr<PSIO> psio_;
+
     // These used to live in the dpd_data struct
     int nirreps;
     int num_subspaces;
@@ -259,17 +263,17 @@ public:
 
     DPD(int dpd_num, int nirreps, long int memory, int cachetype,
         int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
-        int num_subspaces, std::vector<int*> &spaceArrays);
+        int num_subspaces, std::vector<int*> &spaceArrays, boost::shared_ptr<PSIO> psio_in);
     DPD();
 
     ~DPD();
 
     int init(int dpd_num, int nirreps, long int memory, int cachetype,
                  int *cachefiles, int **cachelist,
-                 dpd_file4_cache_entry *priority, int num_subspaces, ...);
+                 dpd_file4_cache_entry *priority, int num_subspaces, boost::shared_ptr<PSIO> psio_in, ...);
     int init(int dpd_num, int nirreps, long int memory, int cachetype,
                  int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
-                 int num_subspaces, std::vector<int*> &spaceArrays);
+                 int num_subspaces, std::vector<int*> &spaceArrays, boost::shared_ptr<PSIO> psio_in);
 
     void dpd_error(const char *caller, FILE *outfile);
 
@@ -381,7 +385,10 @@ public:
                                 int num_pq);
     int buf4_mat_irrep_wrt_block(dpdbuf4 *Buf, int irrep, int start_pq,
                                  int num_pq);
-    int buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf,
+    //~ int buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf,
+                  //~ int *prel, int *qrel, int *rrel, int *srel,
+                  //~ int bk_pack, int swap23);
+    int buf4_dump(dpdbuf4 *DPDBuf, boost::shared_ptr<IWL> IWLBuf,
                   int *prel, int *qrel, int *rrel, int *srel,
                   int bk_pack, int swap23);
 
@@ -504,7 +511,7 @@ extern DPD* dpd_list[2];
 extern int dpd_set_default(int dpd_num);
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
             int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
-            int num_subspaces, std::vector<int*> &spaceArrays);
+            int num_subspaces, std::vector<int*> &spaceArrays, boost::shared_ptr<PSIO> psio_in);
 extern int dpd_close(int dpd_num);
 extern long int dpd_memfree(void);
 extern void dpd_memset(long int memory);

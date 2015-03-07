@@ -113,30 +113,30 @@ void Chkpt::rehash() {
   psio->rehash(PSIF_CHKPT);
 }
 
-extern "C" {
-/*!
-**  chkpt_init()  Initializes the checkpoint file for other chkpt_
-**    functions to perform their duties.
-**
-**  arguments:
-**    int status: boolean indicating if the chkpt file should be
-**                initialized (PSIO_OPEN_NEW) or the old chkpt
-**                file should be used (PSIO_OPEN_OLD).
-**
-**  returns: zero.  Perhaps this will change some day.
-**  \ingroup CHKPT
-*/
-    int chkpt_init(int status)
-    {
-        if (_default_chkpt_lib_.get() == 0) {
-                        boost::shared_ptr<Chkpt> temp(new Chkpt(_default_psio_lib_, status));
-            _default_chkpt_lib_ = temp;
-            if (_default_chkpt_lib_ == 0) {
-                fprintf(stderr, "LIBCHKPT::init() -- failed to allocate memory\n");
-                exit(PSI_RETURN_FAILURE);
-            }
-        }
-        return 0;
-    }
-}
+//~ extern "C" {
+//~ /*!
+//~ **  chkpt_init()  Initializes the checkpoint file for other chkpt_
+//~ **    functions to perform their duties.
+//~ **
+//~ **  arguments:
+//~ **    int status: boolean indicating if the chkpt file should be
+//~ **                initialized (PSIO_OPEN_NEW) or the old chkpt
+//~ **                file should be used (PSIO_OPEN_OLD).
+//~ **
+//~ **  returns: zero.  Perhaps this will change some day.
+//~ **  \ingroup CHKPT
+//~ */
+    //~ int chkpt_init(int status)
+    //~ {
+        //~ if (_default_chkpt_lib_.get() == 0) {
+                        //~ boost::shared_ptr<Chkpt> temp(new Chkpt(_default_psio_lib_, status));
+            //~ _default_chkpt_lib_ = temp;
+            //~ if (_default_chkpt_lib_ == 0) {
+                //~ fprintf(stderr, "LIBCHKPT::init() -- failed to allocate memory\n");
+                //~ exit(PSI_RETURN_FAILURE);
+            //~ }
+        //~ }
+        //~ return 0;
+    //~ }
+//~ }
 

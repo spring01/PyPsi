@@ -140,7 +140,7 @@ void THCE::delete_dimension(const std::string& name)
 {
     dimensions_.erase(name); 
 }
-void THCE::new_core_tensor(const std::string& name, const std::string& dimensions, double* data, bool trust)
+void THCE::new_core_tensor(const std::string& name, const std::string& dimensions, boost::shared_ptr<PSIO> psio_in, double* data, bool trust)
 {
     std::vector<std::string> dims;
     std::vector<int> sizes;
@@ -153,11 +153,11 @@ void THCE::new_core_tensor(const std::string& name, const std::string& dimension
         }
     }
 
-    boost::shared_ptr<Tensor> T(new CoreTensor(name,dims,sizes,data,trust));
+    boost::shared_ptr<Tensor> T(new CoreTensor(name,dims,sizes,psio_in,data,trust));
     
     tensors_[name] = T; 
 }
-void THCE::new_disk_tensor(const std::string& name, const std::string& dimensions, bool save, bool load)
+void THCE::new_disk_tensor(const std::string& name, const std::string& dimensions, boost::shared_ptr<PSIO> psio_in, bool save, bool load)
 {
     std::vector<std::string> dims;
     std::vector<int> sizes;
@@ -170,7 +170,7 @@ void THCE::new_disk_tensor(const std::string& name, const std::string& dimension
         }
     }
 
-    boost::shared_ptr<Tensor> T(new DiskTensor(name,dims,sizes,save,load));
+    boost::shared_ptr<Tensor> T(new DiskTensor(name,dims,sizes,psio_in,save,load));
     
     tensors_[name] = T; 
 }
@@ -187,8 +187,9 @@ std::set<std::string> Tensor::static_names_;
 
 Tensor::Tensor(const std::string& name,
         std::vector<string>& dimensions, 
-        std::vector<int>& sizes) :
-    name_(name), dimensions_(dimensions), sizes_(sizes)
+        std::vector<int>& sizes, 
+        boost::shared_ptr<PSIO> psio_in) :
+    name_(name), dimensions_(dimensions), sizes_(sizes), psio_(psio_in)
 {
     if (static_names_.count(name_)) {
         throw PSIEXCEPTION("Tensor name " + name_ + " already exists, and could produce scratch file aliasing.\nDelete the other tensor first."); 
@@ -212,7 +213,8 @@ Tensor::~Tensor()
 std::string Tensor::filename() const
 {
     std::stringstream ss;
-    ss <<  PSIOManager::shared_object()->get_default_path();
+    //~ ss <<  PSIOManager::shared_object()->get_default_path();
+    ss <<  psio_->_psio_manager_->get_default_path();
     ss <<  "/";
     ss << psi_file_prefix;
     ss << ".";
@@ -567,9 +569,9 @@ void Tensor::slice(boost::shared_ptr<Tensor> A, std::vector<boost::tuple<bool,in
 }
 
 CoreTensor::CoreTensor(const std::string& name,
-        std::vector<string>& dimensions, std::vector<int>& sizes, 
+        std::vector<string>& dimensions, std::vector<int>& sizes, boost::shared_ptr<PSIO> psio_in, 
         double* data,
-        bool trust) : Tensor(name,dimensions,sizes), trust_(trust)
+        bool trust) : Tensor(name,dimensions,sizes,psio_in), trust_(trust)
 {
     if (trust_) {
         data_ = data;
@@ -604,6 +606,7 @@ boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     const std::string& dimension2, int size2,
     const std::string& dimension3, int size3,
     const std::string& dimension4, int size4,
+    boost::shared_ptr<PSIO> psio_in,
     double* data, bool trust)
 {
     std::vector<std::string> dimensions;
@@ -618,12 +621,13 @@ boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     dimensions.push_back(dimension4);
     sizes.push_back(size4);
 
-    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
+    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,psio_in,data,trust));
 }
 boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name, 
     const std::string& dimension1, int size1,
     const std::string& dimension2, int size2,
     const std::string& dimension3, int size3,
+    boost::shared_ptr<PSIO> psio_in,
     double* data, bool trust)
 {
     std::vector<std::string> dimensions;
@@ -636,11 +640,12 @@ boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     dimensions.push_back(dimension3);
     sizes.push_back(size3);
 
-    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
+    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,psio_in,data,trust));
 }
 boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name, 
     const std::string& dimension1, int size1,
     const std::string& dimension2, int size2,
+    boost::shared_ptr<PSIO> psio_in,
     double* data, bool trust)
 {
     std::vector<std::string> dimensions;
@@ -651,10 +656,11 @@ boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     dimensions.push_back(dimension2);
     sizes.push_back(size2);
 
-    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
+    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,psio_in,data,trust));
 }
 boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name, 
     const std::string& dimension1, int size1,
+    boost::shared_ptr<PSIO> psio_in,
     double* data, bool trust)
 {
     std::vector<std::string> dimensions;
@@ -663,15 +669,15 @@ boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     dimensions.push_back(dimension1);
     sizes.push_back(size1);
 
-    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
+    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,psio_in,data,trust));
 }
-boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name, 
+boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,boost::shared_ptr<PSIO> psio_in, 
     double* data, bool trust)
 {
     std::vector<std::string> dimensions;
     std::vector<int> sizes;
 
-    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
+    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,psio_in,data,trust));
 }
 void CoreTensor::print(FILE* fh, int level) const
 {
@@ -1334,8 +1340,8 @@ void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor>
 }
 
 DiskTensor::DiskTensor(const std::string& name,
-        std::vector<string>& dimensions, std::vector<int>& sizes, 
-        bool save, bool load) : Tensor(name,dimensions,sizes), save_(save)
+        std::vector<string>& dimensions, std::vector<int>& sizes, boost::shared_ptr<PSIO> psio_in, 
+        bool save, bool load) : Tensor(name,dimensions,sizes,psio_in), save_(save)
 {
     if (load) {
         fh_ = fopen(filename().c_str(),"rb+");
@@ -1358,7 +1364,7 @@ boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     const std::string& dimension1, int size1,
     const std::string& dimension2, int size2,
     const std::string& dimension3, int size3,
-    const std::string& dimension4, int size4,
+    const std::string& dimension4, int size4, boost::shared_ptr<PSIO> psio_in,
     bool save, bool load)
 {
     std::vector<std::string> dimensions;
@@ -1373,12 +1379,13 @@ boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     dimensions.push_back(dimension4);
     sizes.push_back(size4);
 
-    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
+    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,psio_in,save,load));
 }
 boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name, 
     const std::string& dimension1, int size1,
     const std::string& dimension2, int size2,
     const std::string& dimension3, int size3,
+    boost::shared_ptr<PSIO> psio_in,
     bool save, bool load)
 {
     std::vector<std::string> dimensions;
@@ -1391,11 +1398,12 @@ boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     dimensions.push_back(dimension3);
     sizes.push_back(size3);
 
-    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
+    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,psio_in,save,load));
 }
 boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name, 
     const std::string& dimension1, int size1,
     const std::string& dimension2, int size2,
+    boost::shared_ptr<PSIO> psio_in,
     bool save, bool load)
 {
     std::vector<std::string> dimensions;
@@ -1406,10 +1414,11 @@ boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     dimensions.push_back(dimension2);
     sizes.push_back(size2);
 
-    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
+    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,psio_in,save,load));
 }
 boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name, 
     const std::string& dimension1, int size1,
+    boost::shared_ptr<PSIO> psio_in,
     bool save, bool load)
 {
     std::vector<std::string> dimensions;
@@ -1418,15 +1427,15 @@ boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     dimensions.push_back(dimension1);
     sizes.push_back(size1);
 
-    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
+    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,psio_in,save,load));
 }
-boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name, 
+boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name, boost::shared_ptr<PSIO> psio_in, 
     bool save, bool load)
 {
     std::vector<std::string> dimensions;
     std::vector<int> sizes;
 
-    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
+    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,psio_in,save,load));
 }
 void DiskTensor::print(FILE* fh, int level) const
 {

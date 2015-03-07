@@ -68,10 +68,10 @@ void PSIO::tocwrite(unsigned int unit) {
    ** \ingroup PSIO
    */
 
-  int psio_tocwrite(unsigned int unit) {
-    _default_psio_lib_->tocwrite(unit);
-    return 1;
-  }
+  //~ int psio_tocwrite(unsigned int unit) {
+    //~ _default_psio_lib_->tocwrite(unit);
+    //~ return 1;
+  //~ }
 
 }
 

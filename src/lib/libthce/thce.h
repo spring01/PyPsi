@@ -89,9 +89,9 @@ public:
     /// Remove a dimension from this instance
     void delete_dimension(const std::string& name);
     /// Add or overwrite a new core tensor, given a name and comma-separated dimension list
-    void new_core_tensor(const std::string& name, const std::string& dimensions, double* data = NULL, bool trust = false);
+    void new_core_tensor(const std::string& name, const std::string& dimensions, boost::shared_ptr<PSIO> psio_in, double* data = NULL, bool trust = false);
     /// Add or overwrite a new disk tensor, given a name and comma-separated dimension list
-    void new_disk_tensor(const std::string& name, const std::string& dimensions, bool save = false, bool load = false);
+    void new_disk_tensor(const std::string& name, const std::string& dimensions, boost::shared_ptr<PSIO> psio_in, bool save = false, bool load = false);
     /// Add or alias an existing Tensor of any type
     void add_tensor(const std::string& name, boost::shared_ptr<Tensor> tensor);
     /// Decrement a Tensor of any type (removes from tensors_)
@@ -111,6 +111,9 @@ private:
     static std::set<std::string> static_names_;
 
 protected:
+    
+    // added by spring
+    boost::shared_ptr<PSIO> psio_;
 
     // => Object Data <= //
 
@@ -139,7 +142,7 @@ public:
     /// Master constructor
     Tensor(const std::string& name, 
            std::vector<std::string>& dimensions, 
-           std::vector<int>& sizes);
+           std::vector<int>& sizes, boost::shared_ptr<PSIO> psio_in);
 
     /// Master destructor
     virtual ~Tensor();
@@ -272,36 +275,36 @@ public:
 
     /// Master constructor
     CoreTensor(const std::string& name, 
-        std::vector<std::string>& dimensions, std::vector<int>& sizes, 
+        std::vector<std::string>& dimensions, std::vector<int>& sizes, boost::shared_ptr<PSIO> psio_in, 
         double* data = NULL, bool trust = false);
 
     /// Master destructor
     virtual ~CoreTensor();
      
     /// Order-0 Constructor
-    static boost::shared_ptr<Tensor> build(const std::string& name, 
+    static boost::shared_ptr<Tensor> build(const std::string& name, boost::shared_ptr<PSIO> psio_in, 
         double* data = NULL, bool trust = false);
     /// Order-1 Constructor
     static boost::shared_ptr<Tensor> build(const std::string& name, 
-        const std::string& dimension1, int size1, 
+        const std::string& dimension1, int size1, boost::shared_ptr<PSIO> psio_in, 
         double* data = NULL, bool trust = false);
     /// Order-2 Constructor
     static boost::shared_ptr<Tensor> build(const std::string& name, 
         const std::string& dimension1, int size1,
-        const std::string& dimension2, int size2,
+        const std::string& dimension2, int size2, boost::shared_ptr<PSIO> psio_in,
         double* data = NULL, bool trust = false);
     /// Order-3 Constructor
     static boost::shared_ptr<Tensor> build(const std::string& name, 
         const std::string& dimension1, int size1,
         const std::string& dimension2, int size2,
-        const std::string& dimension3, int size3,
+        const std::string& dimension3, int size3, boost::shared_ptr<PSIO> psio_in,
         double* data = NULL, bool trust = false);
     /// Order-4 Constructor
     static boost::shared_ptr<Tensor> build(const std::string& name, 
         const std::string& dimension1, int size1,
         const std::string& dimension2, int size2,
         const std::string& dimension3, int size3,
-        const std::string& dimension4, int size4,
+        const std::string& dimension4, int size4, boost::shared_ptr<PSIO> psio_in,
         double* data = NULL, bool trust = false);
 
     // => Universal Accessors <= //
@@ -400,36 +403,36 @@ public:
     /// Will delete file upon destruct if !save
     /// Does not explicitly prestripe, call zero to accomplish this
     DiskTensor(const std::string& name, 
-        std::vector<std::string>& dimensions, std::vector<int>& sizes, 
+        std::vector<std::string>& dimensions, std::vector<int>& sizes, boost::shared_ptr<PSIO> psio_in, 
         bool save = false, bool load = false);
 
     /// Master destructor
     virtual ~DiskTensor();
     
     /// Order-0 Constructor
-    static boost::shared_ptr<Tensor> build(const std::string& name, 
+    static boost::shared_ptr<Tensor> build(const std::string& name, boost::shared_ptr<PSIO> psio_in, 
         bool save = false, bool load = false);
     /// Order-1 Constructor
     static boost::shared_ptr<Tensor> build(const std::string& name, 
-        const std::string& dimension1, int size1, 
+        const std::string& dimension1, int size1, boost::shared_ptr<PSIO> psio_in, 
         bool save = false, bool load = false);
     /// Order-2 Constructor
     static boost::shared_ptr<Tensor> build(const std::string& name, 
         const std::string& dimension1, int size1,
-        const std::string& dimension2, int size2,
+        const std::string& dimension2, int size2, boost::shared_ptr<PSIO> psio_in,
         bool save = false, bool load = false);
     /// Order-3 Constructor
     static boost::shared_ptr<Tensor> build(const std::string& name, 
         const std::string& dimension1, int size1,
         const std::string& dimension2, int size2,
-        const std::string& dimension3, int size3,
+        const std::string& dimension3, int size3, boost::shared_ptr<PSIO> psio_in,
         bool save = false, bool load = false);
     /// Order-4 Constructor
     static boost::shared_ptr<Tensor> build(const std::string& name, 
         const std::string& dimension1, int size1,
         const std::string& dimension2, int size2,
         const std::string& dimension3, int size3,
-        const std::string& dimension4, int size4,
+        const std::string& dimension4, int size4, boost::shared_ptr<PSIO> psio_in,
         bool save = false, bool load = false);
     
     // => Universal Accessors <= //

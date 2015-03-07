@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-int chkpt_init(int status);
+//~ int chkpt_init(int status);
 int chkpt_close(void);
 
 char *chkpt_rd_prefix(void);

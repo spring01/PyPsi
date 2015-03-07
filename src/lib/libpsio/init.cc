@@ -28,7 +28,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <sstream>
-#include <libpsio/psio.h>
+//~ #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <psi4-dec.h>
@@ -41,8 +41,8 @@
 namespace psi {
 
 /* Definition of global data */
-boost::shared_ptr<PSIO> _default_psio_lib_;
-boost::shared_ptr<PSIOManager> _default_psio_manager_;
+//~ boost::shared_ptr<PSIO> _default_psio_lib_;
+//~ boost::shared_ptr<PSIOManager> _default_psio_manager_;
 std::string PSIO::default_namespace_;
 
 int PSIO::_error_exit_code_ = 1;
@@ -116,35 +116,35 @@ PSIO::PSIO()
     pid_ = ss.str();
 }
 
-boost::shared_ptr<PSIO> PSIO::shared_object()
-{
-    return _default_psio_lib_;
-}
-
-int psio_init(void) {
-    if (_default_psio_lib_.get() == 0) {
-        boost::shared_ptr<PSIO> temp(new PSIO);
-        _default_psio_lib_ = temp;
-        if (_default_psio_lib_ == 0) {
-            fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
-            exit(PSIO::_error_exit_code_);
-        }
-    }
-    if (_default_psio_manager_.get() == 0) {
-        boost::shared_ptr<PSIOManager> temp(new PSIOManager);
-        _default_psio_manager_ = temp;
-        if (_default_psio_manager_ == 0) {
-            fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
-            exit(PSIO::_error_exit_code_);
-        }
-    }
-
-    return 1;
-}
-
-int psio_state() {
-    return _default_psio_lib_->state();
-}
+//~ boost::shared_ptr<PSIO> PSIO::shared_object()
+//~ {
+    //~ return _default_psio_lib_;
+//~ }
+//~ 
+//~ int psio_init(void) {
+    //~ if (_default_psio_lib_.get() == 0) {
+        //~ boost::shared_ptr<PSIO> temp(new PSIO);
+        //~ _default_psio_lib_ = temp;
+        //~ if (_default_psio_lib_ == 0) {
+            //~ fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
+            //~ exit(PSIO::_error_exit_code_);
+        //~ }
+    //~ }
+    //~ if (_default_psio_manager_.get() == 0) {
+        //~ boost::shared_ptr<PSIOManager> temp(new PSIOManager);
+        //~ _default_psio_manager_ = temp;
+        //~ if (_default_psio_manager_ == 0) {
+            //~ fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
+            //~ exit(PSIO::_error_exit_code_);
+        //~ }
+    //~ }
+//~ 
+    //~ return 1;
+//~ }
+//~ 
+//~ int psio_state() {
+    //~ return _default_psio_lib_->state();
+//~ }
 
 }
 

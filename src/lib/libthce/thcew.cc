@@ -52,7 +52,8 @@ using namespace boost;
 namespace psi {
 
 THCEW::THCEW(Process::Environment& process_environment_in) :
-    Wavefunction(process_environment_in, process_environment_in.options, boost::shared_ptr<PSIO>(new PSIO()), process_environment_.wavefunction()->get_chkpt())
+    //~ Wavefunction(process_environment_in, process_environment_in.options, boost::shared_ptr<PSIO>(new PSIO()), process_environment_.wavefunction()->get_chkpt())
+    Wavefunction(process_environment_in, process_environment_in.options, process_environment_in.psio(), process_environment_.wavefunction()->get_chkpt())
 {
     common_init();
 }
@@ -107,7 +108,7 @@ void RTHCEW::common_init()
     thce_->new_dimension("nact",nact);
 
     boost::shared_ptr<Matrix> C = Ca_subset("AO","ALL");
-    boost::shared_ptr<Tensor> Ca = CoreTensor::build("Cmo","nmo",nmo,"nso",nso);
+    boost::shared_ptr<Tensor> Ca = CoreTensor::build("Cmo","nmo",nmo,"nso",nso,psio_);
     double* C1p = C->pointer()[0];
     double* Cap = Ca->pointer();
 
@@ -118,31 +119,31 @@ void RTHCEW::common_init()
     }
     
     thce_->add_tensor("Cmo", Ca);
-    thce_->add_tensor("Cocc", CoreTensor::build("Cocc" ,"nocc" ,nocc ,"nso",nso,Cap + 0              * nso,true));
-    thce_->add_tensor("Cfocc",CoreTensor::build("Cfocc","nfocc",nfocc,"nso",nso,Cap + 0              * nso,true));
-    thce_->add_tensor("Caocc",CoreTensor::build("Caocc","naocc",naocc,"nso",nso,Cap + nfocc          * nso,true));
-    thce_->add_tensor("Cavir",CoreTensor::build("Cavir","navir",navir,"nso",nso,Cap + nocc           * nso,true));
-    thce_->add_tensor("Cfvir",CoreTensor::build("Cfvir","nfvir",nfvir,"nso",nso,Cap + (nocc + navir) * nso,true));
-    thce_->add_tensor("Cvir", CoreTensor::build("Cvir" ,"nvir" ,nvir ,"nso",nso,Cap + nocc           * nso,true));
+    thce_->add_tensor("Cocc", CoreTensor::build("Cocc" ,"nocc" ,nocc ,"nso",nso,psio_,Cap + 0              * nso,true));
+    thce_->add_tensor("Cfocc",CoreTensor::build("Cfocc","nfocc",nfocc,"nso",nso,psio_,Cap + 0              * nso,true));
+    thce_->add_tensor("Caocc",CoreTensor::build("Caocc","naocc",naocc,"nso",nso,psio_,Cap + nfocc          * nso,true));
+    thce_->add_tensor("Cavir",CoreTensor::build("Cavir","navir",navir,"nso",nso,psio_,Cap + nocc           * nso,true));
+    thce_->add_tensor("Cfvir",CoreTensor::build("Cfvir","nfvir",nfvir,"nso",nso,psio_,Cap + (nocc + navir) * nso,true));
+    thce_->add_tensor("Cvir", CoreTensor::build("Cvir" ,"nvir" ,nvir ,"nso",nso,psio_,Cap + nocc           * nso,true));
 
     boost::shared_ptr<Vector> eps = epsilon_a_subset("AO","ALL");
-    boost::shared_ptr<Tensor> eps_a = CoreTensor::build("eps_mo","nmo",nmo,eps->pointer(),false);
+    boost::shared_ptr<Tensor> eps_a = CoreTensor::build("eps_mo","nmo",nmo,psio_,eps->pointer(),false);
     double* eps_ap = eps_a->pointer();
 
     thce_->add_tensor("eps_mo", eps_a);
-    thce_->add_tensor("eps_occ", CoreTensor::build("eps_occ" ,"nocc" ,nocc ,eps_ap + 0             ,true));
-    thce_->add_tensor("eps_focc",CoreTensor::build("eps_focc","nfocc",nfocc,eps_ap + 0             ,true));
-    thce_->add_tensor("eps_aocc",CoreTensor::build("eps_aocc","naocc",naocc,eps_ap + nfocc         ,true));
-    thce_->add_tensor("eps_avir",CoreTensor::build("eps_avir","navir",navir,eps_ap + nocc          ,true));
-    thce_->add_tensor("eps_fvir",CoreTensor::build("eps_fvir","nfvir",nfvir,eps_ap + (nocc + navir),true));
-    thce_->add_tensor("eps_vir", CoreTensor::build("eps_vir" ,"nvir" ,nvir ,eps_ap + nocc          ,true));
+    thce_->add_tensor("eps_occ", CoreTensor::build("eps_occ" ,"nocc" ,nocc ,psio_,eps_ap + 0             ,true));
+    thce_->add_tensor("eps_focc",CoreTensor::build("eps_focc","nfocc",nfocc,psio_,eps_ap + 0             ,true));
+    thce_->add_tensor("eps_aocc",CoreTensor::build("eps_aocc","naocc",naocc,psio_,eps_ap + nfocc         ,true));
+    thce_->add_tensor("eps_avir",CoreTensor::build("eps_avir","navir",navir,psio_,eps_ap + nocc          ,true));
+    thce_->add_tensor("eps_fvir",CoreTensor::build("eps_fvir","nfvir",nfvir,psio_,eps_ap + (nocc + navir),true));
+    thce_->add_tensor("eps_vir", CoreTensor::build("eps_vir" ,"nvir" ,nvir ,psio_,eps_ap + nocc          ,true));
     
 }
 void RTHCEW::build_laplace(double delta, double omega)
 {
     boost::shared_ptr<Vector> eps_aocc = epsilon_a_subset("AO","ACTIVE_OCC");
     boost::shared_ptr<Vector> eps_avir = epsilon_a_subset("AO","ACTIVE_VIR");
-    boost::shared_ptr<LaplaceDenom> laplace(new LaplaceDenom(eps_aocc,eps_avir,delta,omega,2));
+    boost::shared_ptr<LaplaceDenom> laplace(new LaplaceDenom(eps_aocc,eps_avir,psio_,delta,omega,2));
     laplace->compute("pi_i","pi_a"); 
     thce_->add_tensor("pi_i",laplace->tau_occ());
     thce_->add_tensor("pi_a",laplace->tau_vir());
@@ -154,7 +155,7 @@ void RTHCEW::build_laplace(double delta, double omega)
 }
 void RTHCEW::build_df_ia(boost::shared_ptr<BasisSet> auxiliary)
 {
-    boost::shared_ptr<DFERI> dferi = DFERI::build(basisset_,auxiliary,options_,reference_wavefunction_);
+    boost::shared_ptr<DFERI> dferi = DFERI::build(basisset_,auxiliary,options_,reference_wavefunction_,psio_);
     dferi->add_pair_space("Bia","ACTIVE_OCC","ACTIVE_VIR");
     dferi->compute();
     boost::shared_ptr<Tensor> Bia = dferi->ints()["Bia"];
@@ -168,7 +169,7 @@ void RTHCEW::build_df_ia(boost::shared_ptr<BasisSet> auxiliary)
 }
 void RTHCEW::build_df_act(boost::shared_ptr<BasisSet> auxiliary)
 {
-    boost::shared_ptr<DFERI> dferi = DFERI::build(basisset_,auxiliary,options_,reference_wavefunction_);
+    boost::shared_ptr<DFERI> dferi = DFERI::build(basisset_,auxiliary,options_,reference_wavefunction_,psio_);
     dferi->add_pair_space("Bii","ACTIVE_OCC","ACTIVE_OCC");
     dferi->add_pair_space("Bia","ACTIVE_OCC","ACTIVE_VIR");
     dferi->add_pair_space("Bai","ACTIVE_VIR","ACTIVE_OCC");
@@ -200,7 +201,7 @@ void RTHCEW::build_df_act(boost::shared_ptr<BasisSet> auxiliary)
 }
 void RTHCEW::build_df_pp(boost::shared_ptr<BasisSet> auxiliary)
 {
-    boost::shared_ptr<DFERI> dferi = DFERI::build(basisset_,auxiliary,options_,reference_wavefunction_);
+    boost::shared_ptr<DFERI> dferi = DFERI::build(basisset_,auxiliary,options_,reference_wavefunction_,psio_);
     dferi->add_pair_space("Bpp","ACTIVE_ALL","ACTIVE_ALL");
     dferi->compute();
     boost::shared_ptr<Tensor> Bpp = dferi->ints()["Bpp"];
@@ -214,7 +215,7 @@ void RTHCEW::build_df_pp(boost::shared_ptr<BasisSet> auxiliary)
 }
 void RTHCEW::build_lsthc_ia(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X)
 {
-    boost::shared_ptr<LSTHCERI> lsthceri = LSTHCERI::build(basisset_,auxiliary,X,options_,reference_wavefunction_);
+    boost::shared_ptr<LSTHCERI> lsthceri = LSTHCERI::build(basisset_,auxiliary,X,options_,reference_wavefunction_,psio_);
     lsthceri->add_eri_space("ovov","ACTIVE_OCC","ACTIVE_VIR","ACTIVE_OCC","ACTIVE_VIR");
     lsthceri->compute();
     std::vector<boost::shared_ptr<Tensor> > ovov = lsthceri->ints()["ovov"];
@@ -250,7 +251,7 @@ void RTHCEW::build_lsthc_ia(boost::shared_ptr<BasisSet> auxiliary, boost::shared
 }
 void RTHCEW::build_lsthc_act(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X)
 {
-    boost::shared_ptr<LSTHCERI> lsthceri = LSTHCERI::build(basisset_,auxiliary,X,options_,reference_wavefunction_);
+    boost::shared_ptr<LSTHCERI> lsthceri = LSTHCERI::build(basisset_,auxiliary,X,options_,reference_wavefunction_,psio_);
     lsthceri->add_eri_space("oooo","ACTIVE_OCC","ACTIVE_OCC","ACTIVE_OCC","ACTIVE_OCC");
     lsthceri->add_eri_space("ooov","ACTIVE_OCC","ACTIVE_OCC","ACTIVE_OCC","ACTIVE_VIR");
     lsthceri->add_eri_space("oovv","ACTIVE_OCC","ACTIVE_OCC","ACTIVE_VIR","ACTIVE_VIR");
@@ -330,7 +331,7 @@ void RTHCEW::build_lsthc_act(boost::shared_ptr<BasisSet> auxiliary, boost::share
 }
 void RTHCEW::build_lsthc_pp(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X)
 {
-    boost::shared_ptr<LSTHCERI> lsthceri = LSTHCERI::build(basisset_,auxiliary,X,options_,reference_wavefunction_);
+    boost::shared_ptr<LSTHCERI> lsthceri = LSTHCERI::build(basisset_,auxiliary,X,options_,reference_wavefunction_,psio_);
     lsthceri->add_eri_space("pppp","ACTIVE_ALL","ACTIVE_ALL","ACTIVE_ALL","ACTIVE_ALL");
     lsthceri->compute();
     std::vector<boost::shared_ptr<Tensor> > pppp = lsthceri->ints()["pppp"];
@@ -348,8 +349,8 @@ void RTHCEW::build_lsthc_pp(boost::shared_ptr<BasisSet> auxiliary, boost::shared
     int naux = L->sizes()[1];
     thce_->new_dimension("naux", naux);
 
-    boost::shared_ptr<Tensor> Xi = CoreTensor::build("Xi","naocc",naocc,"ngrid",ngrid,X2->pointer() + 0L,false);
-    boost::shared_ptr<Tensor> Xa = CoreTensor::build("Xa","navir",navir,"ngrid",ngrid,X2->pointer() + naocc * (size_t) ngrid,false);
+    boost::shared_ptr<Tensor> Xi = CoreTensor::build("Xi","naocc",naocc,"ngrid",ngrid,psio_,X2->pointer() + 0L,false);
+    boost::shared_ptr<Tensor> Xa = CoreTensor::build("Xa","navir",navir,"ngrid",ngrid,psio_,X2->pointer() + naocc * (size_t) ngrid,false);
 
     Z->dimensions()[0] = "ngrid";
     Z->dimensions()[1] = "ngrid";
@@ -366,7 +367,7 @@ void RTHCEW::build_lsthc_pp(boost::shared_ptr<BasisSet> auxiliary, boost::shared
 }
 void RTHCEW::build_meth_ia(boost::shared_ptr<Matrix> X)
 {
-    boost::shared_ptr<LSTHCERI> lsthceri = LSTHCERI::build(basisset_,boost::shared_ptr<BasisSet>(),X,options_,reference_wavefunction_);
+    boost::shared_ptr<LSTHCERI> lsthceri = LSTHCERI::build(basisset_,boost::shared_ptr<BasisSet>(),X,options_,reference_wavefunction_,psio_);
     lsthceri->add_eri_space("ovov","ACTIVE_OCC","ACTIVE_VIR","ACTIVE_OCC","ACTIVE_VIR");
     lsthceri->compute_meth();
     std::vector<boost::shared_ptr<Tensor> > ovov = lsthceri->meths()["ovov"];

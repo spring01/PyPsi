@@ -54,13 +54,13 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
   first_vol = page % numvols;
   errcod = psio_volseek(&(this_unit->vol[first_vol]), page, offset, numvols);
   if (errcod == -1)
-    psio_error(unit, PSIO_ERROR_LSEEK);
+    PSIOError(unit, PSIO_ERROR_LSEEK);
   for (i=1, this_page=page+1; i < numvols; i++, this_page++) {
     this_vol = this_page % numvols;
     errcod = psio_volseek(&(this_unit->vol[this_vol]), this_page, (ULI) 0,
                           numvols);
     if (errcod == -1)
-      psio_error(unit, PSIO_ERROR_LSEEK);
+      PSIOError(unit, PSIO_ERROR_LSEEK);
   }
   
   /* Number of bytes left on the first page */
@@ -80,7 +80,7 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
 	//~ }
         //~ WorldComm->bcast(&errcod_uli, 1, 0);
         //WorldComm->raw_bcast(&errcod_uli, sizeof(ULI), 0);
-    if(errcod_uli != this_page_total) psio_error(unit,PSIO_ERROR_WRITE);
+    if(errcod_uli != this_page_total) PSIOError(unit,PSIO_ERROR_WRITE);
   }
   else {
 	//~ if (WorldComm->me() == 0) {
@@ -90,7 +90,7 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
         //~ WorldComm->bcast(&errcod_uli, 1, 0);
         //WorldComm->raw_bcast(&errcod_uli, sizeof(ULI), 0);
     if(errcod_uli != this_page_total)
-      psio_error(unit,PSIO_ERROR_READ);
+      PSIOError(unit,PSIO_ERROR_READ);
     //~ else
       //~ WorldComm->bcast(&(buffer[buf_offset]), this_page_total, 0);
       //WorldComm->raw_bcast(&(buffer[buf_offset]), this_page_total, 0);
@@ -113,7 +113,7 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
       //~ }
       //~ WorldComm->bcast(&errcod_uli, 1, 0);
       //WorldComm->raw_bcast(&errcod_uli, sizeof(ULI), 0);
-      if(errcod_uli != this_page_total) psio_error(unit,PSIO_ERROR_WRITE);
+      if(errcod_uli != this_page_total) PSIOError(unit,PSIO_ERROR_WRITE);
     }
     else {
       //~ if (WorldComm->me() == 0) {
@@ -123,7 +123,7 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
       //~ WorldComm->bcast(&errcod_uli, 1, 0);
       //WorldComm->raw_bcast(&errcod_uli, sizeof(ULI), 0);
       if(errcod_uli != this_page_total)
-        psio_error(unit,PSIO_ERROR_READ);
+        PSIOError(unit,PSIO_ERROR_READ);
       //~ else
         //~ WorldComm->bcast(&(buffer[buf_offset]), this_page_total, 0);
         //WorldComm->raw_bcast(&(buffer[buf_offset]), this_page_total, 0);
@@ -143,7 +143,7 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
       //~ }
       //~ WorldComm->bcast(&errcod_uli, 1, 0);
       //WorldComm->raw_bcast(&errcod_uli, sizeof(ULI), 0);
-      if(errcod_uli != bytes_left) psio_error(unit,PSIO_ERROR_WRITE);
+      if(errcod_uli != bytes_left) PSIOError(unit,PSIO_ERROR_WRITE);
     }
     else {
       //~ if (WorldComm->me() == 0) {
@@ -153,7 +153,7 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
       //~ WorldComm->bcast(&errcod_uli, 1, 0);
       //WorldComm->raw_bcast(&errcod_uli, sizeof(ULI), 0);
       if(errcod_uli != bytes_left)
-        psio_error(unit,PSIO_ERROR_READ);
+        PSIOError(unit,PSIO_ERROR_READ);
       //~ else
         //~ WorldComm->bcast(&(buffer[buf_offset]), bytes_left, 0);
         //WorldComm->raw_bcast(&(buffer[buf_offset]), bytes_left, 0);
@@ -173,11 +173,11 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
    ** \ingroup PSIO
    */
 
-  int psio_rw(unsigned int unit, char *buffer, psio_address address, ULI size,
-              int wrt) {
-    _default_psio_lib_->rw(unit, buffer, address, size, wrt);
-    return 1;
-  }
+  //~ int psio_rw(unsigned int unit, char *buffer, psio_address address, ULI size,
+              //~ int wrt) {
+    //~ _default_psio_lib_->rw(unit, buffer, address, size, wrt);
+    //~ return 1;
+  //~ }
 
 }
 

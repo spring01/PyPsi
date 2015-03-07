@@ -35,6 +35,9 @@ class LRERI {
     
 protected:
 
+    // added by spring
+    boost::shared_ptr<PSIO> psio_;
+
     // => Utility <= //
 
     /// Print flag
@@ -71,7 +74,7 @@ protected:
 public:
     // => Constructors <= //
 
-    LRERI(boost::shared_ptr<BasisSet> primary);
+    LRERI(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio_in);
     virtual ~LRERI();
 
     // => Defaults <= //
@@ -155,11 +158,11 @@ public:
     // => Constructors <= //
 
     DFERI(boost::shared_ptr<BasisSet> primary,
-          boost::shared_ptr<BasisSet> auxiliary);
+          boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<PSIO> psio_in);
     virtual ~DFERI();
 
-    static boost::shared_ptr<DFERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options);
-    static boost::shared_ptr<DFERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options, boost::shared_ptr<Wavefunction> ref);
+    static boost::shared_ptr<DFERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options, boost::shared_ptr<PSIO> psio_in);
+    static boost::shared_ptr<DFERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options, boost::shared_ptr<Wavefunction> ref, boost::shared_ptr<PSIO> psio_in);
 
     // => Defaults <= //
     
@@ -259,11 +262,11 @@ public:
 
     LSTHCERI(boost::shared_ptr<BasisSet> primary,
            boost::shared_ptr<BasisSet> auxiliary,
-           boost::shared_ptr<Matrix> X);
+           boost::shared_ptr<Matrix> X, boost::shared_ptr<PSIO> psio_in);
     virtual ~LSTHCERI();
 
-    static boost::shared_ptr<LSTHCERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X, Options& options);
-    static boost::shared_ptr<LSTHCERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X, Options& options, boost::shared_ptr<Wavefunction> ref);
+    static boost::shared_ptr<LSTHCERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X, Options& options, boost::shared_ptr<PSIO> psio_in);
+    static boost::shared_ptr<LSTHCERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X, Options& options, boost::shared_ptr<Wavefunction> ref, boost::shared_ptr<PSIO> psio_in);
 
     // => Defaults <= //
     

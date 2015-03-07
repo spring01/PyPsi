@@ -28,7 +28,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libpsio/psio.h>
+//~ #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <psi4-dec.h>
 
@@ -75,22 +75,22 @@ void PSIO::get_filename(unsigned int unit, char **name, bool remove_namespace) {
   abort();
 }
 
-int psio_get_filename_default(char **name) {
-  std::string kval;
-  kval = _default_psio_lib_->filecfg_kwd("PSI", "NAME", -1);
-  if (!kval.empty()) {
-    *name = strdup(kval.c_str());
-    return (1);
-  }
-  kval = _default_psio_lib_->filecfg_kwd("DEFAULT", "NAME", -1);
-  if (!kval.empty()) {
-    *name = strdup(kval.c_str());
-    return (1);
-  }
-
-  // assume that the default has been provided already
-  abort();
-}
+//~ int psio_get_filename_default(char **name) {
+  //~ std::string kval;
+  //~ kval = _default_psio_lib_->filecfg_kwd("PSI", "NAME", -1);
+  //~ if (!kval.empty()) {
+    //~ *name = strdup(kval.c_str());
+    //~ return (1);
+  //~ }
+  //~ kval = _default_psio_lib_->filecfg_kwd("DEFAULT", "NAME", -1);
+  //~ if (!kval.empty()) {
+    //~ *name = strdup(kval.c_str());
+    //~ return (1);
+  //~ }
+//~ 
+  //~ // assume that the default has been provided already
+  //~ abort();
+//~ }
 
 }
 

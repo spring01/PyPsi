@@ -27,7 +27,7 @@
 
 #include <cstdio>
 #include <boost/shared_ptr.hpp>
-#include <libpsio/psio.h>
+//~ #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
 namespace psi {
@@ -66,9 +66,9 @@ void PSIO::tocprint(unsigned int unit) {
    ** \ingroup PSIO
    */
 
-  void psio_tocprint(unsigned int unit) {
-    return _default_psio_lib_->tocprint(unit);
-  }
+  //~ void psio_tocprint(unsigned int unit) {
+    //~ return _default_psio_lib_->tocprint(unit);
+  //~ }
 
 
 }

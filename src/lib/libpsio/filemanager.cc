@@ -23,7 +23,7 @@
 #include <boost/thread.hpp>
 
 #include "psio.hpp"
-#include "psio.h"
+//~ #include "psio.h"
 #include <unistd.h>
 #include <cstdio>
 #include "exception.h"
@@ -36,10 +36,10 @@ PSIOManager::PSIOManager() : default_path_("/tmp/")
 PSIOManager::~PSIOManager()
 {
 }
-boost::shared_ptr<PSIOManager> PSIOManager::shared_object()
-{
-    return _default_psio_manager_;
-}
+//~ boost::shared_ptr<PSIOManager> PSIOManager::shared_object()
+//~ {
+    //~ return _default_psio_manager_;
+//~ }
 
 void PSIOManager::set_default_path(const std::string& path)
 {

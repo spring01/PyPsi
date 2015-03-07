@@ -60,7 +60,7 @@ int DPD::file4_mat_irrep_rd_block(dpdfile4 *File, int irrep, int start_pq,
     }
 
     if(rowtot && coltot)
-        psio_read(File->filenum, File->label, (char *) File->matrix[irrep][0],
+        psio_->read(File->filenum, File->label, (char *) File->matrix[irrep][0],
                 size * ((long) sizeof(double)), irrep_ptr, &next_address);
 
     return 0;

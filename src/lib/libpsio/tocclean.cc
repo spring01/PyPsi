@@ -45,7 +45,7 @@ void PSIO::tocclean(unsigned int unit, const char *key) {
       this_entry = this_unit->toc;
     else {
       fprintf(stderr, "PSIO_ERROR: Can't find TOC Entry %s in unit %d\n", key, unit);
-      psio_error(unit, PSIO_ERROR_NOTOCENT);
+      PSIOError(unit, PSIO_ERROR_NOTOCENT);
     }
   } else
     this_entry = this_entry->next;
@@ -73,10 +73,10 @@ void PSIO::tocclean(unsigned int unit, const char *key) {
    ** \ingroup PSIO
    */
 
-  int psio_tocclean(unsigned int unit, const char *key) {
-    _default_psio_lib_->tocclean(unit, key);
-    return 0;
-  }
+  //~ int psio_tocclean(unsigned int unit, const char *key) {
+    //~ _default_psio_lib_->tocclean(unit, key);
+    //~ return 0;
+  //~ }
 
 }
 

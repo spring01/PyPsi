@@ -26,7 +26,7 @@
  */
 
 #include <boost/shared_ptr.hpp>
-#include <libpsio/psio.h>
+//~ #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <string.h>
 
@@ -52,10 +52,10 @@ void PSIO::zero_disk(unsigned int unit, const char *key, ULI rows, ULI cols) {
    ** \ingroup PSIO
    */
 
-  int psio_zero_disk(unsigned int unit, const char *key, ULI rows, ULI cols) {
-    _default_psio_lib_->zero_disk(unit, key, rows, cols);
-    return 1;
-  }
+  //~ int psio_zero_disk(unsigned int unit, const char *key, ULI rows, ULI cols) {
+    //~ _default_psio_lib_->zero_disk(unit, key, rows, cols);
+    //~ return 1;
+  //~ }
 
 }
 

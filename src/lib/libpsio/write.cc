@@ -50,7 +50,7 @@ void PSIO::write(unsigned int unit, const char *key, char *buffer, ULI size,
 
   if (this_entry == NULL) { /* New TOC entry */
     if (start.page||start.offset)
-      psio_error(unit, PSIO_ERROR_BLKSTART);
+      PSIOError(unit, PSIO_ERROR_BLKSTART);
 
     dirty = 1; /* set flag for writing the TOC header */
 
@@ -96,17 +96,17 @@ void PSIO::write(unsigned int unit, const char *key, char *buffer, ULI size,
 
     /* Make sure this block doesn't start past the end of the entry */
     if (start_data.page > this_entry->eadd.page)
-      psio_error(unit, PSIO_ERROR_BLKSTART);
+      PSIOError(unit, PSIO_ERROR_BLKSTART);
     else if ((start_data.page == this_entry->eadd.page) &&(start_data.offset
         > this_entry->eadd.offset))
-      psio_error(unit, PSIO_ERROR_BLKSTART);
+      PSIOError(unit, PSIO_ERROR_BLKSTART);
 
     /* Compute the new global ending address for the entry, if necessary */
     end_data = psio_get_address(start_data, size);
     if (end_data.page > this_entry->eadd.page) {
       if (this_entry->next != NULL) {
         fprintf(stderr, "PSIO_ERROR: Attempt to write into next entry: %d, %s\n", unit, key);
-        psio_error(unit, PSIO_ERROR_BLKEND);
+        PSIOError(unit, PSIO_ERROR_BLKEND);
       }
       this_entry->eadd = end_data;
       dirty = 1; /* set flag for writing the TOC header */
@@ -114,7 +114,7 @@ void PSIO::write(unsigned int unit, const char *key, char *buffer, ULI size,
         > this_entry->eadd.offset)) {
       if (this_entry->next != NULL) {
         fprintf(stderr, "PSIO_ERROR: Attempt to write into next entry: %d, %s\n", unit, key);
-        psio_error(unit, PSIO_ERROR_BLKEND);
+        PSIOError(unit, PSIO_ERROR_BLKEND);
       }
       this_entry->eadd = end_data;
       dirty = 1; /* set flag for writing the TOC header */
@@ -150,11 +150,11 @@ void PSIO::write(unsigned int unit, const char *key, char *buffer, ULI size,
    ** \ingroup PSIO
    */
 
-  int psio_write(unsigned int unit, const char *key, char *buffer, ULI size,
-                 psio_address start, psio_address *end) {
-    _default_psio_lib_->write(unit, key, buffer, size, start, end);
-    return 1;
-  }
+  //~ int psio_write(unsigned int unit, const char *key, char *buffer, ULI size,
+                 //~ psio_address start, psio_address *end) {
+    //~ _default_psio_lib_->write(unit, key, buffer, size, start, end);
+    //~ return 1;
+  //~ }
 
 }
 

@@ -50,7 +50,7 @@ void PSIO::read(unsigned int unit, const char *key, char *buffer, ULI size,
 
   if (this_entry == NULL) {
     fprintf(stderr, "PSIO_ERROR: Can't find TOC Entry %s\n", key);
-    psio_error(unit, PSIO_ERROR_NOTOCENT);
+    PSIOError(unit, PSIO_ERROR_NOTOCENT);
   } else {
 
     /* Compute the global starting page and offset for the data */
@@ -60,17 +60,17 @@ void PSIO::read(unsigned int unit, const char *key, char *buffer, ULI size,
 
     /* Make sure the block starts and ends within the entry */
     if (start_data.page > this_entry->eadd.page)
-      psio_error(unit, PSIO_ERROR_BLKSTART);
+      PSIOError(unit, PSIO_ERROR_BLKSTART);
     else if ((start_data.page == this_entry->eadd.page) &&(start_data.offset
         > this_entry->eadd.offset))
-      psio_error(unit, PSIO_ERROR_BLKSTART);
+      PSIOError(unit, PSIO_ERROR_BLKSTART);
 
     end_data = psio_get_address(start_data, size);
     if ((end_data.page > this_entry->eadd.page))
-      psio_error(unit, PSIO_ERROR_BLKEND);
+      PSIOError(unit, PSIO_ERROR_BLKEND);
     else if ((end_data.page == this_entry->eadd.page) &&(end_data.offset
         > this_entry->eadd.offset))
-      psio_error(unit, PSIO_ERROR_BLKEND);
+      PSIOError(unit, PSIO_ERROR_BLKEND);
 
     /* Update end (an entry-relative address) for the caller */
     *end = psio_get_address(start, size);
@@ -99,11 +99,11 @@ void PSIO::read(unsigned int unit, const char *key, char *buffer, ULI size,
    ** \ingroup PSIO
    */
 
-  int psio_read(unsigned int unit, const char *key, char *buffer, ULI size,
-                psio_address start, psio_address *end) {
-    _default_psio_lib_->read(unit, key, buffer, size, start, end);
-    return 1;
-  }
+  //~ int psio_read(unsigned int unit, const char *key, char *buffer, ULI size,
+                //~ psio_address start, psio_address *end) {
+    //~ _default_psio_lib_->read(unit, key, buffer, size, start, end);
+    //~ return 1;
+  //~ }
 
 }
 

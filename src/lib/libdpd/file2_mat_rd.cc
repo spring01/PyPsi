@@ -39,7 +39,7 @@ int DPD::file2_mat_rd(dpdfile2 *File)
     if(File->incore) return 0; /* We already have this data in core */
 
     /* If data doesn't actually exist on disk, we just leave */
-    if(psio_tocscan(File->filenum, File->label) == NULL) return 1;
+    if(psio_->tocscan(File->filenum, File->label) == NULL) return 1;
 
     for(h=0; h < File->params->nirreps; h++) {
         irrep_ptr = File->lfiles[h];
@@ -47,7 +47,7 @@ int DPD::file2_mat_rd(dpdfile2 *File)
         coltot = File->params->coltot[h^my_irrep];
 
         if(rowtot && coltot)
-            psio_read(File->filenum, File->label, (char *) File->matrix[h][0],
+            psio_->read(File->filenum, File->label, (char *) File->matrix[h][0],
                     rowtot*coltot*sizeof(double), irrep_ptr, &next_address);
     }
 

@@ -60,7 +60,7 @@ int DPD::file4_mat_irrep_row_rd(dpdfile4 *File, int irrep, int row)
     }
 
     if(coltot)
-        psio_read(File->filenum, File->label, (char *) File->matrix[irrep][0],
+        psio_->read(File->filenum, File->label, (char *) File->matrix[irrep][0],
                 coltot*sizeof(double), row_ptr, &next_address);
 
 #ifdef DPD_TIMER

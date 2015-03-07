@@ -57,21 +57,21 @@ void PSIO::open(unsigned int unit, int status) {
   //std::cout << "proc " << WorldComm->me() << "    status = " << status << std::endl;
   /* check for too large unit */
   if (unit > PSIO_MAXUNIT)
-    psio_error(unit, PSIO_ERROR_MAXUNIT);
+    PSIOError(unit, PSIO_ERROR_MAXUNIT);
   
   this_unit = &(psio_unit[unit]);
   
   /* Get number of volumes to stripe across */
   this_unit->numvols = get_numvols(unit);
   if (this_unit->numvols > PSIO_MAXVOL)
-    psio_error(unit, PSIO_ERROR_MAXVOL);
+    PSIOError(unit, PSIO_ERROR_MAXVOL);
   if (!(this_unit->numvols))
     this_unit->numvols = 1;
   
   /* Check to see if this unit is already open */
   for (i=0; i < this_unit->numvols; i++) {
     if (this_unit->vol[i].stream != -1)
-      psio_error(unit, PSIO_ERROR_REOPEN);
+      PSIOError(unit, PSIO_ERROR_REOPEN);
   }
   
   /* Get the file name prefix */
@@ -91,7 +91,7 @@ void PSIO::open(unsigned int unit, int status) {
       typedef Names::const_iterator citer;
       citer n = names.find(fullpath);
       if (n != names.end())
-        psio_error(unit, PSIO_ERROR_IDENTVOLPATH);
+        PSIOError(unit, PSIO_ERROR_IDENTVOLPATH);
       names[fullpath] = 1;
       free(path);
     }
@@ -121,7 +121,7 @@ void PSIO::open(unsigned int unit, int status) {
       //~ WorldComm->bcast(&(this_unit->vol[i].stream), 1, 0);
       //WorldComm->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
       if(this_unit->vol[i].stream == -1)
-        psio_error(unit,PSIO_ERROR_OPEN);
+        PSIOError(unit,PSIO_ERROR_OPEN);
     }
     else if(status == PSIO_OPEN_NEW) {
       //~ if (WorldComm->me() == 0) {
@@ -130,9 +130,9 @@ void PSIO::open(unsigned int unit, int status) {
       //~ WorldComm->bcast(&(this_unit->vol[i].stream), 1, 0);
       //WorldComm->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
       if(this_unit->vol[i].stream == -1)
-        psio_error(unit,PSIO_ERROR_OPEN);
+        PSIOError(unit,PSIO_ERROR_OPEN);
     }
-    else psio_error(unit,PSIO_ERROR_OSTAT);
+    else PSIOError(unit,PSIO_ERROR_OSTAT);
 
     free(path);
   }
@@ -144,7 +144,7 @@ void PSIO::open(unsigned int unit, int status) {
     this_unit->toc = NULL;
     wt_toclen(unit, 0);
   }
-  else psio_error(unit,PSIO_ERROR_OSTAT);
+  else PSIOError(unit,PSIO_ERROR_OSTAT);
 
   free(name);
 }
@@ -157,14 +157,14 @@ bool PSIO::exists(unsigned int unit) {
   psio_ud *this_unit;
   
   if (unit > PSIO_MAXUNIT)
-    psio_error(unit, PSIO_ERROR_MAXUNIT);
+    PSIOError(unit, PSIO_ERROR_MAXUNIT);
   
   this_unit = &(psio_unit[unit]);
   
   /* Get number of volumes to stripe across */
   this_unit->numvols = get_numvols(unit);
   if (this_unit->numvols > PSIO_MAXVOL)
-    psio_error(unit, PSIO_ERROR_MAXVOL);
+    PSIOError(unit, PSIO_ERROR_MAXVOL);
   if (!(this_unit->numvols))
     this_unit->numvols = 1;
   
@@ -194,7 +194,7 @@ bool PSIO::exists(unsigned int unit) {
       typedef Names::const_iterator citer;
       citer n = names.find(fullpath);
       if (n != names.end())
-        psio_error(unit, PSIO_ERROR_IDENTVOLPATH);
+        PSIOError(unit, PSIO_ERROR_IDENTVOLPATH);
       names[fullpath] = 1;
       free(path);
     }
@@ -240,10 +240,10 @@ PSIO::rehash(unsigned int unit)
   }
 }
 
-  int psio_open(unsigned int unit, int status) {
-    _default_psio_lib_->open(unit, status);
-    return 1;
-  }   
+  //~ int psio_open(unsigned int unit, int status) {
+    //~ _default_psio_lib_->open(unit, status);
+    //~ return 1;
+  //~ }   
 
 }
 

@@ -26,7 +26,7 @@
  */
 
 #include <boost/shared_ptr.hpp>
-#include <libpsio/psio.h>
+//~ #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
 namespace psi {
@@ -51,9 +51,9 @@ int PSIO::open_check(unsigned int unit) {
    ** \ingroup PSIO
    */
 
-  int psio_open_check(unsigned int unit) {
-    return _default_psio_lib_->open_check(unit);
-  }
+  //~ int psio_open_check(unsigned int unit) {
+    //~ return _default_psio_lib_->open_check(unit);
+  //~ }
 
 }
 

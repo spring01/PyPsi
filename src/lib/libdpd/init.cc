@@ -59,12 +59,12 @@ int dpd_set_default(int dpd_num)
 
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
             int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
-            int num_subspaces, std::vector<int*> &spaceArrays)
+            int num_subspaces, std::vector<int*> &spaceArrays, boost::shared_ptr<PSIO> psio_in)
 {
     if(dpd_list[dpd_num])
         throw PSIEXCEPTION("Attempting to initilize new DPD instance before the old one was freed.");
     dpd_list[dpd_num] = new DPD(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist,
-                                priority, num_subspaces, spaceArrays);
+                                priority, num_subspaces, spaceArrays, psio_in);
     dpd_default = dpd_num;
     global_dpd_ = dpd_list[dpd_num];
     return 0;
@@ -111,17 +111,17 @@ DPD::DPD():
 
 DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype,
          int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
-         int num_subspaces, std::vector<int*> &spaceArrays)
+         int num_subspaces, std::vector<int*> &spaceArrays, boost::shared_ptr<PSIO> psio_in)
 {
     init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist,
-             priority, num_subspaces, spaceArrays);
+             priority, num_subspaces, spaceArrays, psio_in);
 }
 
 /* This is the original function call, but is now just a wrapper to the same function
  * that takes the spaces in a vector instead of using variable argument lists */
 int DPD::init(int dpd_num, int nirreps, long int memory, int cachetype,
              int *cachefiles, int **cachelist,
-             dpd_file4_cache_entry *priority, int num_subspaces, ...)
+             dpd_file4_cache_entry *priority, int num_subspaces, boost::shared_ptr<PSIO> psio_in, ...)
 {
     std::vector<int*> spaceArrays;
     va_list ap;
@@ -136,7 +136,7 @@ int DPD::init(int dpd_num, int nirreps, long int memory, int cachetype,
     }
     va_end(ap);
     return init(dpd_num, nirreps, memory, cachetype, cachefiles,
-                    cachelist, priority, num_subspaces, spaceArrays);
+                    cachelist, priority, num_subspaces, spaceArrays, psio_in);
 }
 
 /* This is the original function code, but modified to take a vector of the orbital
@@ -144,8 +144,9 @@ int DPD::init(int dpd_num, int nirreps, long int memory, int cachetype,
  * easier to construct for some code that creates an arbitrary number of spaces */
 int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_in,
                   int *cachefiles_in, int **cachelist_in, dpd_file4_cache_entry *priority_in,
-                  int num_subspaces_in, std::vector<int*> &spaceArrays_in)
+                  int num_subspaces_in, std::vector<int*> &spaceArrays_in, boost::shared_ptr<PSIO> psio_in)
 {
+    psio_ = psio_in;
     int h,h0,h1,cnt,***dp,l_irrep,r_irrep,p,q;
     int i,j,k,l,*count,offset1,offset2;
     int *tmparray;

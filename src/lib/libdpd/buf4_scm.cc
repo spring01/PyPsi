@@ -72,7 +72,7 @@ int DPD::buf4_scm(dpdbuf4 *InBuf, double alpha)
 #endif
 
     /* Look first for the TOC entry on disk */
-    if(psio_tocscan(InBuf->file.filenum, InBuf->file.label) == NULL)
+    if(psio_->tocscan(InBuf->file.filenum, InBuf->file.label) == NULL)
         new_buf4 = 1;
     else new_buf4 = 0;
 

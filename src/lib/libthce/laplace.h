@@ -50,6 +50,9 @@ class LaplaceDenom {
 
 protected:
 
+    // added by spring
+    boost::shared_ptr<PSIO> psio_;
+
     // => Input Spec <= //
     
     /// Active occupied orbital eigenvalues
@@ -78,7 +81,7 @@ public:
 
     /// Master constructor
     LaplaceDenom(boost::shared_ptr<Vector> eps_occ,
-                 boost::shared_ptr<Vector> eps_vir,
+                 boost::shared_ptr<Vector> eps_vir, boost::shared_ptr<PSIO> psio_in,
                  double delta = 1.0E-6,
                  double omega = 0.0,
                  int rank = 2);

@@ -30,7 +30,8 @@
 
 namespace psi {
 
-int DPD::buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf,
+//~ int DPD::buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf,
+int DPD::buf4_dump(dpdbuf4 *DPDBuf, boost::shared_ptr<psi::IWL> IWLBuf,
                    int *prel, int *qrel, int *rrel, int *srel,
                    int bk_pack, int swap23)
 {
@@ -52,11 +53,17 @@ int DPD::buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf,
 
                     value = DPDBuf->matrix[h][row][col];
 
+                    //~ if(swap23)
+                        //~ iwl_buf_wrt_val(IWLBuf, P, R, Q, S, value, 0,
+                                        //~ (FILE *) NULL, 0);
+                    //~ else
+                        //~ iwl_buf_wrt_val(IWLBuf, P, Q, R, S, value, 0,
+                                        //~ (FILE *) NULL, 0);
                     if(swap23)
-                        iwl_buf_wrt_val(IWLBuf, P, R, Q, S, value, 0,
+                        IWLBuf->write_value(P, R, Q, S, value, 0,
                                         (FILE *) NULL, 0);
                     else
-                        iwl_buf_wrt_val(IWLBuf, P, Q, R, S, value, 0,
+                        IWLBuf->write_value(P, Q, R, S, value, 0,
                                         (FILE *) NULL, 0);
                 }
             }
@@ -67,11 +74,17 @@ int DPD::buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf,
 
                     value = DPDBuf->matrix[h][row][col];
 
+                    //~ if(swap23)
+                        //~ iwl_buf_wrt_val(IWLBuf, P, R, Q, S, value, 0,
+                                        //~ (FILE *) NULL, 0);
+                    //~ else
+                        //~ iwl_buf_wrt_val(IWLBuf, P, Q, R, S, value, 0,
+                                        //~ (FILE *) NULL, 0);
                     if(swap23)
-                        iwl_buf_wrt_val(IWLBuf, P, R, Q, S, value, 0,
+                        IWLBuf->write_value(P, R, Q, S, value, 0,
                                         (FILE *) NULL, 0);
                     else
-                        iwl_buf_wrt_val(IWLBuf, P, Q, R, S, value, 0,
+                        IWLBuf->write_value(P, Q, R, S, value, 0,
                                         (FILE *) NULL, 0);
                 }
             }

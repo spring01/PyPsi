@@ -49,8 +49,8 @@ using namespace boost;
 
 namespace psi {
 
-LRERI::LRERI(boost::shared_ptr<BasisSet> primary) :
-    primary_(primary)
+LRERI::LRERI(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio_in) :
+    primary_(primary), psio_(psio_in)
 {
     common_init();
 }
@@ -208,8 +208,8 @@ boost::shared_ptr<Matrix> LRERI::Jm12(boost::shared_ptr<BasisSet> auxiliary, dou
 
 
 DFERI::DFERI(boost::shared_ptr<BasisSet> primary,
-             boost::shared_ptr<BasisSet> auxiliary) :
-    LRERI(primary), auxiliary_(auxiliary)
+             boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<PSIO> psio_in) :
+    LRERI(primary, psio_in), auxiliary_(auxiliary)
 {
     common_init();
 }
@@ -222,15 +222,15 @@ void DFERI::common_init()
     J_cutoff_ = 1.0E-10;
     keep_raw_integrals_ = false;
 }
-boost::shared_ptr<DFERI> DFERI::build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options)
+boost::shared_ptr<DFERI> DFERI::build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options, boost::shared_ptr<PSIO> psio_in)
 {
-    boost::shared_ptr<DFERI> df(new DFERI(primary,auxiliary));
+    boost::shared_ptr<DFERI> df(new DFERI(primary,auxiliary, psio_in));
     df->load_options(options);
     return df;
 }
-boost::shared_ptr<DFERI> DFERI::build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options, boost::shared_ptr<Wavefunction> ref)
+boost::shared_ptr<DFERI> DFERI::build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options, boost::shared_ptr<Wavefunction> ref, boost::shared_ptr<PSIO> psio_in)
 {
-    boost::shared_ptr<DFERI> df = DFERI::build(primary,auxiliary,options);
+    boost::shared_ptr<DFERI> df = DFERI::build(primary,auxiliary,options, psio_in);
     df->load_wavefunction(ref);
     return df;
 }
@@ -393,11 +393,11 @@ void DFERI::allocate()
         ints_[name + "_temp"] = DiskTensor::build(name + "_temp",
             naux, auxiliary_->nbf(),
             space1, size1,
-            space2, size2);
+            space2, size2, psio_);
         ints_[name] = DiskTensor::build(name,
             space1, size1,
             space2, size2,  
-            naux, auxiliary_->nbf());
+            naux, auxiliary_->nbf(), psio_);
     }
 }
 void DFERI::transform()
@@ -704,8 +704,8 @@ void DFERI::fit()
 
 LSTHCERI::LSTHCERI(boost::shared_ptr<BasisSet> primary,
     boost::shared_ptr<BasisSet> auxiliary,
-    boost::shared_ptr<Matrix> X) :
-    LRERI(primary),
+    boost::shared_ptr<Matrix> X, boost::shared_ptr<PSIO> psio_in) :
+    LRERI(primary, psio_in),
     auxiliary_(auxiliary),
     X_(X)
 {
@@ -721,15 +721,15 @@ void LSTHCERI::common_init()
     schwarz_cutoff_ = 0.0;
     balance_ = false;
 }
-boost::shared_ptr<LSTHCERI> LSTHCERI::build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X, Options& options)
+boost::shared_ptr<LSTHCERI> LSTHCERI::build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X, Options& options, boost::shared_ptr<PSIO> psio_in)
 {
-    boost::shared_ptr<LSTHCERI> df(new LSTHCERI(primary,auxiliary,X));
+    boost::shared_ptr<LSTHCERI> df(new LSTHCERI(primary,auxiliary,X,psio_in));
     df->load_options(options);
     return df;
 }
-boost::shared_ptr<LSTHCERI> LSTHCERI::build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X, Options& options, boost::shared_ptr<Wavefunction> ref)
+boost::shared_ptr<LSTHCERI> LSTHCERI::build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X, Options& options, boost::shared_ptr<Wavefunction> ref, boost::shared_ptr<PSIO> psio_in)
 {
-    boost::shared_ptr<LSTHCERI> df = LSTHCERI::build(primary,auxiliary,X,options);
+    boost::shared_ptr<LSTHCERI> df = LSTHCERI::build(primary,auxiliary,X,options,psio_in);
     df->load_wavefunction(ref);
     return df;
 }
@@ -853,7 +853,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_X(bool meth)
                 int nP = X_->colspi()[0];
 
                 boost::shared_ptr<Tensor> X =  
-                    (meth ? CoreTensor::build("T_" + space, space, na,"NP", nP) : CoreTensor::build("X_" + space, space, na,"NP", nP));
+                    (meth ? CoreTensor::build("T_" + space, space, na,"NP", nP, psio_) : CoreTensor::build("X_" + space, space, na,"NP", nP, psio_));
                 
                 double** X1p = X_->pointer();
                 double* X2p = X->pointer();
@@ -982,7 +982,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
                 int end1   = spaces_[space].second;
                 int n1      = end1 - start1;
        
-                boost::shared_ptr<Tensor> R = CoreTensor::build("R_" + space, "NSO", nso, "NP", nP);
+                boost::shared_ptr<Tensor> R = CoreTensor::build("R_" + space, "NSO", nso, "NP", nP, psio_);
                 double* Xp = X->pointer();
                 double* Rp = R->pointer();
                 
@@ -1063,7 +1063,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
         std::string space2 = pair_spaces[name].second;
 
         boost::shared_ptr<Tensor> ET = DiskTensor::build("E_" + space1 + "_" + space2, 
-            "NAUX", naux, "NP", nP, false, false);
+            "NAUX", naux, "NP", nP, psio_, false, false);
 
         Es[space1 + "_" + space2] = ET;
     }
@@ -1187,8 +1187,8 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_S(std::map<std
 
                 boost::shared_ptr<Matrix> S1(new Matrix("S1", nP, nP));
                 boost::shared_ptr<Tensor> S2 = (meth ?
-                    CoreTensor::build("STinv_" + space1 + "_" + space2, "NP", nP, "NP", nP) : 
-                    CoreTensor::build("Sinv_" + space1 + "_" + space2, "NP", nP, "NP", nP));
+                    CoreTensor::build("STinv_" + space1 + "_" + space2, "NP", nP, "NP", nP, psio_) : 
+                    CoreTensor::build("Sinv_" + space1 + "_" + space2, "NP", nP, "NP", nP, psio_));
         
                 double*  X1p = X1->pointer();
                 double*  X2p = X2->pointer();
@@ -1238,7 +1238,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_L(std::map<std
                 int nP = E->sizes()[1];                    
 
                 boost::shared_ptr<Tensor> L = CoreTensor::build("L_" + space1 + "_" + space2,
-                    "NP", nP, "NAUX", nA);
+                    "NP", nP, "NAUX", nA, psio_);
                 boost::shared_ptr<Matrix> T(new Matrix("LT", nA, nP));
                 
                 double* Tp = T->pointer()[0]; 
@@ -1272,7 +1272,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_Z(std::map<std
         int nP = L12->sizes()[0]; 
         int nA = L12->sizes()[1]; 
         boost::shared_ptr<Tensor> Z = CoreTensor::build("Z_" + name, 
-            "NP", nP, "NP", nP);
+            "NP", nP, "NP", nP, psio_);
         L12->swap_in();        
         L34->swap_in();        
         double* L12p = L12->pointer();

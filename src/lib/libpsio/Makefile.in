@@ -10,7 +10,7 @@ TRUECSRC =
 
 TRUECXXSRC = init.cc \
 close.cc          get_global_address.cc  tocwrite.cc \
-done.cc           get_length.cc          read.cc        toclast.cc \
+done.cc           get_length.cc        read.cc        toclast.cc \
 volseek.cc        error.cc               get_numvols.cc toclen.cc        write.cc \
 get_address.cc    get_volpath.cc         read_entry.cc  tocprint.cc \
 rw.cc             tocread.cc             write_entry.cc get_filename.cc  open.cc \

@@ -25,7 +25,7 @@
  \ingroup PSIO
  */
 
-#include <libpsio/psio.h>
+//~ #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
 namespace psi {

@@ -25,7 +25,7 @@
  \ingroup PSIO
  */
 
-#include <libpsio/psio.h>
+//~ #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
 namespace psi {
@@ -51,10 +51,10 @@ void PSIO::read_entry(unsigned int unit, const char *key, char *buffer, ULI size
    ** \ingroup PSIO
    */
 
-  int psio_read_entry(unsigned int unit, const char *key, char *buffer, ULI size) {
-    psio_address end;
-    return psio_read(unit, key, buffer, size, PSIO_ZERO, &end);
-  }
+  //~ int psio_read_entry(unsigned int unit, const char *key, char *buffer, ULI size) {
+    //~ psio_address end;
+    //~ return psio_read(unit, key, buffer, size, PSIO_ZERO, &end);
+  //~ }
 
 }
 

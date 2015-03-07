@@ -58,7 +58,7 @@ int DPD::file4_mat_irrep_row_wrt(dpdfile4 *File, int irrep, int row)
     }
 
     if(coltot)
-        psio_write(File->filenum, File->label, (char *) File->matrix[irrep][0],
+        psio_->write(File->filenum, File->label, (char *) File->matrix[irrep][0],
                 coltot*sizeof(double), row_ptr, &next_address);
 
     return 0;

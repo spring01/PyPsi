@@ -26,7 +26,7 @@
  */
 
 #include <boost/shared_ptr.hpp>
-#include <libpsio/psio.h>
+//~ #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
 namespace psi {
@@ -42,10 +42,10 @@ void PSIO::write_entry(unsigned int unit, const char *key, char *buffer, ULI siz
    ** \ingroup PSIO
    */
 
-  int psio_write_entry(unsigned int unit, const char *key, char *buffer, ULI size) {
-    _default_psio_lib_->write_entry(unit, key, buffer, size);
-    return 1;
-  }
+  //~ int psio_write_entry(unsigned int unit, const char *key, char *buffer, ULI size) {
+    //~ _default_psio_lib_->write_entry(unit, key, buffer, size);
+    //~ return 1;
+  //~ }
 
 }
 

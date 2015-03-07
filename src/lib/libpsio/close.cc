@@ -46,7 +46,7 @@ void PSIO::close(unsigned int unit, int keep) {
 
   /* First check to see if this unit is already closed */
   if (this_unit->vol[0].stream == -1)
-    psio_error(unit, PSIO_ERROR_RECLOSE);
+    PSIOError(unit, PSIO_ERROR_RECLOSE);
 
   /* Dump the current TOC back out to disk */
   tocwrite(unit);
@@ -68,7 +68,7 @@ void PSIO::close(unsigned int unit, int keep) {
     //~ WorldComm->bcast(&errcod, 1, 0);
     //WorldComm->raw_bcast(&errcod, sizeof(int), 0);
     if (errcod == -1)
-      psio_error(unit,PSIO_ERROR_CLOSE);
+      PSIOError(unit,PSIO_ERROR_CLOSE);
     /* Delete the file completely if requested */
     if(!keep) unlink(this_unit->vol[i].path);
     _psio_manager_->close_file(std::string(this_unit->vol[i].path), unit, (keep ? true : false));
@@ -84,10 +84,10 @@ void PSIO::close(unsigned int unit, int keep) {
   this_unit->toc = NULL;
 }
 
-int psio_close(unsigned int unit, int keep) {
-  _default_psio_lib_->close(unit, keep);
-  return 0;
-}
+//~ int psio_close(unsigned int unit, int keep) {
+  //~ _default_psio_lib_->close(unit, keep);
+  //~ return 0;
+//~ }
 
 }
 

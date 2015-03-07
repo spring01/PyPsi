@@ -61,7 +61,7 @@ bool from_string(T& t,
 }
 
 LaplaceDenom::LaplaceDenom(boost::shared_ptr<Vector> eps_occ,
-                           boost::shared_ptr<Vector> eps_vir,
+                           boost::shared_ptr<Vector> eps_vir, boost::shared_ptr<PSIO> psio_in,
                            double delta,
                            double omega,
                            int rank) :
@@ -69,7 +69,8 @@ LaplaceDenom::LaplaceDenom(boost::shared_ptr<Vector> eps_occ,
     eps_vir_(eps_vir),
     delta_(delta),
     omega_(omega),
-    rank_(rank)
+    rank_(rank),
+    psio_(psio_in)
 {
 }
 LaplaceDenom::~LaplaceDenom()
@@ -243,8 +244,8 @@ void LaplaceDenom::compute(const std::string& occ_name, const std::string& vir_n
         omega[k] /= A;
     }
 
-    tau_occ_ = CoreTensor::build(occ_name, "w", npoints_, "o", nocc);
-    tau_vir_ = CoreTensor::build(vir_name, "w", npoints_, "v", nvir);
+    tau_occ_ = CoreTensor::build(occ_name, "w", npoints_, "o", nocc, psio_);
+    tau_vir_ = CoreTensor::build(vir_name, "w", npoints_, "v", nvir, psio_);
 
     double* dop = tau_occ_->pointer();
     double* dvp = tau_vir_->pointer();

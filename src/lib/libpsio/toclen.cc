@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <exception.h>
-#include <libpsio/psio.h>
+//~ #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <libparallel/parallel.h>
 
@@ -64,7 +64,7 @@ ULI PSIO::rd_toclen(unsigned int unit) {
   //~ WorldComm->bcast(&(errcod), 1, 0);
   //WorldComm->raw_bcast(&(errcod), sizeof(int), 0);
   if (errcod == -1)
-    psio_error(unit, PSIO_ERROR_LSEEK);
+    PSIOError(unit, PSIO_ERROR_LSEEK);
   
   /* Read the value */
   //~ if (WorldComm->me() == 0) {
@@ -112,9 +112,9 @@ void PSIO::wt_toclen(unsigned int unit, ULI len) {
   }
 }
 
-unsigned long int psio_rd_toclen(unsigned int unit) {
-  return _default_psio_lib_->rd_toclen(unit);
-}
+//~ unsigned long int psio_rd_toclen(unsigned int unit) {
+  //~ return _default_psio_lib_->rd_toclen(unit);
+//~ }
 
 }
 
