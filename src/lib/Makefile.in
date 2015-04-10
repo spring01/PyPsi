@@ -22,8 +22,8 @@ subdirs = libint \
 		  libscf_solver \
 		  libdiis \
 		  libsapt_solver \
-#		  libplugin \
-		  libmoinfo
+		  libmoinfo \
+		  libscfgrad
 
 all: default
 

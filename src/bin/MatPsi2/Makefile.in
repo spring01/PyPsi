@@ -21,6 +21,7 @@ endif
 
 # NOTE: Keep PSI_parallel last in the PSI library list (but before boost). It contains the fprintf override.
 PSILIBS = \
+-lPSI_scfgrad \
 -lPSI_scf_solver -lPSI_fock \
 -lPSI_functional -lPSI_3index \
 -lPSI_mints -lPSI_trans -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt \

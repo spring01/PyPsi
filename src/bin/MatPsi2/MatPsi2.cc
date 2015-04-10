@@ -712,6 +712,15 @@ SharedMatrix MatPsi2::RHF_FockMatrix() {
     return rhf_->Fa(); 
 }
 
+SharedMatrix MatPsi2::RHF_Gradient() {
+    if(rhf_ == NULL) {
+        throw PSIEXCEPTION("RHF_Gradient: Hartree-Fock calculation has not been done.");
+    }
+    scfgrad::SCFGrad scfgrad_ = scfgrad::SCFGrad(process_environment_);
+    SharedMatrix grad(new Matrix(scfgrad_.compute_gradient()));
+    return grad;
+}
+
 
 double MatPsi2::RKS_DoSCF() {
     if(Molecule_NumElectrons() % 2)

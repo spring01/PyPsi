@@ -12,6 +12,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <libscfgrad/scf_grad.h>
 
 
 using namespace std;
@@ -158,6 +159,7 @@ public:
     SharedMatrix RHF_JMatrix();   // Coulomb interaction matrix J 
     SharedMatrix RHF_KMatrix();   // exchange interaction matrix K
     SharedMatrix RHF_FockMatrix();   // entire Fock matrix 
+    SharedMatrix RHF_Gradient();   // entire Fock matrix 
     
     double RKS_DoSCF();       // restricted Hartree-Fock energy 
     

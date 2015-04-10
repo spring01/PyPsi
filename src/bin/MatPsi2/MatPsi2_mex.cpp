@@ -548,6 +548,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputMatrix(plhs[0], MatPsi_obj->RHF_FockMatrix());
         return;
     }
+    if (!strcmp("RHF_Gradient", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->RHF_Gradient());
+        return;
+    }
     
     //*** DFT related 
     if (!strcmp("RKS_DoSCF", cmd)) {

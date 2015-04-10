@@ -946,6 +946,7 @@ AC_CONFIG_FILES([
           src/lib/libdisp/Makefile
 
           src/lib/lib3index/Makefile
+          src/lib/libscfgrad/Makefile
 
           bin/psi4-config
 
