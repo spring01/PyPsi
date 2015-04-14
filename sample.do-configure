@@ -1,0 +1,1 @@
+../configure --prefix=/home/haichen/working/MatPsi2_dev --with-cc=gcc --with-cxx=g++ --with-libdirs='-L/home/haichen/program/lib/openblas_single/lib' --with-blas='-lopenblas' --with-lapack='-lopenblas' --with-mex=/home/haichen/program/bin/MATLAB/R2013a/bin/mex --with-opt='-Ofast' 
