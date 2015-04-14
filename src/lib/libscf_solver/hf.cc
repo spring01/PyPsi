@@ -122,9 +122,6 @@ void HF::common_init()
 
     H_.reset(factory_->create_matrix("One-electron Hamiltonion"));
     X_.reset(factory_->create_matrix("X"));
-    
-    // init dens
-    initial_density_.reset(factory_->create_matrix("Initial guess density"));
 
     nmo_ = 0;
     nso_ = 0;
@@ -1196,7 +1193,6 @@ void HF::guess()
         Fa_->print();
         Fb_->print();
     }
-    initial_density_->copy(Da_);
 
     // This is confusing the user and valgrind.
     //if (print_ && (WorldComm->me() == 0))
@@ -1925,4 +1921,40 @@ void HF::stability_analysis()
 {
     throw PSIEXCEPTION("Stability analysis hasn't been implemented yet for this wfn type.");
 }
+
+SharedMatrix HF::InitialGuessDensity()
+{
+    std::string reference = options_.get_str("REFERENCE");
+
+    bool converged = false;
+    MOM_performed_ = false;
+    diis_performed_ = false;
+    // Neither of these are idempotent
+    if (options_.get_str("GUESS") == "SAD" || options_.get_str("GUESS") == "READ")
+        iteration_ = -1;
+    else
+        iteration_ = 0;
+
+    // Andy trick 2.0
+    std::string old_scf_type = options_.get_str("SCF_TYPE");
+    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF" || old_scf_type == "CD")) {
+         fprintf(outfile, "  Starting with a DF guess...\n\n");
+         if(!options_["DF_BASIS_SCF"].has_changed()) {
+             // TODO: Match Dunning basis sets 
+             molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
+         }
+         scf_type_ = "DF";
+         options_.set_str("SCF","SCF_TYPE","DF"); // Scope is reset in proc.py. This is not pretty, but it works
+    }
+    
+    boost::shared_ptr<MintsHelper> mints (new MintsHelper(process_environment_, psio_, options_, 0));
+    mints->one_electron_integrals();
+
+    integrals();
+    form_H(); //Core Hamiltonian
+    form_Shalf(); //S and X Matrix
+    guess(); // Guess
+    return Da_;
+}
+
 }}

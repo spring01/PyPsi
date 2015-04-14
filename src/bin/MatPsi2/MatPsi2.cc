@@ -722,9 +722,12 @@ SharedMatrix MatPsi2::RHF_Gradient() {
 }
 
 SharedMatrix MatPsi2::RHF_InitialGuessDensity() {
-    if(rhf_ == NULL) {
-        throw PSIEXCEPTION("RHF_InitialGuessDensity: Hartree-Fock calculation has not been done.");
-    }
+    if(Molecule_NumElectrons() % 2)
+        throw PSIEXCEPTION("RHF_DoSCF: RHF can handle singlets only.");
+    if(jk_ == NULL)
+        JK_Initialize("PKJK");
+    rhf_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
+    process_environment_.set_wavefunction(rhf_);
     return rhf_->InitialGuessDensity();
 }
 
