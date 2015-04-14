@@ -348,6 +348,10 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_Gradient', this.objectHandle, varargin{:});
         end
         
+        function varargout = RHF_InitialGuessDensity(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_InitialGuessDensity', this.objectHandle, varargin{:});
+        end
+        
         function varargout = RKS_DoSCF(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RKS_DoSCF', this.objectHandle, varargin{:});
         end

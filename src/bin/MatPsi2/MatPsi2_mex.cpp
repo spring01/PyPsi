@@ -552,6 +552,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputMatrix(plhs[0], MatPsi_obj->RHF_Gradient());
         return;
     }
+    if (!strcmp("RHF_InitialGuessDensity", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->RHF_InitialGuessDensity());
+        return;
+    }
     
     //*** DFT related 
     if (!strcmp("RKS_DoSCF", cmd)) {

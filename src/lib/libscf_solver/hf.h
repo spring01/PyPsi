@@ -56,6 +56,8 @@ namespace scf {
 
 class HF : public Wavefunction {
 protected:
+
+    SharedMatrix initial_density_;
     
     SharedMatrix SO2AO_;
 
@@ -353,6 +355,8 @@ public:
     
     SharedMatrix sotoao() { return SO2AO_;} // wavefunction already has aotoso() 
     double EHF() { return E_; }
+    
+    SharedMatrix InitialGuessDensity() { return initial_density_; }
 
     virtual ~HF();
 

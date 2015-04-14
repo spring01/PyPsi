@@ -161,6 +161,8 @@ public:
     SharedMatrix RHF_FockMatrix();   // entire Fock matrix 
     SharedMatrix RHF_Gradient();   // entire Fock matrix 
     
+    SharedMatrix RHF_InitialGuessDensity();
+    
     double RKS_DoSCF();       // restricted Hartree-Fock energy 
     
 };

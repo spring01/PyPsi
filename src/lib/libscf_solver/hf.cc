@@ -122,6 +122,9 @@ void HF::common_init()
 
     H_.reset(factory_->create_matrix("One-electron Hamiltonion"));
     X_.reset(factory_->create_matrix("X"));
+    
+    // init dens
+    initial_density_.reset(factory_->create_matrix("Initial guess density"));
 
     nmo_ = 0;
     nso_ = 0;
@@ -1193,6 +1196,7 @@ void HF::guess()
         Fa_->print();
         Fb_->print();
     }
+    initial_density_->copy(Da_);
 
     // This is confusing the user and valgrind.
     //if (print_ && (WorldComm->me() == 0))

@@ -721,6 +721,13 @@ SharedMatrix MatPsi2::RHF_Gradient() {
     return grad;
 }
 
+SharedMatrix MatPsi2::RHF_InitialGuessDensity() {
+    if(rhf_ == NULL) {
+        throw PSIEXCEPTION("RHF_InitialGuessDensity: Hartree-Fock calculation has not been done.");
+    }
+    return rhf_->InitialGuessDensity();
+}
+
 
 double MatPsi2::RKS_DoSCF() {
     if(Molecule_NumElectrons() % 2)
