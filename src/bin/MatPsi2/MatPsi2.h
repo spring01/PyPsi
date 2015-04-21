@@ -25,7 +25,7 @@ protected:
     std::string basisname_;
 
     Process::Environment process_environment_;
-    boost::shared_ptr<worldcomm> worldcomm_;
+    boost::shared_ptr<LocalCommWrapper> worldcomm_;
     
     boost::shared_ptr<PSIO> psio_;
     
