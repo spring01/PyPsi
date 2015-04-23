@@ -136,11 +136,6 @@ void RHF::finalize()
     HF::finalize();
 }
 
-void RHF::extern_finalize()
-{
-    RHF::finalize();
-}
-
 SharedMatrix RHF::Da() const
 {
     return D_;

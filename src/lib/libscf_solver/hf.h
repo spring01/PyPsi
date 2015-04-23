@@ -354,6 +354,9 @@ public:
     SharedMatrix sotoao() { return SO2AO_;} // wavefunction already has aotoso() 
     double EHF() { return E_; }
     
+    // Finalize memory/files
+    void extern_finalize();
+    
     SharedMatrix InitialGuessDensity();
 
     virtual ~HF();

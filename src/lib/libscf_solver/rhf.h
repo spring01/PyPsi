@@ -95,9 +95,6 @@ public:
     RHF(Process::Environment& process_environment_in, Options& options, boost::shared_ptr<JK> jk_in, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     RHF(Process::Environment& process_environment_in, Options& options, boost::shared_ptr<JK> jk_in, boost::shared_ptr<PSIO> psio);
     virtual ~RHF();
-    
-    // Finalize memory/files
-    void extern_finalize();
 
     virtual SharedMatrix Da() const;
     virtual SharedMatrix J() const { return J_; }

@@ -35,15 +35,16 @@ protected:
     boost::shared_ptr<TwoBodyAOInt> eri_;
     boost::shared_ptr<MatrixFactory> matfac_;
     boost::shared_ptr<JK> jk_;
-    boost::shared_ptr<scf::RHF> rhf_;
-    
-    boost::shared_ptr<scf::RKS> rks_;
+    boost::shared_ptr<Wavefunction> wfn_;
     
     // create basis object 
     void create_basis();
     
     // create basis object and one & two electron integral factories 
     void create_basis_and_integral_factories();
+    
+    void create_default_wavefunction();
+    void reset_wavefunction();
     
     // exception function for DFJK utilities
     void DFJKException(std::string functionName);
@@ -136,33 +137,34 @@ public:
     
     
     //*** SCF related
-    // create/reset RHF object 
-    void RHF_Reset();
-    
     // method of doing RHF calculations 
-    double RHF_DoSCF(); // "regular" restricted Hartree-Fock 
+    double SCF_RunRHF();
+    double SCF_RunUHF();
+    double SCF_RunRKS();
     
     // methods controlling RHF algorithm 
-    void RHF_EnableMOM(int mom_start);
-    void RHF_EnableDamping(double damping_percentage);
-    void RHF_EnableDIIS();
-    void RHF_DisableDIIS();
-    void RHF_GuessSAD();
-    void RHF_GuessCore();
+    void SCF_EnableMOM(int mom_start);
+    void SCF_EnableDamping(double damping_percentage);
+    void SCF_EnableDIIS();
+    void SCF_DisableDIIS();
+    void SCF_GuessSAD();
+    void SCF_GuessCore();
     
     // methods extracting restricted Hartree-Fock results
-    double RHF_TotalEnergy();       // restricted Hartree-Fock energy 
-    SharedMatrix RHF_Orbital();   // molecular orbital coefficients
-    SharedVector RHF_OrbitalEnergies(); // molecular orbital engenvalues 
-    SharedMatrix RHF_Density();   // density matrix 
-    SharedMatrix RHF_CoreHamiltonian();  // core Hamiltonian 
-    SharedMatrix RHF_JMatrix();   // Coulomb interaction matrix J 
-    SharedMatrix RHF_KMatrix();   // exchange interaction matrix K
-    SharedMatrix RHF_FockMatrix();   // entire Fock matrix 
-    SharedMatrix RHF_Gradient();   // entire Fock matrix 
+    double SCF_TotalEnergy();
+    SharedMatrix SCF_OrbitalAlpha();
+    SharedMatrix SCF_OrbitalBeta();
+    SharedVector SCF_OrbitalEnergiesAlpha();
+    SharedVector SCF_OrbitalEnergiesBeta();
+    SharedMatrix SCF_DensityAlpha();
+    SharedMatrix SCF_DensityBeta();
+    SharedMatrix SCF_CoreHamiltonian();
+    SharedMatrix SCF_FockAlpha();
+    SharedMatrix SCF_FockBeta();
+    SharedMatrix SCF_Gradient();
+    SharedMatrix SCF_InitialGuessDensity();
     
-    SharedMatrix RHF_InitialGuessDensity();
-    
-    double RKS_DoSCF();       // restricted Hartree-Fock energy 
+    SharedMatrix SCF_RHF_Coulomb();
+    SharedMatrix SCF_RHF_Exchange();
     
 };

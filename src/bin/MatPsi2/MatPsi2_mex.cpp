@@ -464,102 +464,116 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     
     //*** SCF related 
-    if (!strcmp("RHF_DoSCF", cmd)) {
-        OutputScalar(plhs[0], MatPsi_obj->RHF_DoSCF());
+    if (!strcmp("SCF_RunRHF", cmd)) {
+        OutputScalar(plhs[0], MatPsi_obj->SCF_RunRHF());
         return;
     }
-    if (!strcmp("RHF_Reset", cmd)) {
-        MatPsi_obj->RHF_Reset();
+    if (!strcmp("SCF_RunUHF", cmd)) {
+        OutputScalar(plhs[0], MatPsi_obj->SCF_RunUHF());
         return;
     }
-    if (!strcmp("RHF_EnableMOM", cmd)) {
+    if (!strcmp("SCF_RunRKS", cmd)) {
+        OutputScalar(plhs[0], MatPsi_obj->SCF_RunRKS());
+        return;
+    }
+    if (!strcmp("SCF_EnableMOM", cmd)) {
         if (nrhs == 2) {
-            MatPsi_obj->RHF_EnableMOM(20);
+            MatPsi_obj->SCF_EnableMOM(20);
             return;
         }
         if (nrhs!=3 || mxGetM(prhs[2])!=1 || mxGetN(prhs[2])!=1)
-            mexErrMsgTxt("RHF_EnableMOM(mom_start): Integer input expected.");
-        MatPsi_obj->RHF_EnableMOM((int)InputScalar(prhs[2]));
+            mexErrMsgTxt("SCF_EnableMOM(mom_start): Integer input expected.");
+        MatPsi_obj->SCF_EnableMOM((int)InputScalar(prhs[2]));
         return;
     }
-    if (!strcmp("RHF_DisableMOM", cmd)) {
-        MatPsi_obj->RHF_EnableMOM(0);
+    if (!strcmp("SCF_DisableMOM", cmd)) {
+        MatPsi_obj->SCF_EnableMOM(0);
         return;
     }
-    if (!strcmp("RHF_EnableDamping", cmd)) {
+    if (!strcmp("SCF_EnableDamping", cmd)) {
         if (nrhs == 2) {
-            MatPsi_obj->RHF_EnableDamping(20.0);
+            MatPsi_obj->SCF_EnableDamping(20.0);
             return;
         }
         if (nrhs!=3 || mxGetM(prhs[2])!=1 || mxGetN(prhs[2])!=1)
-            mexErrMsgTxt("RHF_EnableDamping(damping_percentage): 1 double input expected.");
-        MatPsi_obj->RHF_EnableDamping(InputScalar(prhs[2]));
+            mexErrMsgTxt("SCF_EnableDamping(damping_percentage): 1 double input expected.");
+        MatPsi_obj->SCF_EnableDamping(InputScalar(prhs[2]));
         return;
     }
-    if (!strcmp("RHF_DisableDamping", cmd)) {
-        MatPsi_obj->RHF_EnableDamping(0.0);
+    if (!strcmp("SCF_DisableDamping", cmd)) {
+        MatPsi_obj->SCF_EnableDamping(0.0);
         return;
     }
-    if (!strcmp("RHF_EnableDIIS", cmd)) {
-        MatPsi_obj->RHF_EnableDIIS();
+    if (!strcmp("SCF_EnableDIIS", cmd)) {
+        MatPsi_obj->SCF_EnableDIIS();
         return;
     }
-    if (!strcmp("RHF_DisableDIIS", cmd)) {
-        MatPsi_obj->RHF_DisableDIIS();
+    if (!strcmp("SCF_DisableDIIS", cmd)) {
+        MatPsi_obj->SCF_DisableDIIS();
         return;
     }
-    if (!strcmp("RHF_GuessSAD", cmd)) {
-        MatPsi_obj->RHF_GuessSAD();
+    if (!strcmp("SCF_GuessSAD", cmd)) {
+        MatPsi_obj->SCF_GuessSAD();
         return;
     }
-    if (!strcmp("RHF_GuessCore", cmd)) {
-        MatPsi_obj->RHF_GuessCore();
+    if (!strcmp("SCF_GuessCore", cmd)) {
+        MatPsi_obj->SCF_GuessCore();
         return;
     }
-    if (!strcmp("RHF_TotalEnergy", cmd)) {
-        OutputScalar(plhs[0], MatPsi_obj->RHF_TotalEnergy());
+    if (!strcmp("SCF_TotalEnergy", cmd)) {
+        OutputScalar(plhs[0], MatPsi_obj->SCF_TotalEnergy());
         return;
     }
-    if (!strcmp("RHF_Orbital", cmd)) {
-        OutputMatrix(plhs[0], MatPsi_obj->RHF_Orbital());
+    if (!strcmp("SCF_OrbitalAlpha", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_OrbitalAlpha());
         return;
     }
-    if (!strcmp("RHF_OrbitalEnergies", cmd)) {
-        OutputVector(plhs[0], MatPsi_obj->RHF_OrbitalEnergies());
+    if (!strcmp("SCF_OrbitalBeta", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_OrbitalBeta());
         return;
     }
-    if (!strcmp("RHF_Density", cmd)) {
-        OutputMatrix(plhs[0], MatPsi_obj->RHF_Density());
+    if (!strcmp("SCF_OrbitalEnergiesAlpha", cmd)) {
+        OutputVector(plhs[0], MatPsi_obj->SCF_OrbitalEnergiesAlpha());
         return;
     }
-    if (!strcmp("RHF_CoreHamiltonian", cmd)) {
-        OutputMatrix(plhs[0], MatPsi_obj->RHF_CoreHamiltonian());
+    if (!strcmp("SCF_OrbitalEnergiesBeta", cmd)) {
+        OutputVector(plhs[0], MatPsi_obj->SCF_OrbitalEnergiesBeta());
         return;
     }
-    if (!strcmp("RHF_JMatrix", cmd)) {
-        OutputMatrix(plhs[0], MatPsi_obj->RHF_JMatrix());
+    if (!strcmp("SCF_DensityAlpha", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_DensityAlpha());
         return;
     }
-    if (!strcmp("RHF_KMatrix", cmd)) {
-        OutputMatrix(plhs[0], MatPsi_obj->RHF_KMatrix());
+    if (!strcmp("SCF_DensityBeta", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_DensityBeta());
         return;
     }
-    if (!strcmp("RHF_FockMatrix", cmd)) {
-        OutputMatrix(plhs[0], MatPsi_obj->RHF_FockMatrix());
+    if (!strcmp("SCF_CoreHamiltonian", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_CoreHamiltonian());
         return;
     }
-    if (!strcmp("RHF_Gradient", cmd)) {
-        OutputMatrix(plhs[0], MatPsi_obj->RHF_Gradient());
+    if (!strcmp("SCF_FockAlpha", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_FockAlpha());
         return;
     }
-    if (!strcmp("RHF_InitialGuessDensity", cmd)) {
-        OutputMatrix(plhs[0], MatPsi_obj->RHF_InitialGuessDensity());
+    if (!strcmp("SCF_FockBeta", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_FockBeta());
         return;
     }
-    
-    //*** DFT related 
-    if (!strcmp("RKS_DoSCF", cmd)) {
-        OutputScalar(plhs[0], MatPsi_obj->RKS_DoSCF());
+    if (!strcmp("SCF_Gradient", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_Gradient());
+        return;
+    }
+    if (!strcmp("SCF_InitialGuessDensity", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_InitialGuessDensity());
+        return;
+    }
+    if (!strcmp("SCF_RHF_Coulomb", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_RHF_Coulomb());
+        return;
+    }
+    if (!strcmp("SCF_RHF_Exchange", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_RHF_Exchange());
         return;
     }
     

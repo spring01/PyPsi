@@ -272,88 +272,104 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_InverseJHalfMetric', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_DoSCF(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_DoSCF', this.objectHandle, varargin{:});
+        function varargout = SCF_RunRHF(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RunRHF', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_Reset(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_Reset', this.objectHandle, varargin{:});
+        function varargout = SCF_RunUHF(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RunUHF', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_EnableMOM(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_EnableMOM', this.objectHandle, varargin{:});
+        function varargout = SCF_RunRKS(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RunRKS', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_DisableMOM(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_DisableMOM', this.objectHandle, varargin{:});
+        function varargout = SCF_EnableMOM(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_EnableMOM', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_EnableDamping(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_EnableDamping', this.objectHandle, varargin{:});
+        function varargout = SCF_DisableMOM(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_DisableMOM', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_DisableDamping(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_DisableDamping', this.objectHandle, varargin{:});
+        function varargout = SCF_EnableDamping(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_EnableDamping', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_EnableDIIS(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_EnableDIIS', this.objectHandle, varargin{:});
+        function varargout = SCF_DisableDamping(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_DisableDamping', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_DisableDIIS(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_DisableDIIS', this.objectHandle, varargin{:});
+        function varargout = SCF_EnableDIIS(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_EnableDIIS', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_GuessSAD(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_GuessSAD', this.objectHandle, varargin{:});
+        function varargout = SCF_DisableDIIS(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_DisableDIIS', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_GuessCore(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_GuessCore', this.objectHandle, varargin{:});
+        function varargout = SCF_GuessSAD(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_GuessSAD', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_TotalEnergy(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_TotalEnergy', this.objectHandle, varargin{:});
+        function varargout = SCF_GuessCore(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_GuessCore', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_Orbital(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_Orbital', this.objectHandle, varargin{:});
+        function varargout = SCF_TotalEnergy(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_TotalEnergy', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_OrbitalEnergies(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_OrbitalEnergies', this.objectHandle, varargin{:});
+        function varargout = SCF_OrbitalAlpha(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_OrbitalAlpha', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_Density(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_Density', this.objectHandle, varargin{:});
+        function varargout = SCF_OrbitalBeta(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_OrbitalBeta', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_CoreHamiltonian(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_CoreHamiltonian', this.objectHandle, varargin{:});
+        function varargout = SCF_OrbitalEnergiesAlpha(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_OrbitalEnergiesAlpha', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_JMatrix(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_JMatrix', this.objectHandle, varargin{:});
+        function varargout = SCF_OrbitalEnergiesBeta(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_OrbitalEnergiesBeta', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_KMatrix(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_KMatrix', this.objectHandle, varargin{:});
+        function varargout = SCF_DensityAlpha(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_DensityAlpha', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_FockMatrix(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_FockMatrix', this.objectHandle, varargin{:});
+        function varargout = SCF_DensityBeta(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_DensityBeta', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_Gradient(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_Gradient', this.objectHandle, varargin{:});
+        function varargout = SCF_CoreHamiltonian(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_CoreHamiltonian', this.objectHandle, varargin{:});
         end
         
-        function varargout = RHF_InitialGuessDensity(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RHF_InitialGuessDensity', this.objectHandle, varargin{:});
+        function varargout = SCF_FockAlpha(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_FockAlpha', this.objectHandle, varargin{:});
         end
         
-        function varargout = RKS_DoSCF(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('RKS_DoSCF', this.objectHandle, varargin{:});
+        function varargout = SCF_FockBeta(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_FockBeta', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = SCF_Gradient(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_Gradient', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = SCF_InitialGuessDensity(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_InitialGuessDensity', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = SCF_RHF_Coulomb(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RHF_Coulomb', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = SCF_RHF_Exchange(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RHF_Exchange', this.objectHandle, varargin{:});
         end
 
     end

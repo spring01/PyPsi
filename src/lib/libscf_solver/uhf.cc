@@ -59,6 +59,18 @@ UHF::UHF(Process::Environment& process_environment_in, Options& options, boost::
     common_init();
 }
 
+UHF::UHF(Process::Environment& process_environment_in, boost::shared_ptr<JK> jk_in) // construct a usable uhf object
+    : HF(process_environment_in, jk_in)
+{
+    common_init();
+}
+
+UHF::UHF(Process::Environment& process_environment_in, boost::shared_ptr<BasisSet> basisset_in) // construct a fake uhf object
+    : HF(process_environment_in, basisset_in)
+{
+    common_init();
+}
+
 UHF::~UHF()
 {
 }

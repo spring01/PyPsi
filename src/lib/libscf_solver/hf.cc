@@ -1957,4 +1957,10 @@ SharedMatrix HF::InitialGuessDensity()
     return Da_;
 }
 
+
+void HF::extern_finalize()
+{
+    HF::finalize();
+}
+
 }}

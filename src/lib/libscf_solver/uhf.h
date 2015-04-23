@@ -66,6 +66,10 @@ protected:
 public:
     UHF(Process::Environment& process_environment_in, Options& options, boost::shared_ptr<JK> jk_in, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     UHF(Process::Environment& process_environment_in, Options& options, boost::shared_ptr<JK> jk_in, boost::shared_ptr<PSIO> psio);
+    
+    UHF(Process::Environment& process_environment_in, boost::shared_ptr<JK> jk_in);
+    UHF(Process::Environment& process_environment_in, boost::shared_ptr<BasisSet> basisset_in); // added by spring
+    
     virtual ~UHF();
 
     virtual bool same_a_b_orbs() const { return false; }
