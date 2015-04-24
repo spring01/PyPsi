@@ -455,6 +455,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputScalar(plhs[0], MatPsi_obj->SCF_RunRKS());
         return;
     }
+    if (!strcmp("SCF_RunUKS", cmd)) {
+        OutputScalar(plhs[0], MatPsi_obj->SCF_RunUKS());
+        return;
+    }
     if (!strcmp("SCF_EnableMOM", cmd)) {
         if (nrhs == 2) {
             MatPsi_obj->SCF_EnableMOM(20);

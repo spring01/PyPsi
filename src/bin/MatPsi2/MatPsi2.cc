@@ -116,7 +116,7 @@ void MatPsi2::create_basis_and_integral_factories() {
 // destructor 
 MatPsi2::~MatPsi2() {
     if(process_environment_.wavefunction() != NULL)
-        ((scf::HF*)(process_environment_.wavefunction().get()))->extern_finalize();
+        wfn_->extern_finalize();
     if(jk_ != NULL)
         jk_->finalize();
     psio_->_psio_manager_->psiclean();
@@ -598,17 +598,64 @@ SharedMatrix MatPsi2::JK_DFMetric_InvJHalf() {
 }
 
 void MatPsi2::create_default_wavefunction() {
-    if(Molecule_NumElectrons() % 2)
+    if(Molecule_NumElectrons() % 2) {
+        process_environment_.options.set_global_str("REFERENCE", "UHF");
         wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, basis_));
-    else
+    } else {
+        process_environment_.options.set_global_str("REFERENCE", "RHF");
         wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, basis_));
+    }
     process_environment_.set_wavefunction(wfn_);
 }
 
 void MatPsi2::reset_wavefunction() {
     create_default_wavefunction();
-    boost::static_pointer_cast<scf::HF>(wfn_)->extern_finalize();
+    wfn_->extern_finalize();
     wfn_.reset();
+}
+
+double MatPsi2::SCF_RunRHF() {
+    if(Molecule_NumElectrons() % 2)
+        throw PSIEXCEPTION("SCF_RunRHF: RHF can handle singlets only.");
+    if(jk_ == NULL)
+        JK_Initialize("PKJK");
+    jk_->set_do_wK(false);
+    wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
+    process_environment_.set_wavefunction(wfn_);
+    return boost::static_pointer_cast<scf::RHF>(wfn_)->compute_energy();
+}
+
+double MatPsi2::SCF_RunUHF() {
+    if(jk_ == NULL)
+        JK_Initialize("PKJK");
+    jk_->set_do_wK(false);
+    wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, jk_));
+    process_environment_.set_wavefunction(wfn_);
+    return boost::static_pointer_cast<scf::UHF>(wfn_)->compute_energy();
+}
+
+double MatPsi2::SCF_RunRKS() {
+    if(Molecule_NumElectrons() % 2)
+        throw PSIEXCEPTION("SCF_RunRKS: RKS can handle singlets only.");
+    if(jk_ == NULL)
+        JK_Initialize("PKJK");
+    jk_->set_do_wK(true);
+    process_environment_.options.set_global_str("REFERENCE", "RKS");
+    process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
+    wfn_ = boost::shared_ptr<scf::RKS>(new scf::RKS(process_environment_, jk_));
+    process_environment_.set_wavefunction(wfn_);
+    return boost::static_pointer_cast<scf::RKS>(wfn_)->compute_energy();
+}
+
+double MatPsi2::SCF_RunUKS() {
+    if(jk_ == NULL)
+        JK_Initialize("PKJK");
+    jk_->set_do_wK(true);
+    process_environment_.options.set_global_str("REFERENCE", "UKS");
+    process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
+    wfn_ = boost::shared_ptr<scf::UKS>(new scf::UKS(process_environment_, jk_));
+    process_environment_.set_wavefunction(wfn_);
+    return boost::static_pointer_cast<scf::UKS>(wfn_)->compute_energy();
 }
 
 void MatPsi2::SCF_EnableMOM(int mom_start) {
@@ -637,45 +684,11 @@ void MatPsi2::SCF_GuessCore() {
     process_environment_.options.set_global_str("GUESS", "Core");
 }
 
-double MatPsi2::SCF_RunRHF() {
-    if(Molecule_NumElectrons() % 2)
-        throw PSIEXCEPTION("SCF_RunRHF: RHF can handle singlets only.");
-    if(jk_ == NULL)
-        JK_Initialize("PKJK");
-    jk_->set_do_wK(false);
-    wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
-    process_environment_.set_wavefunction(wfn_);
-    return boost::static_pointer_cast<scf::RHF>(wfn_)->compute_energy();
-}
-
-double MatPsi2::SCF_RunUHF() {
-    if(jk_ == NULL)
-        JK_Initialize("PKJK");
-    jk_->set_do_wK(false);
-    wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, jk_));
-    process_environment_.set_wavefunction(wfn_);
-    return boost::static_pointer_cast<scf::UHF>(wfn_)->compute_energy();
-}
-
-
-double MatPsi2::SCF_RunRKS() {
-    if(Molecule_NumElectrons() % 2)
-        throw PSIEXCEPTION("SCF_RunRKS: RKS can handle singlets only.");
-    if(jk_ == NULL)
-        JK_Initialize("PKJK");
-    jk_->set_do_wK(true);
-    process_environment_.options.set_global_str("REFERENCE", "RKS");
-    process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
-    wfn_ = boost::shared_ptr<scf::RKS>(new scf::RKS(process_environment_, jk_));
-    process_environment_.set_wavefunction(wfn_);
-    return boost::static_pointer_cast<scf::RKS>(wfn_)->compute_energy();
-}
-
 double MatPsi2::SCF_TotalEnergy() { 
     if(wfn_ == NULL) {
         throw PSIEXCEPTION("SCF_TotalEnergy: SCF calculation has not been done.");
     }
-    return boost::static_pointer_cast<scf::HF>(wfn_)->EHF(); 
+    return wfn_->EHF(); 
 }
 
 SharedMatrix MatPsi2::SCF_OrbitalAlpha() { 
@@ -754,7 +767,7 @@ SharedMatrix MatPsi2::SCF_GuessDensity() {
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     create_default_wavefunction();
-    return boost::static_pointer_cast<scf::HF>(wfn_)->GuessDensity();
+    return wfn_->GuessDensity();
 }
 
 SharedMatrix MatPsi2::SCF_RHF_J() { 

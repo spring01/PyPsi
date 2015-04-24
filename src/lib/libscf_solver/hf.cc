@@ -1954,6 +1954,7 @@ SharedMatrix HF::GuessDensity()
     form_H(); //Core Hamiltonian
     form_Shalf(); //S and X Matrix
     guess(); // Guess
+    finalize();
     return Da_;
 }
 

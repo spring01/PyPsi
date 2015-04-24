@@ -276,6 +276,10 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RunRKS', this.objectHandle, varargin{:});
         end
         
+        function varargout = SCF_RunUKS(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RunUKS', this.objectHandle, varargin{:});
+        end
+        
         function varargout = SCF_EnableMOM(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_EnableMOM', this.objectHandle, varargin{:});
         end
@@ -352,16 +356,16 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_Gradient', this.objectHandle, varargin{:});
         end
         
-        function varargout = SCF_InitialGuessDensity(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_InitialGuessDensity', this.objectHandle, varargin{:});
+        function varargout = SCF_GuessDensity(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_GuessDensity', this.objectHandle, varargin{:});
         end
         
-        function varargout = SCF_RHF_Coulomb(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RHF_Coulomb', this.objectHandle, varargin{:});
+        function varargout = SCF_RHF_J(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RHF_J', this.objectHandle, varargin{:});
         end
         
-        function varargout = SCF_RHF_Exchange(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RHF_Exchange', this.objectHandle, varargin{:});
+        function varargout = SCF_RHF_K(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RHF_K', this.objectHandle, varargin{:});
         end
 
     end

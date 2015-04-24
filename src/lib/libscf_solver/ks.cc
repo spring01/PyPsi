@@ -256,6 +256,13 @@ void RKS::stability_analysis()
     throw PSIEXCEPTION("DFT stabilty analysis has not been implemented yet.  Sorry :(");
 }
 
+// added by spring
+UKS::UKS(Process::Environment& process_environment_in, boost::shared_ptr<JK> jk_in) :
+    UHF(process_environment_in, jk_in), KS(process_environment_in)
+{
+    common_init();
+}
+
 UKS::UKS(Process::Environment& process_environment_in, Options & options, boost::shared_ptr<JK> jk_in, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     UHF(process_environment_in, options, jk_in, psio, chkpt), KS(process_environment_in, options,psio)
 {

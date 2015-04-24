@@ -35,7 +35,7 @@ protected:
     boost::shared_ptr<TwoBodyAOInt> eri_;
     boost::shared_ptr<MatrixFactory> matfac_;
     boost::shared_ptr<JK> jk_;
-    boost::shared_ptr<Wavefunction> wfn_;
+    boost::shared_ptr<scf::HF> wfn_;
     
     // create basis object 
     void create_basis();
@@ -139,6 +139,7 @@ public:
     double SCF_RunRHF();
     double SCF_RunUHF();
     double SCF_RunRKS();
+    double SCF_RunUKS();
     
     // methods controlling RHF algorithm 
     void SCF_EnableMOM(int mom_start);
