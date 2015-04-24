@@ -243,7 +243,7 @@ SharedVector MatPsi2::BasisSet_ShellToCenter() {
     return shell2centerVec;
 }
 
-SharedVector MatPsi2::BasisSet_FunctionToCenter() {
+SharedVector MatPsi2::BasisSet_FuncToCenter() {
     SharedVector func2centerVec(new Vector(basis_->nbf()));
     for(int i = 0; i < basis_->nbf(); i++) {
         func2centerVec->set(i, (double)basis_->function_to_center(i));
@@ -251,7 +251,7 @@ SharedVector MatPsi2::BasisSet_FunctionToCenter() {
     return func2centerVec;
 }
 
-SharedVector MatPsi2::BasisSet_FunctionToShell() {
+SharedVector MatPsi2::BasisSet_FuncToShell() {
     SharedVector func2shellVec(new Vector(basis_->nbf()));
     for(int i = 0; i < basis_->nbf(); i++) {
         func2shellVec->set(i, (double)basis_->function_to_shell(i));
@@ -259,7 +259,7 @@ SharedVector MatPsi2::BasisSet_FunctionToShell() {
     return func2shellVec;
 }
 
-SharedVector MatPsi2::BasisSet_FunctionToAngularMomentum() {
+SharedVector MatPsi2::BasisSet_FuncToAngular() {
     SharedVector func2amVec(new Vector(basis_->nbf()));
     for(int i = 0; i < basis_->nbf(); i++) {
         func2amVec->set(i, (double)basis_->shell(basis_->function_to_shell(i)).am());
@@ -267,7 +267,7 @@ SharedVector MatPsi2::BasisSet_FunctionToAngularMomentum() {
     return func2amVec;
 }
 
-SharedVector MatPsi2::BasisSet_PrimitiveExponents() {
+SharedVector MatPsi2::BasisSet_PrimExp() {
     SharedVector primExpsVec(new Vector(basis_->nprimitive()));
     std::vector<double> temp;
     for(int i = 0; i < basis_->nshell(); i++) {
@@ -280,7 +280,7 @@ SharedVector MatPsi2::BasisSet_PrimitiveExponents() {
     return primExpsVec;
 }
 
-SharedVector MatPsi2::BasisSet_PrimitiveCoefficients() { // should have been normalized 
+SharedVector MatPsi2::BasisSet_PrimCoeffUnnorm() {
     SharedVector primCoefsVec(new Vector(basis_->nprimitive()));
     std::vector<double> temp;
     for(int i = 0; i < basis_->nshell(); i++) {
@@ -351,7 +351,7 @@ std::vector<SharedMatrix> MatPsi2::Integrals_PotentialEachCore() {
     return viMatVec;
 }
 
-SharedMatrix MatPsi2::Integrals_PotentialPointCharges(SharedMatrix Zxyz_list) {
+SharedMatrix MatPsi2::Integrals_PotentialPtQ(SharedMatrix Zxyz_list) {
     boost::shared_ptr<OneBodyAOInt> viOBI(intfac_->ao_potential());
     boost::shared_ptr<PotentialInt> viPtI = boost::static_pointer_cast<PotentialInt>(viOBI);
     viPtI->set_charge_field(Zxyz_list);
@@ -434,7 +434,7 @@ void MatPsi2::Integrals_AllTEIs(double* matpt) {
     }
 }
 
-void MatPsi2::Integrals_IndicesForExchange(double* indices1, double* indices2) {
+void MatPsi2::Integrals_IndicesForK(double* indices1, double* indices2) {
     AOShellCombinationsIterator shellIter = intfac_->shells_iterator();
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
         // Compute quartet
@@ -452,7 +452,7 @@ void MatPsi2::Integrals_IndicesForExchange(double* indices1, double* indices2) {
     }
 }
 
-void MatPsi2::JK_Initialize(std::string jktype, std::string auxiliaryBasisSetName) {
+void MatPsi2::JK_Initialize(std::string jktype, std::string auxBasisName) {
     if(jk_ != NULL)
         jk_->finalize();
     if(wfn_ == NULL)
@@ -461,7 +461,7 @@ void MatPsi2::JK_Initialize(std::string jktype, std::string auxiliaryBasisSetNam
         jk_ = boost::shared_ptr<JK>(new PKJK(process_environment_, basis_, psio_));
     } else if(boost::iequals(jktype, "DFJK")) {
         boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-        molecule_->set_basis_all_atoms(auxiliaryBasisSetName, "DF_BASIS_SCF");
+        molecule_->set_basis_all_atoms(auxBasisName, "DF_BASIS_SCF");
         boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(process_environment_, parser, molecule_, "DF_BASIS_SCF");
         jk_ = boost::shared_ptr<JK>(new DFJK(process_environment_, basis_, auxiliary, psio_));
         molecule_->set_basis_all_atoms(basisname_);
@@ -483,7 +483,7 @@ const std::string& MatPsi2::JK_Type() {
     return jk_->JKtype();
 }
 
-SharedMatrix MatPsi2::JK_DensityToJ(SharedMatrix density) {
+SharedMatrix MatPsi2::JK_DensToJ(SharedMatrix density) {
     if(jk_ == NULL) {
         JK_Initialize("PKJK");
     }
@@ -499,12 +499,12 @@ SharedMatrix MatPsi2::JK_DensityToJ(SharedMatrix density) {
     return Jnew;
 }
 
-SharedMatrix MatPsi2::JK_DensityToK(SharedMatrix density) {
+SharedMatrix MatPsi2::JK_DensToK(SharedMatrix density) {
     if(jk_ == NULL) {
         JK_Initialize("PKJK");
     }
     if(boost::iequals(jk_->JKtype(), "DFJK")) {
-        throw PSIEXCEPTION("JK_DensityToK: DensityToK cannot be used with DFJK.");
+        throw PSIEXCEPTION("JK_DensToK: DensToK cannot be used with DFJK.");
     }
     jk_->set_do_J(false);
     jk_->C_left().clear();
@@ -518,23 +518,23 @@ SharedMatrix MatPsi2::JK_DensityToK(SharedMatrix density) {
     return Knew;
 }
 
-SharedMatrix MatPsi2::JK_OrbitalToJ(SharedMatrix orbital) {
+SharedMatrix MatPsi2::JK_OrbToJ(SharedMatrix orbital) {
     SharedMatrix occupiedOrbital(new Matrix(orbital->nrow(), Molecule_NumElectrons()/2));
     for(int i = 0; i < Molecule_NumElectrons()/2; i++) {
         occupiedOrbital->set_column(0, i, orbital->get_column(0, i));
     }
-    return JK_OccupiedOrbitalToJ(occupiedOrbital);
+    return JK_OccOrbToJ(occupiedOrbital);
 }
 
-SharedMatrix MatPsi2::JK_OrbitalToK(SharedMatrix orbital) {
+SharedMatrix MatPsi2::JK_OrbToK(SharedMatrix orbital) {
     SharedMatrix occupiedOrbital(new Matrix(orbital->nrow(), Molecule_NumElectrons()/2));
     for(int i = 0; i < Molecule_NumElectrons()/2; i++) {
         occupiedOrbital->set_column(0, i, orbital->get_column(0, i));
     }
-    return JK_OccupiedOrbitalToK(occupiedOrbital);
+    return JK_OccOrbToK(occupiedOrbital);
 }
 
-SharedMatrix MatPsi2::JK_OccupiedOrbitalToJ(SharedMatrix occupiedOrbital) {
+SharedMatrix MatPsi2::JK_OccOrbToJ(SharedMatrix occupiedOrbital) {
     if(jk_ == NULL) {
         JK_Initialize("PKJK");
     }
@@ -549,7 +549,7 @@ SharedMatrix MatPsi2::JK_OccupiedOrbitalToJ(SharedMatrix occupiedOrbital) {
     return Jnew;
 }
 
-SharedMatrix MatPsi2::JK_OccupiedOrbitalToK(SharedMatrix occupiedOrbital) {
+SharedMatrix MatPsi2::JK_OccOrbToK(SharedMatrix occupiedOrbital) {
     if(jk_ == NULL) {
         JK_Initialize("PKJK");
     }
@@ -564,52 +564,36 @@ SharedMatrix MatPsi2::JK_OccupiedOrbitalToK(SharedMatrix occupiedOrbital) {
     return Knew;
 }
 
-void MatPsi2::DFJKException(std::string functionName) {
+void MatPsi2::JK_DFException(std::string functionName) {
     if(jk_ == NULL) {
         JK_Initialize("DFJK");
     }
     if(!boost::iequals(jk_->JKtype(), "DFJK")) {
-        throw PSIEXCEPTION(functionName + ": Can only be used with DFJK.");
+        throw PSIEXCEPTION(functionName + ": Can only be used with Density-fitting JK.");
     }
     if(!boost::static_pointer_cast<DFJK>(jk_)->IsCore()) {
-        throw PSIEXCEPTION(functionName + ": Can only be used with DFJK.");
+        throw PSIEXCEPTION(functionName + ": Can only be used with Density-fitting JK.");
     }
 }
 
-SharedMatrix MatPsi2::DFJK_mnQMatrixUnique() {
-    DFJKException("DFJK_mnQMatrixUnique");
-    return boost::static_pointer_cast<DFJK>(jk_)->GetQmn()->transpose();
+SharedMatrix MatPsi2::JK_DFTensor_AuxPriPairs() {
+    JK_DFException("JK_DFTensor_AuxPriPairs");
+    return boost::static_pointer_cast<DFJK>(jk_)->GetQmn();
 }
 
-std::vector<SharedMatrix> MatPsi2::DFJK_mnQTensorFull() {
-    DFJKException("DFJK_mnQTensorFull");
+std::vector<SharedMatrix> MatPsi2::JK_DFTensor_AuxPriPri() {
+    JK_DFException("JK_DFTensor_AuxPriPri");
     SharedMatrix QmnUnique = boost::static_pointer_cast<DFJK>(jk_)->GetQmn();
-    std::vector<SharedMatrix> mnQFull;
+    std::vector<SharedMatrix> QmnFull;
     for(int Q = 0; Q < QmnUnique->nrow(); Q++) {
-        mnQFull.push_back(SharedMatrix(new Matrix(basis_->nbf(), basis_->nbf())));
-        mnQFull[Q]->set(QmnUnique->const_pointer()[Q]);
+        QmnFull.push_back(SharedMatrix(new Matrix(basis_->nbf(), basis_->nbf())));
+        QmnFull[Q]->set(QmnUnique->const_pointer()[Q]);
     }
-    return mnQFull;
+    return QmnFull;
 }
 
-SharedMatrix MatPsi2::DFJK_mnAMatrixUnique() {
-    DFJKException("DFJK_mnAMatrixUnique");
-    return boost::static_pointer_cast<DFJK>(jk_)->GetAmn()->transpose();
-}
-
-std::vector<SharedMatrix> MatPsi2::DFJK_mnATensorFull() {
-    DFJKException("DFJK_mnATensorFull");
-    SharedMatrix AmnUnique = boost::static_pointer_cast<DFJK>(jk_)->GetAmn();
-    std::vector<SharedMatrix> mnAFull;
-    for(int aux = 0; aux < AmnUnique->nrow(); aux++) {
-        mnAFull.push_back(SharedMatrix(new Matrix(basis_->nbf(), basis_->nbf())));
-        mnAFull[aux]->set(AmnUnique->const_pointer()[aux]);
-    }
-    return mnAFull;
-}
-
-SharedMatrix MatPsi2::DFJK_InverseJHalfMetric() {
-    DFJKException("DFJK_InverseJHalfMetric");
+SharedMatrix MatPsi2::JK_DFMetric_InvJHalf() {
+    JK_DFException("JK_DFMetric_InvJHalf");
     return boost::static_pointer_cast<DFJK>(jk_)->GetInvJHalf();
 }
 
@@ -708,16 +692,16 @@ SharedMatrix MatPsi2::SCF_OrbitalBeta() {
     return wfn_->Ca(); 
 }
 
-SharedVector MatPsi2::SCF_OrbitalEnergiesAlpha() { 
+SharedVector MatPsi2::SCF_OrbEigValAlpha() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_OrbitalEnergiesAlpha: SCF calculation has not been done.");
+        throw PSIEXCEPTION("SCF_OrbEigValAlpha: SCF calculation has not been done.");
     }
     return wfn_->epsilon_a(); 
 }
 
-SharedVector MatPsi2::SCF_OrbitalEnergiesBeta() { 
+SharedVector MatPsi2::SCF_OrbEigValBeta() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_OrbitalEnergiesBeta: SCF calculation has not been done.");
+        throw PSIEXCEPTION("SCF_OrbEigValBeta: SCF calculation has not been done.");
     }
     return wfn_->epsilon_b(); 
 }
@@ -766,28 +750,28 @@ SharedMatrix MatPsi2::SCF_Gradient() {
     return grad;
 }
 
-SharedMatrix MatPsi2::SCF_InitialGuessDensity() {
+SharedMatrix MatPsi2::SCF_GuessDensity() {
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     create_default_wavefunction();
-    return boost::static_pointer_cast<scf::HF>(wfn_)->InitialGuessDensity();
+    return boost::static_pointer_cast<scf::HF>(wfn_)->GuessDensity();
 }
 
-SharedMatrix MatPsi2::SCF_RHF_Coulomb() { 
+SharedMatrix MatPsi2::SCF_RHF_J() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_RHF_Coulomb: RHF calculation has not been done.");
+        throw PSIEXCEPTION("SCF_RHF_J: RHF calculation has not been done.");
     }
     if(dynamic_cast<scf::RHF*>(wfn_.get()) == NULL)
-        throw PSIEXCEPTION("SCF_RHF_Coulomb: This function works only for RHF.");
+        throw PSIEXCEPTION("SCF_RHF_J: This function works only for RHF.");
     return boost::static_pointer_cast<scf::RHF>(wfn_)->J(); 
 }
 
-SharedMatrix MatPsi2::SCF_RHF_Exchange() { 
+SharedMatrix MatPsi2::SCF_RHF_K() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_RHF_Exchange: RHF calculation has not been done.");
+        throw PSIEXCEPTION("SCF_RHF_K: RHF calculation has not been done.");
     }
     if(dynamic_cast<scf::RHF*>(wfn_.get()) == NULL)
-        throw PSIEXCEPTION("SCF_RHF_Exchange: This function works only for RHF.");
+        throw PSIEXCEPTION("SCF_RHF_K: This function works only for RHF.");
     return boost::static_pointer_cast<scf::RHF>(wfn_)->K(); 
 }
 

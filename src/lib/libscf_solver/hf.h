@@ -357,7 +357,7 @@ public:
     // Finalize memory/files
     void extern_finalize();
     
-    SharedMatrix InitialGuessDensity();
+    SharedMatrix GuessDensity();
 
     virtual ~HF();
 

@@ -113,8 +113,8 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_AtomicNumbers', this.objectHandle, varargin{:});
         end
         
-        function varargout = Molecule_NuclearRepulsionEnergy(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_NuclearRepulsionEnergy', this.objectHandle, varargin{:});
+        function varargout = Molecule_NucRepEnergy(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_NucRepEnergy', this.objectHandle, varargin{:});
         end
         function varargout = Molecule_SetCharge(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_SetCharge', this.objectHandle, varargin{:});
@@ -156,24 +156,24 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_ShellToCenter', this.objectHandle, varargin{:});
         end
         
-        function varargout = BasisSet_FunctionToCenter(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_FunctionToCenter', this.objectHandle, varargin{:});
+        function varargout = BasisSet_FuncToCenter(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_FuncToCenter', this.objectHandle, varargin{:});
         end
         
-        function varargout = BasisSet_FunctionToShell(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_FunctionToShell', this.objectHandle, varargin{:});
+        function varargout = BasisSet_FuncToShell(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_FuncToShell', this.objectHandle, varargin{:});
         end
         
-        function varargout = BasisSet_FunctionToAngularMomentum(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_FunctionToAngularMomentum', this.objectHandle, varargin{:});
+        function varargout = BasisSet_FuncToAngular(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_FuncToAngular', this.objectHandle, varargin{:});
         end
         
-        function varargout = BasisSet_PrimitiveExponents(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_PrimitiveExponents', this.objectHandle, varargin{:});
+        function varargout = BasisSet_PrimExp(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_PrimExp', this.objectHandle, varargin{:});
         end
         
-        function varargout = BasisSet_PrimitiveCoefficients(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_PrimitiveCoefficients', this.objectHandle, varargin{:});
+        function varargout = BasisSet_PrimCoeffUnnorm(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('BasisSet_PrimCoeffUnnorm', this.objectHandle, varargin{:});
         end
         
         function varargout = Integrals_Overlap(this, varargin)
@@ -192,8 +192,8 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Integrals_PotentialEachCore', this.objectHandle, varargin{:});
         end
         
-        function varargout = Integrals_PotentialPointCharges(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Integrals_PotentialPointCharges', this.objectHandle, varargin{:});
+        function varargout = Integrals_PotentialPtQ(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Integrals_PotentialPtQ', this.objectHandle, varargin{:});
         end
         
         function varargout = Integrals_Dipole(this, varargin)
@@ -216,8 +216,8 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Integrals_AllTEIs', this.objectHandle, varargin{:});
         end
         
-        function varargout = Integrals_IndicesForExchange(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Integrals_IndicesForExchange', this.objectHandle, varargin{:});
+        function varargout = Integrals_IndicesForK(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Integrals_IndicesForK', this.objectHandle, varargin{:});
         end
         
         function varargout = JK_Initialize(this, varargin)
@@ -228,48 +228,40 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_Type', this.objectHandle, varargin{:});
         end
         
-        function varargout = JK_DensityToJ(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_DensityToJ', this.objectHandle, varargin{:});
+        function varargout = JK_DensToJ(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_DensToJ', this.objectHandle, varargin{:});
         end
         
-        function varargout = JK_DensityToK(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_DensityToK', this.objectHandle, varargin{:});
+        function varargout = JK_DensToK(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_DensToK', this.objectHandle, varargin{:});
         end
         
-        function varargout = JK_OrbitalToJ(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OrbitalToJ', this.objectHandle, varargin{:});
+        function varargout = JK_OrbToJ(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OrbToJ', this.objectHandle, varargin{:});
         end
         
-        function varargout = JK_OrbitalToK(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OrbitalToK', this.objectHandle, varargin{:});
+        function varargout = JK_OrbToK(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OrbToK', this.objectHandle, varargin{:});
         end
         
-        function varargout = JK_OccupiedOrbitalToJ(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OccupiedOrbitalToJ', this.objectHandle, varargin{:});
+        function varargout = JK_OccOrbToJ(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OccOrbToJ', this.objectHandle, varargin{:});
         end
         
-        function varargout = JK_OccupiedOrbitalToK(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OccupiedOrbitalToK', this.objectHandle, varargin{:});
+        function varargout = JK_OccOrbToK(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OccOrbToK', this.objectHandle, varargin{:});
         end
         
-        function varargout = DFJK_mnQMatrixUnique(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_mnQMatrixUnique', this.objectHandle, varargin{:});
+        function varargout = JK_DFTensor_AuxPriPairs(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_DFTensor_AuxPriPairs', this.objectHandle, varargin{:});
         end
         
-        function varargout = DFJK_mnQTensorFull(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_mnQTensorFull', this.objectHandle, varargin{:});
+        function varargout = JK_DFTensor_AuxPriPri(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_DFTensor_AuxPriPri', this.objectHandle, varargin{:});
         end
         
-        function varargout = DFJK_mnAMatrixUnique(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_mnAMatrixUnique', this.objectHandle, varargin{:});
-        end
-        
-        function varargout = DFJK_mnATensorFull(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_mnATensorFull', this.objectHandle, varargin{:});
-        end
-        
-        function varargout = DFJK_InverseJHalfMetric(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFJK_InverseJHalfMetric', this.objectHandle, varargin{:});
+        function varargout = JK_DFMetric_InvJHalf(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_DFMetric_InvJHalf', this.objectHandle, varargin{:});
         end
         
         function varargout = SCF_RunRHF(this, varargin)
@@ -328,12 +320,12 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_OrbitalBeta', this.objectHandle, varargin{:});
         end
         
-        function varargout = SCF_OrbitalEnergiesAlpha(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_OrbitalEnergiesAlpha', this.objectHandle, varargin{:});
+        function varargout = SCF_OrbEigValAlpha(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_OrbEigValAlpha', this.objectHandle, varargin{:});
         end
         
-        function varargout = SCF_OrbitalEnergiesBeta(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_OrbitalEnergiesBeta', this.objectHandle, varargin{:});
+        function varargout = SCF_OrbEigValBeta(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_OrbEigValBeta', this.objectHandle, varargin{:});
         end
         
         function varargout = SCF_DensityAlpha(this, varargin)

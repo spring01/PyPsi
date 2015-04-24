@@ -170,8 +170,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputVector(plhs[0], MatPsi_obj->Molecule_AtomicNumbers());
         return;
     }
-    if (!strcmp("Molecule_NuclearRepulsionEnergy", cmd)) {
-        OutputScalar(plhs[0], MatPsi_obj->Molecule_NuclearRepulsionEnergy());
+    if (!strcmp("Molecule_NucRepEnergy", cmd)) {
+        OutputScalar(plhs[0], MatPsi_obj->Molecule_NucRepEnergy());
         return;
     }
     if (!strcmp("Molecule_SetCharge", cmd)) {
@@ -223,30 +223,30 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputVector(plhs[0], shell2centerVec);
         return;
     }
-    if (!strcmp("BasisSet_FunctionToCenter", cmd)) {
-        SharedVector func2centerVec = MatPsi_obj->BasisSet_FunctionToCenter();
+    if (!strcmp("BasisSet_FuncToCenter", cmd)) {
+        SharedVector func2centerVec = MatPsi_obj->BasisSet_FuncToCenter();
         for(int i = 0; i < func2centerVec->dim(); i++)
             func2centerVec->add(i, 1.0); // + 1 convert C++ convention to Matlab convention 
         OutputVector(plhs[0], func2centerVec);
         return;
     }
-    if (!strcmp("BasisSet_FunctionToShell", cmd)) {
-        SharedVector func2shellVec = MatPsi_obj->BasisSet_FunctionToShell();
+    if (!strcmp("BasisSet_FuncToShell", cmd)) {
+        SharedVector func2shellVec = MatPsi_obj->BasisSet_FuncToShell();
         for(int i = 0; i < func2shellVec->dim(); i++)
             func2shellVec->add(i, 1.0); // + 1 convert C++ convention to Matlab convention 
         OutputVector(plhs[0], func2shellVec);
         return;
     }
-    if (!strcmp("BasisSet_FunctionToAngularMomentum", cmd)) {
-        OutputVector(plhs[0], MatPsi_obj->BasisSet_FunctionToAngularMomentum());
+    if (!strcmp("BasisSet_FuncToAngular", cmd)) {
+        OutputVector(plhs[0], MatPsi_obj->BasisSet_FuncToAngular());
         return;
     }
-    if (!strcmp("BasisSet_PrimitiveExponents", cmd)) {
-        OutputVector(plhs[0], MatPsi_obj->BasisSet_PrimitiveExponents());
+    if (!strcmp("BasisSet_PrimExp", cmd)) {
+        OutputVector(plhs[0], MatPsi_obj->BasisSet_PrimExp());
         return;
     }
-    if (!strcmp("BasisSet_PrimitiveCoefficients", cmd)) {
-        OutputVector(plhs[0], MatPsi_obj->BasisSet_PrimitiveCoefficients());
+    if (!strcmp("BasisSet_PrimCoeffUnnorm", cmd)) {
+        OutputVector(plhs[0], MatPsi_obj->BasisSet_PrimCoeffUnnorm());
         return;
     }
     
@@ -280,14 +280,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         }
         return;
     }
-    if (!strcmp("Integrals_PotentialPointCharges", cmd)) {
+    if (!strcmp("Integrals_PotentialPtQ", cmd)) {
         // Check parameters
         if (nrhs!=3)
-            mexErrMsgTxt("Integrals_PotentialPointCharges(Zxyz_mat): (number of point charges) by 4 matrix input expected.");
+            mexErrMsgTxt("Integrals_PotentialPtQ(Zxyz_mat): (number of point charges) by 4 matrix input expected.");
         if (mxGetN(prhs[2]) != 4)
-            mexErrMsgTxt("Integrals_PotentialPointCharges: Zxyz list matrix dimension does not agree.");
+            mexErrMsgTxt("Integrals_PotentialPtQ: Zxyz list matrix dimension does not agree.");
         // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->Integrals_PotentialPointCharges(InputMatrix(prhs[2])));
+        OutputMatrix(plhs[0], MatPsi_obj->Integrals_PotentialPtQ(InputMatrix(prhs[2])));
         return;
     }
     if (!strcmp("Integrals_Dipole", cmd)) {
@@ -342,12 +342,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         MatPsi_obj->Integrals_AllTEIs(matpt);
         return;
     }
-    if (!strcmp("Integrals_IndicesForExchange", cmd)) {
+    if (!strcmp("Integrals_IndicesForK", cmd)) {
         plhs[0] = mxCreateDoubleMatrix( 1, MatPsi_obj->Integrals_NumUniqueTEIs(), mxREAL);
         double* matpt1 = mxGetPr(plhs[0]);
         plhs[1] = mxCreateDoubleMatrix( 1, MatPsi_obj->Integrals_NumUniqueTEIs(), mxREAL);
         double* matpt2 = mxGetPr(plhs[1]);
-        MatPsi_obj->Integrals_IndicesForExchange(matpt1, matpt2);
+        MatPsi_obj->Integrals_IndicesForK(matpt1, matpt2);
         return;
     }
     
@@ -367,99 +367,78 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         plhs[0] = mxCreateString((MatPsi_obj->JK_Type()).c_str());
         return;
     }
-    if (!strcmp("JK_DensityToJ", cmd)) {
+    if (!strcmp("JK_DensToJ", cmd)) {
         // Check parameters
         if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) != nbf)
-            mexErrMsgTxt("JK_DensityToJ(density): nbf by nbf matrix input expected.");
+            mexErrMsgTxt("JK_DensToJ(density): nbf by nbf matrix input expected.");
         // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->JK_DensityToJ(InputMatrix(prhs[2])));
+        OutputMatrix(plhs[0], MatPsi_obj->JK_DensToJ(InputMatrix(prhs[2])));
         return;
     }
-    if (!strcmp("JK_DensityToK", cmd)) {
+    if (!strcmp("JK_DensToK", cmd)) {
         // Check parameters
         if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) != nbf)
-            mexErrMsgTxt("JK_DensityToK(density): nbf by nbf matrix input expected.");
+            mexErrMsgTxt("JK_DensToK(density): nbf by nbf matrix input expected.");
         // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->JK_DensityToK(InputMatrix(prhs[2])));
+        OutputMatrix(plhs[0], MatPsi_obj->JK_DensToK(InputMatrix(prhs[2])));
         return;
     }
-    if (!strcmp("JK_OrbitalToJ", cmd)) {
+    if (!strcmp("JK_OrbToJ", cmd)) {
         // Check parameters
         if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) < MatPsi_obj->Molecule_NumElectrons()/2)
-            mexErrMsgTxt("JK_OrbitalToJ(orbital): nbf by (at least numElec/2) matrix input expected.");
+            mexErrMsgTxt("JK_OrbToJ(orbital): nbf by (at least numElec/2) matrix input expected.");
         // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->JK_OrbitalToJ(InputMatrix(prhs[2])));
+        OutputMatrix(plhs[0], MatPsi_obj->JK_OrbToJ(InputMatrix(prhs[2])));
         return;
     }
-    if (!strcmp("JK_OrbitalToK", cmd)) {
+    if (!strcmp("JK_OrbToK", cmd)) {
         // Check parameters
         if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) < MatPsi_obj->Molecule_NumElectrons()/2)
-            mexErrMsgTxt("JK_OrbitalToK(orbital): nbf by (at least numElec/2) matrix input expected.");
+            mexErrMsgTxt("JK_OrbToK(orbital): nbf by (at least numElec/2) matrix input expected.");
         // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->JK_OrbitalToK(InputMatrix(prhs[2])));
+        OutputMatrix(plhs[0], MatPsi_obj->JK_OrbToK(InputMatrix(prhs[2])));
         return;
     }
-    if (!strcmp("JK_OccupiedOrbitalToJ", cmd)) {
+    if (!strcmp("JK_OccOrbToJ", cmd)) {
         // Check parameters
         if (nrhs!=3 || mxGetM(prhs[2]) != nbf)
-            mexErrMsgTxt("JK_OrbitalToJ(occupiedOrbital): nbf by any matrix input expected.");
+            mexErrMsgTxt("JK_OccOrbToJ(occupiedOrbital): nbf by any matrix input expected.");
         // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->JK_OccupiedOrbitalToJ(InputMatrix(prhs[2])));
+        OutputMatrix(plhs[0], MatPsi_obj->JK_OccOrbToJ(InputMatrix(prhs[2])));
         return;
     }
-    if (!strcmp("JK_OccupiedOrbitalToK", cmd)) {
+    if (!strcmp("JK_OccOrbToK", cmd)) {
         // Check parameters
         if (nrhs!=3 || mxGetM(prhs[2]) != nbf)
-            mexErrMsgTxt("JK_OrbitalToK(occupiedOrbital): nbf by any matrix input expected.");
+            mexErrMsgTxt("JK_OccOrbToK(occupiedOrbital): nbf by any matrix input expected.");
         // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->JK_OccupiedOrbitalToK(InputMatrix(prhs[2])));
+        OutputMatrix(plhs[0], MatPsi_obj->JK_OccOrbToK(InputMatrix(prhs[2])));
         return;
     }
-    if (!strcmp("DFJK_mnQMatrixUnique", cmd)) {
+    if (!strcmp("JK_DFTensor_AuxPriPairs", cmd)) {
         // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->DFJK_mnQMatrixUnique());
+        OutputMatrix(plhs[0], MatPsi_obj->JK_DFTensor_AuxPriPairs());
         return;
     }
-    if (!strcmp("DFJK_mnQTensorFull", cmd)) {
-        std::vector<SharedMatrix> mnQFull = MatPsi_obj->DFJK_mnQTensorFull();
-        int ncol = mnQFull[0]->ncol();
-        int nrow = mnQFull[0]->nrow();
-        int naux = mnQFull.size();
+    if (!strcmp("JK_DFTensor_AuxPriPri", cmd)) {
+        std::vector<SharedMatrix> QmnFull = MatPsi_obj->JK_DFTensor_AuxPriPri();
+        int ncol = QmnFull[0]->ncol();
+        int nrow = QmnFull[0]->nrow();
+        int naux = QmnFull.size();
         mwSize dims[3] = {ncol, nrow, naux};
         plhs[0] = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
         double* matlab_pt = mxGetPr(plhs[0]);
         for(int iaux = 0; iaux < naux; iaux++) {
-            double* tmp_pt = mnQFull[iaux]->get_pointer();
+            double* tmp_pt = QmnFull[iaux]->get_pointer();
             for(int i = 0; i < ncol * nrow; i++) {
                 matlab_pt[iaux*ncol*nrow + i] = tmp_pt[i];
             }
         }
         return;
     }
-    if (!strcmp("DFJK_mnAMatrixUnique", cmd)) {
+    if (!strcmp("JK_DFMetric_InvJHalf", cmd)) {
         // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->DFJK_mnAMatrixUnique());
-        return;
-    }
-    if (!strcmp("DFJK_mnATensorFull", cmd)) {
-        std::vector<SharedMatrix> mnAFull = MatPsi_obj->DFJK_mnATensorFull();
-        int ncol = mnAFull[0]->ncol();
-        int nrow = mnAFull[0]->nrow();
-        int naux = mnAFull.size();
-        mwSize dims[3] = {ncol, nrow, naux};
-        plhs[0] = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
-        double* matlab_pt = mxGetPr(plhs[0]);
-        for(int iaux = 0; iaux < naux; iaux++) {
-            double* tmp_pt = mnAFull[iaux]->get_pointer();
-            for(int i = 0; i < ncol * nrow; i++) {
-                matlab_pt[iaux*ncol*nrow + i] = tmp_pt[i];
-            }
-        }
-        return;
-    }
-    if (!strcmp("DFJK_InverseJHalfMetric", cmd)) {
-        // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->DFJK_InverseJHalfMetric());
+        OutputMatrix(plhs[0], MatPsi_obj->JK_DFMetric_InvJHalf());
         return;
     }
     
@@ -532,12 +511,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputMatrix(plhs[0], MatPsi_obj->SCF_OrbitalBeta());
         return;
     }
-    if (!strcmp("SCF_OrbitalEnergiesAlpha", cmd)) {
-        OutputVector(plhs[0], MatPsi_obj->SCF_OrbitalEnergiesAlpha());
+    if (!strcmp("SCF_OrbEigValAlpha", cmd)) {
+        OutputVector(plhs[0], MatPsi_obj->SCF_OrbEigValAlpha());
         return;
     }
-    if (!strcmp("SCF_OrbitalEnergiesBeta", cmd)) {
-        OutputVector(plhs[0], MatPsi_obj->SCF_OrbitalEnergiesBeta());
+    if (!strcmp("SCF_OrbEigValBeta", cmd)) {
+        OutputVector(plhs[0], MatPsi_obj->SCF_OrbEigValBeta());
         return;
     }
     if (!strcmp("SCF_DensityAlpha", cmd)) {
@@ -564,16 +543,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputMatrix(plhs[0], MatPsi_obj->SCF_Gradient());
         return;
     }
-    if (!strcmp("SCF_InitialGuessDensity", cmd)) {
-        OutputMatrix(plhs[0], MatPsi_obj->SCF_InitialGuessDensity());
+    if (!strcmp("SCF_GuessDensity", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_GuessDensity());
         return;
     }
-    if (!strcmp("SCF_RHF_Coulomb", cmd)) {
-        OutputMatrix(plhs[0], MatPsi_obj->SCF_RHF_Coulomb());
+    if (!strcmp("SCF_RHF_J", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_RHF_J());
         return;
     }
-    if (!strcmp("SCF_RHF_Exchange", cmd)) {
-        OutputMatrix(plhs[0], MatPsi_obj->SCF_RHF_Exchange());
+    if (!strcmp("SCF_RHF_K", cmd)) {
+        OutputMatrix(plhs[0], MatPsi_obj->SCF_RHF_K());
         return;
     }
     

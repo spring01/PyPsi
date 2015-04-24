@@ -1922,7 +1922,7 @@ void HF::stability_analysis()
     throw PSIEXCEPTION("Stability analysis hasn't been implemented yet for this wfn type.");
 }
 
-SharedMatrix HF::InitialGuessDensity()
+SharedMatrix HF::GuessDensity()
 {
     std::string reference = options_.get_str("REFERENCE");
 

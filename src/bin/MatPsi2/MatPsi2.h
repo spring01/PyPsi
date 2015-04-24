@@ -47,7 +47,7 @@ protected:
     void reset_wavefunction();
     
     // exception function for DFJK utilities
-    void DFJKException(std::string functionName);
+    void JK_DFException(std::string functionName);
     
 public:
     // constructor; takes in 2 strings and parse them 
@@ -73,7 +73,7 @@ public:
     int Molecule_NumElectrons(); // number of electrons 
     SharedMatrix Molecule_Geometry() { return molecule_->geometry().clone(); } // geometry in Bohr 
     void Molecule_SetGeometry(SharedMatrix newGeom); // set a new geometry in Bohr 
-    double Molecule_NuclearRepulsionEnergy() { return molecule_->nuclear_repulsion_energy(); } // nuclear repulsion energy 
+    double Molecule_NucRepEnergy() { return molecule_->nuclear_repulsion_energy(); } // nuclear repulsion energy 
     SharedVector Molecule_AtomicNumbers(); // atomic number list vector 
     void Molecule_SetCharge(int charge) { molecule_->set_molecular_charge(charge); }
     
@@ -92,11 +92,11 @@ public:
     SharedVector BasisSet_ShellNumPrimitives();
     SharedVector BasisSet_ShellNumFunctions();
     SharedVector BasisSet_ShellToCenter();
-    SharedVector BasisSet_FunctionToCenter(); // map basis function number to the number of atom it is centred on 
-    SharedVector BasisSet_FunctionToShell();
-    SharedVector BasisSet_FunctionToAngularMomentum(); // map basis function number to its angular momentum 
-    SharedVector BasisSet_PrimitiveExponents();
-    SharedVector BasisSet_PrimitiveCoefficients();
+    SharedVector BasisSet_FuncToCenter(); // map basis function to the index of the atom it is centred on 
+    SharedVector BasisSet_FuncToShell();
+    SharedVector BasisSet_FuncToAngular(); // map basis function number to its angular momentum 
+    SharedVector BasisSet_PrimExp();
+    SharedVector BasisSet_PrimCoeffUnnorm();
     
     
     //*** Integral package
@@ -105,13 +105,13 @@ public:
     SharedMatrix Integrals_Potential(); // total potential energy matrix EN <i|sum(1/R)|j>
     std::vector<SharedMatrix> Integrals_Dipole(); // dipole matrices <i|x|j>, <i|y|j>, <i|z|j>
     std::vector<SharedMatrix> Integrals_PotentialEachCore(); // atom-separated EN 
-    SharedMatrix Integrals_PotentialPointCharges(SharedMatrix Zxyz_list); // compute from a given point charge list the environment potential energy matrix ENVI 
+    SharedMatrix Integrals_PotentialPtQ(SharedMatrix Zxyz_list); // compute from a given point charge list the environment potential energy matrix ENVI 
     int Integrals_NumUniqueTEIs(); // number of unique TEIs 
     double Integrals_ijkl(int i, int j, int k, int l); // (ij|kl), chemist's notation 
     // ## HIGH MEMORY COST METHODS ## 
     void Integrals_AllUniqueTEIs(double*); // all unique TEIs in a vector 
     void Integrals_AllTEIs(double*); // all (repetitive) TEIs in a 4D-array 
-    void Integrals_IndicesForExchange(double*, double*); // pre-arrange TEI vectors for forming J/K 
+    void Integrals_IndicesForK(double*, double*); // pre-arrange TEI vectors for forming K 
     // ## HIGH MEMORY COST METHODS ## 
     
     
@@ -121,19 +121,17 @@ public:
     const std::string& JK_Type();
     
     // methods computing J/K/G 
-    SharedMatrix JK_DensityToJ(SharedMatrix);
-    SharedMatrix JK_DensityToK(SharedMatrix);
-    SharedMatrix JK_OrbitalToJ(SharedMatrix);
-    SharedMatrix JK_OrbitalToK(SharedMatrix);
-    SharedMatrix JK_OccupiedOrbitalToJ(SharedMatrix);
-    SharedMatrix JK_OccupiedOrbitalToK(SharedMatrix);
+    SharedMatrix JK_DensToJ(SharedMatrix);
+    SharedMatrix JK_DensToK(SharedMatrix);
+    SharedMatrix JK_OrbToJ(SharedMatrix);
+    SharedMatrix JK_OrbToK(SharedMatrix);
+    SharedMatrix JK_OccOrbToJ(SharedMatrix);
+    SharedMatrix JK_OccOrbToK(SharedMatrix);
     
     // specially for density-fitting JK
-    SharedMatrix DFJK_mnQMatrixUnique();
-    std::vector<SharedMatrix> DFJK_mnQTensorFull();
-    SharedMatrix DFJK_mnAMatrixUnique();
-    std::vector<SharedMatrix> DFJK_mnATensorFull();
-    SharedMatrix DFJK_InverseJHalfMetric();
+    SharedMatrix JK_DFTensor_AuxPriPairs();
+    std::vector<SharedMatrix> JK_DFTensor_AuxPriPri();
+    SharedMatrix JK_DFMetric_InvJHalf();
     
     
     //*** SCF related
@@ -154,17 +152,18 @@ public:
     double SCF_TotalEnergy();
     SharedMatrix SCF_OrbitalAlpha();
     SharedMatrix SCF_OrbitalBeta();
-    SharedVector SCF_OrbitalEnergiesAlpha();
-    SharedVector SCF_OrbitalEnergiesBeta();
+    SharedVector SCF_OrbEigValAlpha();
+    SharedVector SCF_OrbEigValBeta();
     SharedMatrix SCF_DensityAlpha();
     SharedMatrix SCF_DensityBeta();
     SharedMatrix SCF_CoreHamiltonian();
     SharedMatrix SCF_FockAlpha();
     SharedMatrix SCF_FockBeta();
-    SharedMatrix SCF_Gradient();
-    SharedMatrix SCF_InitialGuessDensity();
+    SharedMatrix SCF_GuessDensity();
     
-    SharedMatrix SCF_RHF_Coulomb();
-    SharedMatrix SCF_RHF_Exchange();
+    SharedMatrix SCF_Gradient();
+    
+    SharedMatrix SCF_RHF_J();
+    SharedMatrix SCF_RHF_K();
     
 };
