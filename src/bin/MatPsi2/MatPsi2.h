@@ -43,11 +43,8 @@ protected:
     // create basis object and one & two electron integral factories 
     void create_basis_and_integral_factories();
     
-    void create_default_wavefunction();
-    void reset_wavefunction();
-    
     // exception function for DFJK utilities
-    void JK_DFException(std::string functionName);
+    void jk_DFException(std::string functionName);
     
 public:
     // constructor; takes in 2 strings and parse them 

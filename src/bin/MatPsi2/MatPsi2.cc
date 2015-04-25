@@ -472,8 +472,18 @@ void MatPsi2::Integrals_IndicesForK(double* indices1, double* indices2) {
 void MatPsi2::JK_Initialize(std::string jktype, std::string auxBasisName) {
     if(jk_ != NULL)
         jk_->finalize();
-    if(wfn_ == NULL)
-        reset_wavefunction();
+    if(wfn_ == NULL) {
+        if(Molecule_NumElectrons() % 2) {
+            process_environment_.options.set_global_str("REFERENCE", "UHF");
+            wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, basis_));
+        } else {
+            process_environment_.options.set_global_str("REFERENCE", "RHF");
+            wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, basis_));
+        }
+        process_environment_.set_wavefunction(wfn_);
+        wfn_->extern_finalize();
+        wfn_.reset();
+    }
     if(boost::iequals(jktype, "PKJK")) {
         jk_ = boost::shared_ptr<JK>(new PKJK(process_environment_, basis_, psio_));
     } else if(boost::iequals(jktype, "DFJK")) {
@@ -581,7 +591,7 @@ SharedMatrix MatPsi2::JK_OccOrbToK(SharedMatrix occupiedOrbital) {
     return Knew;
 }
 
-void MatPsi2::JK_DFException(std::string functionName) {
+void MatPsi2::jk_DFException(std::string functionName) {
     if(jk_ == NULL) {
         JK_Initialize("DFJK");
     }
@@ -594,12 +604,12 @@ void MatPsi2::JK_DFException(std::string functionName) {
 }
 
 SharedMatrix MatPsi2::JK_DFTensor_AuxPriPairs() {
-    JK_DFException("JK_DFTensor_AuxPriPairs");
+    jk_DFException("JK_DFTensor_AuxPriPairs");
     return boost::static_pointer_cast<DFJK>(jk_)->GetQmn();
 }
 
 std::vector<SharedMatrix> MatPsi2::JK_DFTensor_AuxPriPri() {
-    JK_DFException("JK_DFTensor_AuxPriPri");
+    jk_DFException("JK_DFTensor_AuxPriPri");
     SharedMatrix QmnUnique = boost::static_pointer_cast<DFJK>(jk_)->GetQmn();
     std::vector<SharedMatrix> QmnFull;
     for(int Q = 0; Q < QmnUnique->nrow(); Q++) {
@@ -610,32 +620,8 @@ std::vector<SharedMatrix> MatPsi2::JK_DFTensor_AuxPriPri() {
 }
 
 SharedMatrix MatPsi2::JK_DFMetric_InvJHalf() {
-    JK_DFException("JK_DFMetric_InvJHalf");
+    jk_DFException("JK_DFMetric_InvJHalf");
     return boost::static_pointer_cast<DFJK>(jk_)->GetInvJHalf();
-}
-
-void MatPsi2::create_default_wavefunction() {
-    if(Molecule_NumElectrons() % 2) {
-        process_environment_.options.set_global_str("REFERENCE", "UHF");
-        wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, jk_));
-    } else {
-        process_environment_.options.set_global_str("REFERENCE", "RHF");
-        wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
-    }
-    process_environment_.set_wavefunction(wfn_);
-}
-
-void MatPsi2::reset_wavefunction() {
-    if(Molecule_NumElectrons() % 2) {
-        process_environment_.options.set_global_str("REFERENCE", "UHF");
-        wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, basis_));
-    } else {
-        process_environment_.options.set_global_str("REFERENCE", "RHF");
-        wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, basis_));
-    }
-    process_environment_.set_wavefunction(wfn_);
-    wfn_->extern_finalize();
-    wfn_.reset();
 }
 
 double MatPsi2::SCF_RunRHF() {
@@ -792,7 +778,14 @@ SharedMatrix MatPsi2::SCF_Gradient() {
 SharedMatrix MatPsi2::SCF_GuessDensity() {
     if(jk_ == NULL)
         JK_Initialize("PKJK");
-    create_default_wavefunction();
+    if(Molecule_NumElectrons() % 2) {
+        process_environment_.options.set_global_str("REFERENCE", "UHF");
+        wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, jk_));
+    } else {
+        process_environment_.options.set_global_str("REFERENCE", "RHF");
+        wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
+    }
+    process_environment_.set_wavefunction(wfn_);
     return wfn_->GuessDensity();
 }
 
