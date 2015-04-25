@@ -117,12 +117,12 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_NucRepEnergy', this.objectHandle, varargin{:});
         end
         
-        function varargout = Molecule_SetCharge(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_SetCharge', this.objectHandle, varargin{:});
+        function varargout = Molecule_SetChargeMult(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_SetChargeMult', this.objectHandle, varargin{:});
         end
         
-        function varargout = Molecule_SetMultiplicity(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_SetMultiplicity', this.objectHandle, varargin{:});
+        function varargout = Molecule_ChargeMult(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_ChargeMult', this.objectHandle, varargin{:});
         end
         
         function varargout = BasisSet_Name(this, varargin)

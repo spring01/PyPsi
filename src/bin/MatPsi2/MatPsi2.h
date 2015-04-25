@@ -75,8 +75,8 @@ public:
     void Molecule_SetGeometry(SharedMatrix newGeom); // set a new geometry in Bohr 
     double Molecule_NucRepEnergy() { return molecule_->nuclear_repulsion_energy(); } // nuclear repulsion energy 
     SharedVector Molecule_AtomicNumbers(); // atomic number list vector 
-    void Molecule_SetCharge(int charge);
-    void Molecule_SetMultiplicity(int mult);
+    void Molecule_SetChargeMult(int charge, int mult);
+    SharedVector Molecule_ChargeMult();
     
     //*** Molecule operations 
     void Molecule_Fix();

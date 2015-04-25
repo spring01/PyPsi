@@ -24,7 +24,7 @@ geom = matpsi.Molecule_Geometry();
 matpsi.Molecule_SetGeometry(geom + 1);
 atomNums = matpsi.Molecule_AtomicNumbers();
 matpsi.Molecule_NucRepEnergy();
-matpsi.Molecule_SetCharge(0);
+matpsi.Molecule_SetChargeMult(0,1);
 
 % BasisSet
 matpsi.BasisSet_Name();
@@ -74,10 +74,11 @@ matpsi.SCF_RunRHF();
 matpsi.SCF_RunRKS();
 matpsi.SCF_RunUHF();
 matpsi.SCF_RunUKS();
-matpsi.Molecule_SetCharge(1);
+matpsi.Molecule_SetChargeMult(1,2);
+matpsi.Molecule_ChargeMult();
 matpsi.SCF_RunUHF();
 matpsi.SCF_RunUKS();
-matpsi.Molecule_SetCharge(0);
+matpsi.Molecule_SetChargeMult(0,1);
 matpsi.SCF_RunRHF();
 matpsi.SCF_EnableMOM();
 matpsi.SCF_DisableMOM();

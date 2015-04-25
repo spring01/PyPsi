@@ -174,16 +174,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputScalar(plhs[0], MatPsi_obj->Molecule_NucRepEnergy());
         return;
     }
-    if (!strcmp("Molecule_SetCharge", cmd)) {
-        if ( nrhs!=3 || !mxIsDouble(prhs[2]))
-            mexErrMsgTxt("Molecule_SetCharge(charge): Integer input expected.");
-        MatPsi_obj->Molecule_SetCharge((int)InputScalar(prhs[2]));
+    if (!strcmp("Molecule_SetChargeMult", cmd)) {
+        if ( nrhs!=4 || !mxIsDouble(prhs[2]) || !mxIsDouble(prhs[3]))
+            mexErrMsgTxt("Molecule_SetChargeMult(charge, mult): 2 integers input expected.");
+        MatPsi_obj->Molecule_SetChargeMult((int)InputScalar(prhs[2]), (int)InputScalar(prhs[3]));
         return;
     }
-    if (!strcmp("Molecule_SetMultiplicity", cmd)) {
-        if ( nrhs!=3 || !mxIsDouble(prhs[2]))
-            mexErrMsgTxt("Molecule_SetMultiplicity(multiplicity): Integer input expected.");
-        MatPsi_obj->Molecule_SetMultiplicity((int)InputScalar(prhs[2]));
+    if (!strcmp("Molecule_ChargeMult", cmd)) {
+        OutputVector(plhs[0], MatPsi_obj->Molecule_ChargeMult());
         return;
     }
     

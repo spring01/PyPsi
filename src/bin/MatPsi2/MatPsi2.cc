@@ -193,13 +193,21 @@ int MatPsi2::Molecule_NumElectrons() {
     return nelectron;
 }
 
-void MatPsi2::Molecule_SetCharge(int charge) {
+void MatPsi2::Molecule_SetChargeMult(int charge, int mult) {
+    SharedVector charge_mult = Molecule_ChargeMult();
+    int nelectron = Molecule_NumElectrons() + charge_mult->get(0) - charge;
+    if(mult - 1 > nelectron || mult%2 == nelectron%2){
+        throw PSIEXCEPTION("Molecule_SetChargeMult: Charge and Multiplicity are not compatible.");
+    }
     molecule_->set_molecular_charge(charge);
-    molecule_->set_multiplicity((Molecule_NumElectrons()%2) + 1);
+    molecule_->set_multiplicity(mult);
 }
 
-void MatPsi2::Molecule_SetMultiplicity(int mult) {
-    molecule_->set_multiplicity(mult);
+SharedVector MatPsi2::Molecule_ChargeMult() {
+    SharedVector charge_mult(new Vector(2));
+    charge_mult->set(0, (double)molecule_->molecular_charge());
+    charge_mult->set(1, (double)molecule_->multiplicity());
+    return charge_mult;
 }
 
 void MatPsi2::BasisSet_SetBasisSet(const std::string& basisname) {
