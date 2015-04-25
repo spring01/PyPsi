@@ -1142,7 +1142,9 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_cartesian(Process::En
 
     mol->set_units(Angstrom);
     mol->molecular_charge_ = charge;
+    mol->charge_specified_ = true;
     mol->multiplicity_ = multiplicity;
+    mol->multiplicity_specified_ = true;
     
     mol->set_com_fixed();
     mol->set_orientation_fixed(true);

@@ -193,6 +193,15 @@ int MatPsi2::Molecule_NumElectrons() {
     return nelectron;
 }
 
+void MatPsi2::Molecule_SetCharge(int charge) {
+    molecule_->set_molecular_charge(charge);
+    molecule_->set_multiplicity((Molecule_NumElectrons()%2) + 1);
+}
+
+void MatPsi2::Molecule_SetMultiplicity(int mult) {
+    molecule_->set_multiplicity(mult);
+}
+
 void MatPsi2::BasisSet_SetBasisSet(const std::string& basisname) {
     if(jk_ != NULL)
         jk_->finalize();
@@ -600,16 +609,23 @@ SharedMatrix MatPsi2::JK_DFMetric_InvJHalf() {
 void MatPsi2::create_default_wavefunction() {
     if(Molecule_NumElectrons() % 2) {
         process_environment_.options.set_global_str("REFERENCE", "UHF");
+        wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, jk_));
+    } else {
+        process_environment_.options.set_global_str("REFERENCE", "RHF");
+        wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
+    }
+    process_environment_.set_wavefunction(wfn_);
+}
+
+void MatPsi2::reset_wavefunction() {
+    if(Molecule_NumElectrons() % 2) {
+        process_environment_.options.set_global_str("REFERENCE", "UHF");
         wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, basis_));
     } else {
         process_environment_.options.set_global_str("REFERENCE", "RHF");
         wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, basis_));
     }
     process_environment_.set_wavefunction(wfn_);
-}
-
-void MatPsi2::reset_wavefunction() {
-    create_default_wavefunction();
     wfn_->extern_finalize();
     wfn_.reset();
 }
@@ -620,6 +636,7 @@ double MatPsi2::SCF_RunRHF() {
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     jk_->set_do_wK(false);
+    process_environment_.options.set_global_str("REFERENCE", "RHF");
     wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
     process_environment_.set_wavefunction(wfn_);
     return boost::static_pointer_cast<scf::RHF>(wfn_)->compute_energy();
@@ -629,6 +646,7 @@ double MatPsi2::SCF_RunUHF() {
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     jk_->set_do_wK(false);
+    process_environment_.options.set_global_str("REFERENCE", "UHF");
     wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, jk_));
     process_environment_.set_wavefunction(wfn_);
     return boost::static_pointer_cast<scf::UHF>(wfn_)->compute_energy();

@@ -71,9 +71,14 @@ matpsi.JK_DFMetric_InvJHalf();
 
 % SCF
 matpsi.SCF_RunRHF();
-matpsi.SCF_RunUHF();
 matpsi.SCF_RunRKS();
+matpsi.SCF_RunUHF();
 matpsi.SCF_RunUKS();
+matpsi.Molecule_SetCharge(1);
+matpsi.SCF_RunUHF();
+matpsi.SCF_RunUKS();
+matpsi.Molecule_SetCharge(0);
+matpsi.SCF_RunRHF();
 matpsi.SCF_EnableMOM();
 matpsi.SCF_DisableMOM();
 matpsi.SCF_EnableDamping();

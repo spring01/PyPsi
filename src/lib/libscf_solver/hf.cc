@@ -255,19 +255,21 @@ void HF::common_init()
 
     // Make sure that the multiplicity is reasonable
     if(multiplicity_ - 1 > nelectron_){
-        char *str = new char[100];
-        sprintf(str, "There are not enough electrons for multiplicity = %d, \n"
-                     "please check your input and use the MULTP keyword", multiplicity_);
-        throw SanityCheckError(str, __FILE__, __LINE__);
-        delete [] str;
+        //~ char *str = new char[100];
+        //~ sprintf(str, "There are not enough electrons for multiplicity = %d, \n"
+                     //~ "please check your input and use the MULTP keyword", multiplicity_);
+        //~ throw SanityCheckError(str, __FILE__, __LINE__);
+        //~ delete [] str;
+        throw PSIEXCEPTION("HF: multiplicity wrong");
     }
     if(multiplicity_%2 == nelectron_%2){
-        char *str = new char[100];
-        sprintf(str, "A multiplicity of %d with %d electrons is impossible.\n"
-                     "Please check your input and use the MULTP and/or CHARGE keywords",
-                     multiplicity_, nelectron_);
-        throw SanityCheckError(str, __FILE__, __LINE__);
-        delete [] str;
+        //~ char *str = new char[100];
+        //~ sprintf(str, "A multiplicity of %d with %d electrons is impossible.\n"
+                     //~ "Please check your input and use the MULTP and/or CHARGE keywords",
+                     //~ multiplicity_, nelectron_);
+        //~ throw SanityCheckError(str, __FILE__, __LINE__);
+        //~ delete [] str;
+        throw PSIEXCEPTION("HF: multiplicity wrong");
     }
 
     nbeta_  = (nelectron_ - multiplicity_ + 1)/2;

@@ -19,7 +19,7 @@ classdef MatPsi2 < handle
                 charge = 0;
             end
             if(nargin < 4)
-                multiplicity = 1;
+                multiplicity = mod(sum(cartesian(:,1)) - charge, 2) + 1;
             end
             if(exist('./@MatPsi2', 'file'))
                 pathMatPsi2 = [pwd(), '/@MatPsi2'] ;
@@ -116,8 +116,13 @@ classdef MatPsi2 < handle
         function varargout = Molecule_NucRepEnergy(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_NucRepEnergy', this.objectHandle, varargin{:});
         end
+        
         function varargout = Molecule_SetCharge(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_SetCharge', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = Molecule_SetMultiplicity(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('Molecule_SetMultiplicity', this.objectHandle, varargin{:});
         end
         
         function varargout = BasisSet_Name(this, varargin)

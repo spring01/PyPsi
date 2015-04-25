@@ -180,6 +180,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         MatPsi_obj->Molecule_SetCharge((int)InputScalar(prhs[2]));
         return;
     }
+    if (!strcmp("Molecule_SetMultiplicity", cmd)) {
+        if ( nrhs!=3 || !mxIsDouble(prhs[2]))
+            mexErrMsgTxt("Molecule_SetMultiplicity(multiplicity): Integer input expected.");
+        MatPsi_obj->Molecule_SetMultiplicity((int)InputScalar(prhs[2]));
+        return;
+    }
     
     //*** BasisSet 
     if (!strcmp("BasisSet_Name", cmd)) {
