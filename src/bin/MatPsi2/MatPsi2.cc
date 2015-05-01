@@ -714,7 +714,7 @@ SharedMatrix MatPsi2::SCF_OrbitalBeta() {
     if(wfn_ == NULL) {
         throw PSIEXCEPTION("SCF_OrbitalBeta: SCF calculation has not been done.");
     }
-    return wfn_->Ca(); 
+    return wfn_->Cb(); 
 }
 
 SharedVector MatPsi2::SCF_OrbEigValAlpha() { 
