@@ -115,7 +115,7 @@ void MatPsi2::create_basis_and_integral_factories() {
 
 // destructor 
 MatPsi2::~MatPsi2() {
-    if(process_environment_.wavefunction() != NULL)
+    if(wfn_ != NULL)
         wfn_->extern_finalize();
     if(jk_ != NULL)
         jk_->finalize();
@@ -771,8 +771,7 @@ SharedMatrix MatPsi2::SCF_Gradient() {
         throw PSIEXCEPTION("SCF_Gradient: SCF calculation has not been done.");
     }
     scfgrad::SCFGrad scfgrad_ = scfgrad::SCFGrad(process_environment_);
-    SharedMatrix grad(new Matrix(scfgrad_.compute_gradient()));
-    return grad;
+    return scfgrad_.compute_gradient();
 }
 
 SharedMatrix MatPsi2::SCF_GuessDensity() {
