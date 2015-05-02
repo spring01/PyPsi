@@ -175,6 +175,9 @@ protected:
     int r_points_; // number of radial integration points
     int theta_points_; // number of colatitude integration points
     int phi_points_; // number of azimuthal integration points
+    
+    // added by spring
+    SharedMatrix guessOrbital_;
 
 public:
     /// Nuclear contributions
@@ -353,6 +356,8 @@ public:
     
     SharedMatrix sotoao() { return SO2AO_;} // wavefunction already has aotoso() 
     double EHF() { return E_; }
+    
+    void SetGuessOrbital(SharedMatrix guessOrbital) { guessOrbital_ = guessOrbital; }
     
     // Finalize memory/files
     void extern_finalize();

@@ -931,7 +931,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The type of guess orbitals.  Defaults to CORE except for geometry
     optimizations, in which case READ becomes the default after the first
     geometry step. -*/
-    options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
+    options.add_str("GUESS", "CORE", "CORE GWH SAD READ ORBITAL");
     /*- Do write a MOLDEN output file?  If so, the filename will end in
     .molden, and the prefix is determined by |globals__writer_file_label|
     (if set), or else by the name of the output file plus the name of

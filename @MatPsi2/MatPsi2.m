@@ -261,20 +261,16 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_DFMetric_InvJHalf', this.objectHandle, varargin{:});
         end
         
-        function varargout = SCF_RunRHF(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RunRHF', this.objectHandle, varargin{:});
+        function varargout = SCF_SetSCFType(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_SetSCFType', this.objectHandle, varargin{:});
         end
         
-        function varargout = SCF_RunUHF(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RunUHF', this.objectHandle, varargin{:});
+        function varargout = SCF_SetGuessOrb(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_SetGuessOrb', this.objectHandle, varargin{:});
         end
         
-        function varargout = SCF_RunRKS(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RunRKS', this.objectHandle, varargin{:});
-        end
-        
-        function varargout = SCF_RunUKS(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RunUKS', this.objectHandle, varargin{:});
+        function varargout = SCF_RunSCF(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_RunSCF', this.objectHandle, varargin{:});
         end
         
         function varargout = SCF_EnableMOM(this, varargin)

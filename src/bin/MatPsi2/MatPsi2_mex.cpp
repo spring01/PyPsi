@@ -431,20 +431,22 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     
     //*** SCF related 
-    if (!strcmp("SCF_RunRHF", cmd)) {
-        OutputScalar(plhs[0], MatPsi_obj->SCF_RunRHF());
+    if (!strcmp("SCF_SetSCFType", cmd)) {
+        if ( nrhs!=3 || !mxIsChar(prhs[2]) )
+            mexErrMsgTxt("SCF_SetSCFType(\"scfType\"): String input expected.");
+        MatPsi_obj->SCF_SetSCFType((std::string)mxArrayToString(prhs[2]));
         return;
     }
-    if (!strcmp("SCF_RunUHF", cmd)) {
-        OutputScalar(plhs[0], MatPsi_obj->SCF_RunUHF());
+    if (!strcmp("SCF_SetGuessOrb", cmd)) {
+        // Check parameters
+        if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) != nbf)
+            mexErrMsgTxt("SCF_SetGuessOrb(orbital): nbf by nbf matrix input expected.");
+        // Call the method
+        MatPsi_obj->SCF_SetGuessOrb(InputMatrix(prhs[2]));
         return;
     }
-    if (!strcmp("SCF_RunRKS", cmd)) {
-        OutputScalar(plhs[0], MatPsi_obj->SCF_RunRKS());
-        return;
-    }
-    if (!strcmp("SCF_RunUKS", cmd)) {
-        OutputScalar(plhs[0], MatPsi_obj->SCF_RunUKS());
+    if (!strcmp("SCF_RunSCF", cmd)) {
+        OutputScalar(plhs[0], MatPsi_obj->SCF_RunSCF());
         return;
     }
     if (!strcmp("SCF_EnableMOM", cmd)) {

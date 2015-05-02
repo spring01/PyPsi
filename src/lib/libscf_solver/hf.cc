@@ -1132,6 +1132,11 @@ void HF::guess()
         fprintf(outfile, "  Switching over to SAD guess.\n\n");
         guess_type = "SAD";
     }
+    if (guess_type == "ORBITAL" && guessOrbital_ == NULL) {
+        fprintf(outfile, "  SCF Guess was ORBITAL but guessOrbital_ is NULL.\n");
+        fprintf(outfile, "  Switching over to CORE guess.\n\n");
+        guess_type = "CORE";
+    }
 
     if (guess_type == "READ") {
 
@@ -1140,7 +1145,13 @@ void HF::guess()
 
         load_orbitals(); // won't save the energy from here
         form_D();
-
+    } else if (guess_type == "ORBITAL") {
+        fprintf(outfile, "  SCF Guess: ORBITAL.\n\n");
+        find_occupation();
+        Ca_->copy(guessOrbital_);
+        Cb_->copy(Ca_);
+        form_D();
+        guess_E = compute_initial_E();
     } else if (guess_type == "SAD") {
 
         if (print_ && (process_environment_.get_worldcomm()->me() == 0))

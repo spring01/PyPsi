@@ -37,6 +37,8 @@ protected:
     boost::shared_ptr<JK> jk_;
     boost::shared_ptr<scf::HF> wfn_;
     
+    SharedMatrix guessOrbital_;
+    
     // create basis object 
     void create_basis();
     
@@ -132,10 +134,9 @@ public:
     
     //*** SCF related
     // method of doing RHF calculations 
-    double SCF_RunRHF();
-    double SCF_RunUHF();
-    double SCF_RunRKS();
-    double SCF_RunUKS();
+    void SCF_SetSCFType(std::string scfType);
+    void SCF_SetGuessOrb(SharedMatrix guessOrb);
+    double SCF_RunSCF();
     
     // methods controlling RHF algorithm 
     void SCF_EnableMOM(int mom_start);

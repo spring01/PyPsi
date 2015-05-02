@@ -470,31 +470,30 @@ void MatPsi2::Integrals_IndicesForK(double* indices1, double* indices2) {
 }
 
 void MatPsi2::JK_Initialize(std::string jktype, std::string auxBasisName) {
+    std::transform(jktype.begin(), jktype.end(), jktype.begin(), ::toupper);
     if(jk_ != NULL)
         jk_->finalize();
     if(wfn_ == NULL) {
         if(Molecule_NumElectrons() % 2) {
-            process_environment_.options.set_global_str("REFERENCE", "UHF");
             wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, basis_));
         } else {
-            process_environment_.options.set_global_str("REFERENCE", "RHF");
             wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, basis_));
         }
         process_environment_.set_wavefunction(wfn_);
         wfn_->extern_finalize();
         wfn_.reset();
     }
-    if(boost::iequals(jktype, "PKJK")) {
+    if(jktype == "PKJK") {
         jk_ = boost::shared_ptr<JK>(new PKJK(process_environment_, basis_, psio_));
-    } else if(boost::iequals(jktype, "DFJK")) {
+    } else if(jktype == "DFJK") {
         boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
         molecule_->set_basis_all_atoms(auxBasisName, "DF_BASIS_SCF");
         boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(process_environment_, parser, molecule_, "DF_BASIS_SCF");
         jk_ = boost::shared_ptr<JK>(new DFJK(process_environment_, basis_, auxiliary, psio_));
         molecule_->set_basis_all_atoms(basisname_);
-    } else if(boost::iequals(jktype, "ICJK")) {
+    } else if(jktype == "ICJK") {
         jk_ = boost::shared_ptr<JK>(new ICJK(process_environment_, basis_));
-    } else if(boost::iequals(jktype, "DirectJK")) {
+    } else if(jktype == "DIRECTJK") {
         jk_ = boost::shared_ptr<JK>(new DirectJK(process_environment_, basis_));
     } else {
         throw PSIEXCEPTION("JK_Initialize: JK type not recognized.");
@@ -532,7 +531,7 @@ SharedMatrix DensToEigVectors(SharedMatrix density) {
     boost::shared_ptr<Vector> eigValues(new Vector(dim));
     density->diagonalize(eigVectors, eigValues);
     for(int i = 0; i < dim; i++) {
-        eigValues->set(i, sqrt(fabs(eigValues->get(i))));
+        eigValues->set(i, sqrt(max(0.0, eigValues->get(i))));
     }
     for(int i = 0; i < dim; i++) {
         for(int j = 0; j < dim; j++) {
@@ -625,50 +624,44 @@ SharedMatrix MatPsi2::JK_DFMetric_InvJHalf() {
     return boost::static_pointer_cast<DFJK>(jk_)->GetInvJHalf();
 }
 
-double MatPsi2::SCF_RunRHF() {
-    if(Molecule_NumElectrons() % 2)
-        throw PSIEXCEPTION("SCF_RunRHF: RHF can handle singlets only.");
+void MatPsi2::SCF_SetSCFType(std::string scfType) {
+    std::transform(scfType.begin(), scfType.end(), scfType.begin(), ::toupper);
+    process_environment_.options.set_global_str("REFERENCE", scfType);
+    process_environment_.options.set_global_str("GUESS", "CORE");
+}
+
+void MatPsi2::SCF_SetGuessOrb(SharedMatrix guessOrb) {
+    process_environment_.options.set_global_str("GUESS", "ORBITAL");
+    guessOrbital_ = guessOrb;
+}
+
+double MatPsi2::SCF_RunSCF() {
     if(jk_ == NULL)
         JK_Initialize("PKJK");
+    std::string scfType = process_environment_.options.get_str("REFERENCE");
     jk_->set_do_wK(false);
-    process_environment_.options.set_global_str("REFERENCE", "RHF");
-    wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
+    if(scfType == "RHF") {
+        if(Molecule_NumElectrons() % 2)
+            throw PSIEXCEPTION("SCF_RunSCF: RHF can handle singlets only.");
+        wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
+    } else if(scfType == "UHF") {
+        wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, jk_));
+    } else if(scfType == "RKS") {
+        if(Molecule_NumElectrons() % 2)
+            throw PSIEXCEPTION("SCF_RunSCF: RKS can handle singlets only.");
+        jk_->set_do_wK(true);
+        process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
+        wfn_ = boost::shared_ptr<scf::RKS>(new scf::RKS(process_environment_, jk_));
+    } else if(scfType == "UKS") {
+        jk_->set_do_wK(true);
+        process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
+        wfn_ = boost::shared_ptr<scf::UKS>(new scf::UKS(process_environment_, jk_));
+    }
+    if(process_environment_.options.get_str("GUESS") == "ORBITAL") {
+        wfn_->SetGuessOrbital(guessOrbital_);
+    }
     process_environment_.set_wavefunction(wfn_);
-    return boost::static_pointer_cast<scf::RHF>(wfn_)->compute_energy();
-}
-
-double MatPsi2::SCF_RunUHF() {
-    if(jk_ == NULL)
-        JK_Initialize("PKJK");
-    jk_->set_do_wK(false);
-    process_environment_.options.set_global_str("REFERENCE", "UHF");
-    wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, jk_));
-    process_environment_.set_wavefunction(wfn_);
-    return boost::static_pointer_cast<scf::UHF>(wfn_)->compute_energy();
-}
-
-double MatPsi2::SCF_RunRKS() {
-    if(Molecule_NumElectrons() % 2)
-        throw PSIEXCEPTION("SCF_RunRKS: RKS can handle singlets only.");
-    if(jk_ == NULL)
-        JK_Initialize("PKJK");
-    jk_->set_do_wK(true);
-    process_environment_.options.set_global_str("REFERENCE", "RKS");
-    process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
-    wfn_ = boost::shared_ptr<scf::RKS>(new scf::RKS(process_environment_, jk_));
-    process_environment_.set_wavefunction(wfn_);
-    return boost::static_pointer_cast<scf::RKS>(wfn_)->compute_energy();
-}
-
-double MatPsi2::SCF_RunUKS() {
-    if(jk_ == NULL)
-        JK_Initialize("PKJK");
-    jk_->set_do_wK(true);
-    process_environment_.options.set_global_str("REFERENCE", "UKS");
-    process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
-    wfn_ = boost::shared_ptr<scf::UKS>(new scf::UKS(process_environment_, jk_));
-    process_environment_.set_wavefunction(wfn_);
-    return boost::static_pointer_cast<scf::UKS>(wfn_)->compute_energy();
+    return wfn_->compute_energy();
 }
 
 void MatPsi2::SCF_EnableMOM(int mom_start) {
@@ -694,82 +687,82 @@ void MatPsi2::SCF_GuessSAD() {
 }
 
 void MatPsi2::SCF_GuessCore() {
-    process_environment_.options.set_global_str("GUESS", "Core");
+    process_environment_.options.set_global_str("GUESS", "CORE");
 }
 
 double MatPsi2::SCF_TotalEnergy() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_TotalEnergy: SCF calculation has not been done.");
+        SCF_RunSCF();
     }
     return wfn_->EHF(); 
 }
 
 SharedMatrix MatPsi2::SCF_OrbitalAlpha() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_OrbitalAlpha: SCF calculation has not been done.");
+        SCF_RunSCF();
     }
     return wfn_->Ca(); 
 }
 
 SharedMatrix MatPsi2::SCF_OrbitalBeta() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_OrbitalBeta: SCF calculation has not been done.");
+        SCF_RunSCF();
     }
     return wfn_->Cb(); 
 }
 
 SharedVector MatPsi2::SCF_OrbEigValAlpha() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_OrbEigValAlpha: SCF calculation has not been done.");
+        SCF_RunSCF();
     }
     return wfn_->epsilon_a(); 
 }
 
 SharedVector MatPsi2::SCF_OrbEigValBeta() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_OrbEigValBeta: SCF calculation has not been done.");
+        SCF_RunSCF();
     }
     return wfn_->epsilon_b(); 
 }
 
 SharedMatrix MatPsi2::SCF_DensityAlpha() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_DensityAlpha: SCF calculation has not been done.");
+        SCF_RunSCF();
     }
     return wfn_->Da(); 
 }
 
 SharedMatrix MatPsi2::SCF_DensityBeta() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_DensityBeta: SCF calculation has not been done.");
+        SCF_RunSCF();
     }
     return wfn_->Db(); 
 }
 
 SharedMatrix MatPsi2::SCF_CoreHamiltonian() {
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_CoreHamiltonian: SCF calculation has not been done.");
+        SCF_RunSCF();
     }
     return wfn_->H(); 
 }
 
 SharedMatrix MatPsi2::SCF_FockAlpha() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_FockAlpha: SCF calculation has not been done.");
+        SCF_RunSCF();
     }
     return wfn_->Fa(); 
 }
 
 SharedMatrix MatPsi2::SCF_FockBeta() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_FockBeta: SCF calculation has not been done.");
+        SCF_RunSCF();
     }
     return wfn_->Fb(); 
 }
 
 SharedMatrix MatPsi2::SCF_Gradient() {
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_Gradient: SCF calculation has not been done.");
+        SCF_RunSCF();
     }
     scfgrad::SCFGrad scfgrad_ = scfgrad::SCFGrad(process_environment_);
     return scfgrad_.compute_gradient();
@@ -791,7 +784,7 @@ SharedMatrix MatPsi2::SCF_GuessDensity() {
 
 SharedMatrix MatPsi2::SCF_RHF_J() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_RHF_J: RHF calculation has not been done.");
+        SCF_RunSCF();
     }
     if(dynamic_cast<scf::RHF*>(wfn_.get()) == NULL)
         throw PSIEXCEPTION("SCF_RHF_J: This function works only for RHF.");
@@ -800,7 +793,7 @@ SharedMatrix MatPsi2::SCF_RHF_J() {
 
 SharedMatrix MatPsi2::SCF_RHF_K() { 
     if(wfn_ == NULL) {
-        throw PSIEXCEPTION("SCF_RHF_K: RHF calculation has not been done.");
+        SCF_RunSCF();
     }
     if(dynamic_cast<scf::RHF*>(wfn_.get()) == NULL)
         throw PSIEXCEPTION("SCF_RHF_K: This function works only for RHF.");
