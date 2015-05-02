@@ -387,22 +387,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputMatrix(plhs[0], MatPsi_obj->JK_DensToK(InputMatrix(prhs[2])));
         return;
     }
-    if (!strcmp("JK_OrbToJ", cmd)) {
-        // Check parameters
-        if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) < MatPsi_obj->Molecule_NumElectrons()/2)
-            mexErrMsgTxt("JK_OrbToJ(orbital): nbf by (at least numElec/2) matrix input expected.");
-        // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->JK_OrbToJ(InputMatrix(prhs[2])));
-        return;
-    }
-    if (!strcmp("JK_OrbToK", cmd)) {
-        // Check parameters
-        if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) < MatPsi_obj->Molecule_NumElectrons()/2)
-            mexErrMsgTxt("JK_OrbToK(orbital): nbf by (at least numElec/2) matrix input expected.");
-        // Call the method
-        OutputMatrix(plhs[0], MatPsi_obj->JK_OrbToK(InputMatrix(prhs[2])));
-        return;
-    }
     if (!strcmp("JK_OccOrbToJ", cmd)) {
         // Check parameters
         if (nrhs!=3 || mxGetM(prhs[2]) != nbf)

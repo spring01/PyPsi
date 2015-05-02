@@ -241,14 +241,6 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_DensToK', this.objectHandle, varargin{:});
         end
         
-        function varargout = JK_OrbToJ(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OrbToJ', this.objectHandle, varargin{:});
-        end
-        
-        function varargout = JK_OrbToK(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OrbToK', this.objectHandle, varargin{:});
-        end
-        
         function varargout = JK_OccOrbToJ(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OccOrbToJ', this.objectHandle, varargin{:});
         end

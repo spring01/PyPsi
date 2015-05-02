@@ -60,8 +60,6 @@ matpsi.JK_Initialize('PKJK');
 matpsi.JK_Type();
 matpsi.JK_DensToJ(testMat);
 matpsi.JK_DensToK(testMat);
-matpsi.JK_OrbToJ(testMat);
-matpsi.JK_OrbToK(testMat);
 matpsi.JK_OccOrbToJ(testMat);
 matpsi.JK_OccOrbToK(testMat);
 matpsi.JK_Initialize('DFJK');

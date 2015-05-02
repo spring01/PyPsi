@@ -121,8 +121,6 @@ public:
     // methods computing J/K/G 
     SharedMatrix JK_DensToJ(SharedMatrix);
     SharedMatrix JK_DensToK(SharedMatrix);
-    SharedMatrix JK_OrbToJ(SharedMatrix);
-    SharedMatrix JK_OrbToK(SharedMatrix);
     SharedMatrix JK_OccOrbToJ(SharedMatrix);
     SharedMatrix JK_OccOrbToK(SharedMatrix);
     
