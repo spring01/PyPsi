@@ -1,5 +1,6 @@
 #include <libmints/mints.h>
 #include <libfock/jk.h>
+#include <libfock/v.h>
 #include <psi4-dec.h>
 #include <libparallel/parallel.h>
 #include <boost/shared_array.hpp>
@@ -35,6 +36,7 @@ protected:
     boost::shared_ptr<TwoBodyAOInt> eri_;
     boost::shared_ptr<MatrixFactory> matfac_;
     boost::shared_ptr<JK> jk_;
+    boost::shared_ptr<VBase> dftPotential_;
     boost::shared_ptr<scf::HF> wfn_;
     
     SharedMatrix guessOrbital_;
@@ -130,6 +132,12 @@ public:
     SharedMatrix JK_DFTensor_AuxPriPairs();
     std::vector<SharedMatrix> JK_DFTensor_AuxPriPri();
     SharedMatrix JK_DFMetric_InvJHalf();
+    
+    
+    void DFT_Initialize(std::string);
+    std::vector<SharedMatrix> DFT_DensToV(SharedMatrix, SharedMatrix);
+    std::vector<SharedMatrix> DFT_OccOrbToV(SharedMatrix, SharedMatrix);
+    double DFT_EnergyXC();
     
     
     //*** SCF related

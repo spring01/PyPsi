@@ -261,6 +261,22 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_DFMetric_InvJHalf', this.objectHandle, varargin{:});
         end
         
+        function varargout = DFT_Initialize(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFT_Initialize', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = DFT_DensToV(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFT_DensToV', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = DFT_OccOrbToV(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFT_OccOrbToV', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = DFT_EnergyXC(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('DFT_EnergyXC', this.objectHandle, varargin{:});
+        end
+        
         function varargout = SCF_SetSCFType(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('SCF_SetSCFType', this.objectHandle, varargin{:});
         end

@@ -430,6 +430,63 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         return;
     }
     
+    if (!strcmp("DFT_Initialize", cmd)) {
+        if ( nrhs!=3 || !mxIsChar(prhs[2]) )
+            mexErrMsgTxt("DFT_Initialize(\"functionalName\"): String input expected.");
+        MatPsi_obj->DFT_Initialize((std::string)mxArrayToString(prhs[2]));
+        return;
+    }
+    if (!strcmp("DFT_DensToV", cmd)) {
+        std::vector<SharedMatrix> dftPotArray;
+        SharedMatrix nullMatrix;
+        if (nrhs==3 && mxGetM(prhs[2]) == nbf)
+            dftPotArray = MatPsi_obj->DFT_DensToV(InputMatrix(prhs[2]), nullMatrix);
+        else if (nrhs==4 && mxGetM(prhs[2]) == nbf && mxGetN(prhs[2]) == nbf && mxGetM(prhs[3]) == nbf && mxGetN(prhs[3]) == nbf)
+            dftPotArray = MatPsi_obj->DFT_DensToV(InputMatrix(prhs[2]), InputMatrix(prhs[3]));
+        else
+            mexErrMsgTxt("DFT_DensToV(densAlpha, densBeta): 2 nbf by nbf matrix input expected.");
+        int ncol = dftPotArray[0]->ncol();
+        int nrow = dftPotArray[0]->nrow();
+        int nPot = dftPotArray.size();
+        mwSize dims[3] = {ncol, nrow, nPot};
+        plhs[0] = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
+        double* matlab_pt = mxGetPr(plhs[0]);
+        for(int iPot = 0; iPot < nPot; iPot++) {
+            double* tmp_pt = dftPotArray[iPot]->get_pointer();
+            for(int i = 0; i < ncol * nrow; i++) {
+                matlab_pt[iPot*ncol*nrow + i] = tmp_pt[i];
+            }
+        }
+        return;
+    }
+    if (!strcmp("DFT_OccOrbToV", cmd)) {
+        std::vector<SharedMatrix> dftPotArray;
+        SharedMatrix nullMatrix;
+        if (nrhs==3 && mxGetM(prhs[2]) == nbf)
+            dftPotArray = MatPsi_obj->DFT_OccOrbToV(InputMatrix(prhs[2]), nullMatrix);
+        else if (nrhs==4 && mxGetM(prhs[2]) == nbf && mxGetM(prhs[3]) == nbf)
+            dftPotArray = MatPsi_obj->DFT_OccOrbToV(InputMatrix(prhs[2]), InputMatrix(prhs[3]));
+        else
+            mexErrMsgTxt("DFT_OccOrbToV(occOrbAlpha, occOrbBeta): 2 nbf by any matrix input expected.");
+        int ncol = dftPotArray[0]->ncol();
+        int nrow = dftPotArray[0]->nrow();
+        int nPot = dftPotArray.size();
+        mwSize dims[3] = {ncol, nrow, nPot};
+        plhs[0] = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
+        double* matlab_pt = mxGetPr(plhs[0]);
+        for(int iPot = 0; iPot < nPot; iPot++) {
+            double* tmp_pt = dftPotArray[iPot]->get_pointer();
+            for(int i = 0; i < ncol * nrow; i++) {
+                matlab_pt[iPot*ncol*nrow + i] = tmp_pt[i];
+            }
+        }
+        return;
+    }
+    if (!strcmp("DFT_EnergyXC", cmd)) {
+        OutputScalar(plhs[0], MatPsi_obj->DFT_EnergyXC());
+        return;
+    }
+    
     //*** SCF related 
     if (!strcmp("SCF_SetSCFType", cmd)) {
         if ( nrhs!=3 || !mxIsChar(prhs[2]) )

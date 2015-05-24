@@ -526,6 +526,9 @@ SharedMatrix MatPsi2::JK_DensToJ(SharedMatrix density) {
 }
 
 SharedMatrix DensToEigVectors(SharedMatrix density) {
+    if(density == NULL) {
+        return density;
+    }
     int dim = density->ncol();
     SharedMatrix eigVectors(new Matrix(dim, dim));
     boost::shared_ptr<Vector> eigValues(new Vector(dim));
@@ -624,10 +627,43 @@ SharedMatrix MatPsi2::JK_DFMetric_InvJHalf() {
     return boost::static_pointer_cast<DFJK>(jk_)->GetInvJHalf();
 }
 
+void MatPsi2::DFT_Initialize(std::string functionalName) {
+    std::transform(functionalName.begin(), functionalName.end(), functionalName.begin(), ::toupper);
+    process_environment_.options.set_global_str("DFT_FUNCTIONAL", functionalName);
+    dftPotential_ = VBase::build_V(process_environment_, process_environment_.options,(Molecule_NumElectrons() % 2 == 0 ? "RV" : "UV"));
+    dftPotential_->initialize();
+}
+
+std::vector<SharedMatrix> MatPsi2::DFT_DensToV(SharedMatrix densAlpha, SharedMatrix densBeta) {
+    return DFT_OccOrbToV(DensToEigVectors(densAlpha), DensToEigVectors(densBeta));
+}
+
+std::vector<SharedMatrix> MatPsi2::DFT_OccOrbToV(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
+    if(dftPotential_ == NULL)
+        throw PSIEXCEPTION("DFT_OccOrbToV: dftPotential_ hasn't been initialized.");
+    if(dynamic_cast<UV*>(dftPotential_.get()) != NULL && occOrbBeta == NULL)
+        throw PSIEXCEPTION("DFT_OccOrbToV: Unrestricted functional requires both alpha and beta orbital.");
+    std::vector<SharedMatrix> & C = dftPotential_->C();
+    C.clear();
+    C.push_back(occOrbAlpha);
+    if(occOrbBeta != NULL)
+        C.push_back(occOrbBeta);
+    
+    // Run the potential object
+    dftPotential_->compute();
+    return dftPotential_->V();
+}
+
+double MatPsi2::DFT_EnergyXC() {
+    std::map<std::string, double>& quad = dftPotential_->quadrature_values();  
+    return quad["FUNCTIONAL"];
+}
+
 void MatPsi2::SCF_SetSCFType(std::string scfType) {
     std::transform(scfType.begin(), scfType.end(), scfType.begin(), ::toupper);
     process_environment_.options.set_global_str("REFERENCE", scfType);
     process_environment_.options.set_global_str("GUESS", "CORE");
+    process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
 }
 
 void MatPsi2::SCF_SetGuessOrb(SharedMatrix guessOrb) {
@@ -639,7 +675,7 @@ double MatPsi2::SCF_RunSCF() {
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     std::string scfType = process_environment_.options.get_str("REFERENCE");
-    jk_->set_do_wK(false);
+    //~ jk_->set_do_wK(false);
     if(scfType == "RHF") {
         if(Molecule_NumElectrons() % 2)
             throw PSIEXCEPTION("SCF_RunSCF: RHF can handle singlets only.");
@@ -649,12 +685,12 @@ double MatPsi2::SCF_RunSCF() {
     } else if(scfType == "RKS") {
         if(Molecule_NumElectrons() % 2)
             throw PSIEXCEPTION("SCF_RunSCF: RKS can handle singlets only.");
-        jk_->set_do_wK(true);
-        process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
+        //~ jk_->set_do_wK(true);
+        //~ process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
         wfn_ = boost::shared_ptr<scf::RKS>(new scf::RKS(process_environment_, jk_));
     } else if(scfType == "UKS") {
-        jk_->set_do_wK(true);
-        process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
+        //~ jk_->set_do_wK(true);
+        //~ process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
         wfn_ = boost::shared_ptr<scf::UKS>(new scf::UKS(process_environment_, jk_));
     }
     if(process_environment_.options.get_str("GUESS") == "ORBITAL") {
