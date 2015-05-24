@@ -63,12 +63,38 @@ matpsi.JK_DensToK(testMat);
 matpsi.JK_OccOrbToJ(testMat);
 matpsi.JK_OccOrbToK(testMat);
 matpsi.JK_Initialize('DFJK');
+matpsi.JK_DensToJ(testMat);
+matpsi.JK_DensToK(testMat);
+matpsi.JK_OccOrbToJ(testMat);
+matpsi.JK_OccOrbToK(testMat);
 matpsi.JK_DFTensor_AuxPriPairs();
 matpsi.JK_DFTensor_AuxPriPri();
 matpsi.JK_DFMetric_InvJHalf();
 matpsi.JK_Initialize('icjk');
+matpsi.JK_DensToJ(testMat);
+matpsi.JK_DensToK(testMat);
+matpsi.JK_OccOrbToJ(testMat);
+matpsi.JK_OccOrbToK(testMat);
 matpsi.JK_Initialize('directjk');
+matpsi.JK_DensToJ(testMat);
+matpsi.JK_DensToK(testMat);
+matpsi.JK_OccOrbToJ(testMat);
+matpsi.JK_OccOrbToK(testMat);
 matpsi.JK_Initialize('pkJK');
+matpsi.JK_DensToJ(testMat);
+matpsi.JK_DensToK(testMat);
+matpsi.JK_OccOrbToJ(testMat);
+matpsi.JK_OccOrbToK(testMat);
+
+% DFT
+matpsi.DFT_Initialize('b3lyp');
+matpsi.DFT_DensToV(testMat);
+matpsi.DFT_EnergyXC();
+matpsi.Molecule_SetChargeMult(1,2);
+matpsi.DFT_Initialize('b3lyp');
+matpsi.DFT_DensToV(testMat, testMat);
+matpsi.DFT_EnergyXC();
+matpsi.Molecule_SetChargeMult(0,1);
 
 % SCF
 matpsi.SCF_RunSCF();
