@@ -620,60 +620,6 @@ void JK::compute()
     }
 }
 
-void JK::compute_from_D() // must be executed after pushing back to D_ 
-{
-    if (C_left_.size() && !C_right_.size()) {
-        lr_symmetric_ = true;
-        C_right_ = C_left_;
-    } else {
-        lr_symmetric_ = false;
-    }
-
-    //~ timer_on("JK: D");
-    //~ compute_D();
-    //~ timer_off("JK: D");
-    if (C1()) {
-        //~ timer_on("JK: USO2AO");
-        USO2AO();
-        //~ timer_off("JK: USO2AO");
-    } else {
-        allocate_JK();
-    }
-
-    //~ timer_on("JK: JK");
-    compute_JK();
-    //~ timer_off("JK: JK");
-
-    if (C1()) {
-        //~ timer_on("JK: AO2USO");
-        AO2USO();
-        //~ timer_off("JK: AO2USO");
-    }
-
-    if (debug_ > 6) {
-        fprintf(outfile, "   > JK <\n\n");
-        for (int N = 0; N < C_left_.size(); N++) {
-            if (C1() && AO2USO_->nirrep() != 1) {
-                C_left_ao_[N]->print(outfile);
-                C_right_ao_[N]->print(outfile);
-                D_ao_[N]->print(outfile);
-                J_ao_[N]->print(outfile);
-                K_ao_[N]->print(outfile);
-            }
-            C_left_[N]->print(outfile);
-            C_right_[N]->print(outfile);
-            D_[N]->print(outfile);
-            J_[N]->print(outfile);
-            K_[N]->print(outfile);
-        }
-        fflush(outfile);
-    }
-
-    if (lr_symmetric_) {
-        C_right_.clear();
-    }
-}
-
 void JK::finalize()
 {
     postiterations();

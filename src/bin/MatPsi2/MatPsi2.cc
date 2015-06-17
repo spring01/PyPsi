@@ -529,39 +529,11 @@ SharedMatrix DensToEigVectors(SharedMatrix density) {
 }
 
 SharedMatrix MatPsi2::JK_DensToJ(SharedMatrix density) {
-    if(jk_ == NULL) {
-        JK_Initialize("PKJK");
-    }
-    jk_->set_do_K(false);
-    jk_->C_left().clear();
-    jk_->D().clear();
-    jk_->D().push_back(density);
-    
-    jk_->compute_from_D();
-    SharedMatrix Jnew = jk_->J()[0];
-    Jnew->hermitivitize();
-    jk_->set_do_K(true);
-    return Jnew;
+	return JK_OccOrbToJ(DensToEigVectors(density)); 
 }
 
 SharedMatrix MatPsi2::JK_DensToK(SharedMatrix density) {
-    if(jk_ == NULL) {
-        JK_Initialize("PKJK");
-    }
-    if(boost::iequals(jk_->JKtype(), "DFJK")) {
-        //~ throw PSIEXCEPTION("JK_DensToK: DensToK cannot be used with DFJK.");
-        return JK_OccOrbToK(DensToEigVectors(density));
-    }
-    jk_->set_do_J(false);
-    jk_->C_left().clear();
-    jk_->D().clear();
-    jk_->D().push_back(density);
-    
-    jk_->compute_from_D();
-    SharedMatrix Knew = jk_->K()[0];
-    Knew->hermitivitize();
-    jk_->set_do_J(true);
-    return Knew;
+	return JK_OccOrbToK(DensToEigVectors(density));
 }
 
 SharedMatrix MatPsi2::JK_OccOrbToJ(SharedMatrix occupiedOrbital) {
