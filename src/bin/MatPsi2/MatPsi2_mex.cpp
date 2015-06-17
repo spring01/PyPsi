@@ -50,6 +50,21 @@ void OutputScalar(mxArray*& Mat_m, double scalar) {
     *Mat_m_pt = scalar;
 }
 
+void OutputVectorOfSymmMatrices(mxArray*& Mat_m, std::vector<SharedMatrix> vecOfMats) {
+	int ndim1 = vecOfMats[0]->ncol();
+	int ndim2 = vecOfMats[0]->nrow();
+	int ndim3 = vecOfMats.size();
+	mwSize dims[3] = {ndim1, ndim2, ndim3};
+	Mat_m = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
+	double* Mat_m_pt = mxGetPr(Mat_m);
+	for(int idim3 = 0; idim3 < ndim3; idim3++) {
+		double* tmp_pt = vecOfMats[idim3]->get_pointer();
+		for(int i = 0; i < ndim1 * ndim2; i++) {
+			Mat_m_pt[idim3*ndim1*ndim2 + i] = tmp_pt[i];
+		}
+	}
+}
+
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     // Get the command string
     char cmd[64];
@@ -269,19 +284,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         return;
     }
     if (!strcmp("Integrals_PotentialEachCore", cmd)) {
-        std::vector<SharedMatrix> viMatArray = MatPsi_obj->Integrals_PotentialEachCore();
-        int ncol = viMatArray[0]->ncol();
-        int nrow = viMatArray[0]->nrow();
-        int natom = MatPsi_obj->Molecule_NumAtoms();
-        mwSize dims[3] = {ncol, nrow, natom};
-        plhs[0] = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
-        double* matlab_pt = mxGetPr(plhs[0]);
-        for(int iatom = 0; iatom < natom; iatom++) {
-            double* tmp_pt = viMatArray[iatom]->get_pointer();
-            for(int i = 0; i < ncol * nrow; i++) {
-                matlab_pt[iatom*ncol*nrow + i] = tmp_pt[i];
-            }
-        }
+        OutputVectorOfSymmMatrices(plhs[0], MatPsi_obj->Integrals_PotentialEachCore());
         return;
     }
     if (!strcmp("Integrals_PotentialPtQ", cmd)) {
@@ -302,17 +305,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
             OutputMatrix(plhs[2], dipole[2]);
             return;
         }
-        int ncol = dipole[0]->ncol();
-        int nrow = dipole[0]->nrow();
-        mwSize dims[3] = {ncol, nrow, 3};
-        plhs[0] = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
-        double* matlab_pt = mxGetPr(plhs[0]);
-        for(int idim = 0; idim < 3; idim++) {
-            double* tmp_pt = dipole[idim]->get_pointer();
-            for(int i = 0; i < ncol * nrow; i++) {
-                matlab_pt[idim*ncol*nrow + i] = tmp_pt[i];
-            }
-        }
+        OutputVectorOfSymmMatrices(plhs[0], dipole);
         return;
     }
     if (!strcmp("Integrals_ijkl", cmd)) {
@@ -409,19 +402,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         return;
     }
     if (!strcmp("JK_DFTensor_AuxPriPri", cmd)) {
-        std::vector<SharedMatrix> QmnFull = MatPsi_obj->JK_DFTensor_AuxPriPri();
-        int ncol = QmnFull[0]->ncol();
-        int nrow = QmnFull[0]->nrow();
-        int naux = QmnFull.size();
-        mwSize dims[3] = {ncol, nrow, naux};
-        plhs[0] = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
-        double* matlab_pt = mxGetPr(plhs[0]);
-        for(int iaux = 0; iaux < naux; iaux++) {
-            double* tmp_pt = QmnFull[iaux]->get_pointer();
-            for(int i = 0; i < ncol * nrow; i++) {
-                matlab_pt[iaux*ncol*nrow + i] = tmp_pt[i];
-            }
-        }
+        OutputVectorOfSymmMatrices(plhs[0], MatPsi_obj->JK_DFTensor_AuxPriPri());
         return;
     }
     if (!strcmp("JK_DFMetric_InvJHalf", cmd)) {
@@ -430,6 +411,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         return;
     }
     
+    //*** DFT related 
     if (!strcmp("DFT_Initialize", cmd)) {
         if ( nrhs!=3 || !mxIsChar(prhs[2]) )
             mexErrMsgTxt("DFT_Initialize(\"functionalName\"): String input expected.");
@@ -445,18 +427,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
             dftPotArray = MatPsi_obj->DFT_DensToV(InputMatrix(prhs[2]), InputMatrix(prhs[3]));
         else
             mexErrMsgTxt("DFT_DensToV(densAlpha, densBeta): 2 nbf by nbf matrix input expected.");
-        int ncol = dftPotArray[0]->ncol();
-        int nrow = dftPotArray[0]->nrow();
-        int nPot = dftPotArray.size();
-        mwSize dims[3] = {ncol, nrow, nPot};
-        plhs[0] = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
-        double* matlab_pt = mxGetPr(plhs[0]);
-        for(int iPot = 0; iPot < nPot; iPot++) {
-            double* tmp_pt = dftPotArray[iPot]->get_pointer();
-            for(int i = 0; i < ncol * nrow; i++) {
-                matlab_pt[iPot*ncol*nrow + i] = tmp_pt[i];
-            }
-        }
+        OutputVectorOfSymmMatrices(plhs[0], dftPotArray);
         return;
     }
     if (!strcmp("DFT_OccOrbToV", cmd)) {
@@ -468,18 +439,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
             dftPotArray = MatPsi_obj->DFT_OccOrbToV(InputMatrix(prhs[2]), InputMatrix(prhs[3]));
         else
             mexErrMsgTxt("DFT_OccOrbToV(occOrbAlpha, occOrbBeta): 2 nbf by any matrix input expected.");
-        int ncol = dftPotArray[0]->ncol();
-        int nrow = dftPotArray[0]->nrow();
-        int nPot = dftPotArray.size();
-        mwSize dims[3] = {ncol, nrow, nPot};
-        plhs[0] = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
-        double* matlab_pt = mxGetPr(plhs[0]);
-        for(int iPot = 0; iPot < nPot; iPot++) {
-            double* tmp_pt = dftPotArray[iPot]->get_pointer();
-            for(int i = 0; i < ncol * nrow; i++) {
-                matlab_pt[iPot*ncol*nrow + i] = tmp_pt[i];
-            }
-        }
+        OutputVectorOfSymmMatrices(plhs[0], dftPotArray);
         return;
     }
     if (!strcmp("DFT_EnergyXC", cmd)) {

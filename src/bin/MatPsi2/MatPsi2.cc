@@ -509,22 +509,6 @@ const std::string& MatPsi2::JK_Type() {
     return jk_->JKtype();
 }
 
-SharedMatrix MatPsi2::JK_DensToJ(SharedMatrix density) {
-    if(jk_ == NULL) {
-        JK_Initialize("PKJK");
-    }
-    jk_->set_do_K(false);
-    jk_->C_left().clear();
-    jk_->D().clear();
-    jk_->D().push_back(density);
-    
-    jk_->compute_from_D();
-    SharedMatrix Jnew = jk_->J()[0];
-    Jnew->hermitivitize();
-    jk_->set_do_K(true);
-    return Jnew;
-}
-
 SharedMatrix DensToEigVectors(SharedMatrix density) {
     if(density == NULL) {
         return density;
@@ -542,6 +526,22 @@ SharedMatrix DensToEigVectors(SharedMatrix density) {
         }
     }
     return eigVectors;
+}
+
+SharedMatrix MatPsi2::JK_DensToJ(SharedMatrix density) {
+    if(jk_ == NULL) {
+        JK_Initialize("PKJK");
+    }
+    jk_->set_do_K(false);
+    jk_->C_left().clear();
+    jk_->D().clear();
+    jk_->D().push_back(density);
+    
+    jk_->compute_from_D();
+    SharedMatrix Jnew = jk_->J()[0];
+    Jnew->hermitivitize();
+    jk_->set_do_K(true);
+    return Jnew;
 }
 
 SharedMatrix MatPsi2::JK_DensToK(SharedMatrix density) {
