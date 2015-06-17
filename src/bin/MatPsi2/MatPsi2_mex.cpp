@@ -363,24 +363,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if (!strcmp("JK_Type", cmd)) {
         plhs[0] = mxCreateString((MatPsi_obj->JK_Type()).c_str());
         return;
-    }
-    //~ if (!strcmp("JK_DensToJ", cmd)) {
-        //~ // Check parameters
-        //~ if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) != nbf)
-            //~ mexErrMsgTxt("JK_DensToJ(density): nbf by nbf matrix input expected.");
-        //~ // Call the method
-        //~ OutputMatrix(plhs[0], MatPsi_obj->JK_DensToJ(InputMatrix(prhs[2])));
-        //~ return;
-    //~ }
-    //~ if (!strcmp("JK_DensToK", cmd)) {
-        //~ // Check parameters
-        //~ if (nrhs!=3 || mxGetM(prhs[2]) != nbf || mxGetN(prhs[2]) != nbf)
-            //~ mexErrMsgTxt("JK_DensToK(density): nbf by nbf matrix input expected.");
-        //~ // Call the method
-        //~ OutputMatrix(plhs[0], MatPsi_obj->JK_DensToK(InputMatrix(prhs[2])));
-        //~ return;
-    //~ }
-    
+    }    
     if (!strcmp("JK_DensToJ", cmd)) {
         std::vector<SharedMatrix> vecOfJMats;
         if (nrhs==3 && mxGetM(prhs[2]) == nbf && mxGetN(prhs[2]) == nbf)
