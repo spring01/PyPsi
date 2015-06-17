@@ -82,9 +82,13 @@ matpsi.JK_OccOrbToJ(testMat);
 matpsi.JK_OccOrbToK(testMat);
 matpsi.JK_Initialize('pkJK');
 matpsi.JK_DensToJ(testMat);
+matpsi.JK_DensToJ(testMat, testMat);
 matpsi.JK_DensToK(testMat);
+matpsi.JK_DensToK(testMat, testMat);
 matpsi.JK_OccOrbToJ(testMat);
+matpsi.JK_OccOrbToJ(testMat, testMat);
 matpsi.JK_OccOrbToK(testMat);
+matpsi.JK_OccOrbToK(testMat, testMat);
 
 % DFT
 matpsi.DFT_Initialize('b3lyp');

@@ -123,10 +123,10 @@ public:
     const std::string& JK_Type();
     
     // methods computing J/K/G 
-    SharedMatrix JK_DensToJ(SharedMatrix);
-    SharedMatrix JK_DensToK(SharedMatrix);
-    SharedMatrix JK_OccOrbToJ(SharedMatrix);
-    SharedMatrix JK_OccOrbToK(SharedMatrix);
+    std::vector<SharedMatrix> JK_DensToJ(SharedMatrix, SharedMatrix = SharedMatrix());
+    std::vector<SharedMatrix> JK_DensToK(SharedMatrix, SharedMatrix = SharedMatrix());
+    std::vector<SharedMatrix> JK_OccOrbToJ(SharedMatrix, SharedMatrix = SharedMatrix());
+    std::vector<SharedMatrix> JK_OccOrbToK(SharedMatrix, SharedMatrix = SharedMatrix());
     
     // specially for density-fitting JK
     SharedMatrix JK_DFTensor_AuxPriPairs();
@@ -135,8 +135,8 @@ public:
     
     
     void DFT_Initialize(std::string);
-    std::vector<SharedMatrix> DFT_DensToV(SharedMatrix, SharedMatrix);
-    std::vector<SharedMatrix> DFT_OccOrbToV(SharedMatrix, SharedMatrix);
+    std::vector<SharedMatrix> DFT_DensToV(SharedMatrix, SharedMatrix = SharedMatrix());
+    std::vector<SharedMatrix> DFT_OccOrbToV(SharedMatrix, SharedMatrix = SharedMatrix());
     double DFT_EnergyXC();
     
     

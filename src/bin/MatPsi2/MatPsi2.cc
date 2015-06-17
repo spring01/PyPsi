@@ -528,42 +528,40 @@ SharedMatrix DensToEigVectors(SharedMatrix density) {
     return eigVectors;
 }
 
-SharedMatrix MatPsi2::JK_DensToJ(SharedMatrix density) {
-	return JK_OccOrbToJ(DensToEigVectors(density)); 
+std::vector<SharedMatrix> MatPsi2::JK_DensToJ(SharedMatrix densAlpha, SharedMatrix densBeta) {
+	return JK_OccOrbToJ(DensToEigVectors(densAlpha), DensToEigVectors(densBeta)); 
 }
 
-SharedMatrix MatPsi2::JK_DensToK(SharedMatrix density) {
-	return JK_OccOrbToK(DensToEigVectors(density));
+std::vector<SharedMatrix> MatPsi2::JK_DensToK(SharedMatrix densAlpha, SharedMatrix densBeta) {
+	return JK_OccOrbToK(DensToEigVectors(densAlpha), DensToEigVectors(densBeta)); 
 }
 
-SharedMatrix MatPsi2::JK_OccOrbToJ(SharedMatrix occOrb) {
-    if(jk_ == NULL) {
+std::vector<SharedMatrix> MatPsi2::JK_OccOrbToJ(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
+    if(jk_ == NULL)
         JK_Initialize("PKJK");
-    }
     jk_->set_do_K(false);
     jk_->C_left().clear();
-    jk_->C_left().push_back(occOrb);
+    jk_->C_left().push_back(occOrbAlpha);
+    if(occOrbBeta != NULL)
+        jk_->C_left().push_back(occOrbBeta);
     
     jk_->compute();
-    SharedMatrix Jnew = jk_->J()[0];
-    Jnew->hermitivitize();
     jk_->set_do_K(true);
-    return Jnew;
+    return jk_->J();
 }
 
-SharedMatrix MatPsi2::JK_OccOrbToK(SharedMatrix occOrb) {
-    if(jk_ == NULL) {
+std::vector<SharedMatrix> MatPsi2::JK_OccOrbToK(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
+    if(jk_ == NULL)
         JK_Initialize("PKJK");
-    }
     jk_->set_do_J(false);
     jk_->C_left().clear();
-    jk_->C_left().push_back(occOrb);
+    jk_->C_left().push_back(occOrbAlpha);
+    if(occOrbBeta != NULL)
+        jk_->C_left().push_back(occOrbBeta);
     
     jk_->compute();
-    SharedMatrix Knew = jk_->K()[0];
-    Knew->hermitivitize();
     jk_->set_do_J(true);
-    return Knew;
+    return jk_->K();
 }
 
 void MatPsi2::jk_DFException(std::string functionName) {
