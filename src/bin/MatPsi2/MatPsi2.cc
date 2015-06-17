@@ -536,13 +536,13 @@ SharedMatrix MatPsi2::JK_DensToK(SharedMatrix density) {
 	return JK_OccOrbToK(DensToEigVectors(density));
 }
 
-SharedMatrix MatPsi2::JK_OccOrbToJ(SharedMatrix occupiedOrbital) {
+SharedMatrix MatPsi2::JK_OccOrbToJ(SharedMatrix occOrb) {
     if(jk_ == NULL) {
         JK_Initialize("PKJK");
     }
     jk_->set_do_K(false);
     jk_->C_left().clear();
-    jk_->C_left().push_back(occupiedOrbital);
+    jk_->C_left().push_back(occOrb);
     
     jk_->compute();
     SharedMatrix Jnew = jk_->J()[0];
@@ -551,13 +551,13 @@ SharedMatrix MatPsi2::JK_OccOrbToJ(SharedMatrix occupiedOrbital) {
     return Jnew;
 }
 
-SharedMatrix MatPsi2::JK_OccOrbToK(SharedMatrix occupiedOrbital) {
+SharedMatrix MatPsi2::JK_OccOrbToK(SharedMatrix occOrb) {
     if(jk_ == NULL) {
         JK_Initialize("PKJK");
     }
     jk_->set_do_J(false);
     jk_->C_left().clear();
-    jk_->C_left().push_back(occupiedOrbital);
+    jk_->C_left().push_back(occOrb);
     
     jk_->compute();
     SharedMatrix Knew = jk_->K()[0];
@@ -570,10 +570,7 @@ void MatPsi2::jk_DFException(std::string functionName) {
     if(jk_ == NULL) {
         JK_Initialize("DFJK");
     }
-    if(!boost::iequals(jk_->JKtype(), "DFJK")) {
-        throw PSIEXCEPTION(functionName + ": Can only be used with Density-fitting JK.");
-    }
-    if(!boost::static_pointer_cast<DFJK>(jk_)->IsCore()) {
+    if((!boost::iequals(jk_->JKtype(), "DFJK")) || dynamic_cast<DFJK*>(jk_.get()) == NULL) {
         throw PSIEXCEPTION(functionName + ": Can only be used with Density-fitting JK.");
     }
 }
@@ -612,7 +609,7 @@ std::vector<SharedMatrix> MatPsi2::DFT_DensToV(SharedMatrix densAlpha, SharedMat
 
 std::vector<SharedMatrix> MatPsi2::DFT_OccOrbToV(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
     if(dftPotential_ == NULL)
-        throw PSIEXCEPTION("DFT_OccOrbToV: dftPotential_ hasn't been initialized.");
+        DFT_Initialize("B3LYP");
     if(dynamic_cast<UV*>(dftPotential_.get()) != NULL && occOrbBeta == NULL)
         throw PSIEXCEPTION("DFT_OccOrbToV: Unrestricted functional requires both alpha and beta orbital.");
     std::vector<SharedMatrix> & C = dftPotential_->C();
