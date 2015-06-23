@@ -194,6 +194,42 @@ boost::shared_ptr<SuperFunctional> build_b3lyp_superfunctional(int max_points, i
     return super;
 }
 
+boost::shared_ptr<SuperFunctional> build_b3lypv5_superfunctional(int max_points, int deriv)
+{
+    boost::shared_ptr<SuperFunctional> super;
+    
+    // add a B3LYP functional; added by spring
+    super = SuperFunctional::blank();
+    super->set_max_points(max_points);
+    super->set_deriv(deriv);
+    super->set_name("B3LYP");
+    super->set_description("    B3LYP Hybrid-GGA Exchange-Correlation Functional\n");
+    super->set_citation("    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n");
+    
+    // B3_X
+    super->add_x_functional(build_b3_x_functional());
+    
+    // LYP_C
+    boost::shared_ptr<Functional> lyp = Functional::build_base("LYP_C");
+    lyp->set_name("LYP_C");
+    lyp->set_alpha(0.81);
+    
+    // VWN5
+    boost::shared_ptr<Functional> vwn = build_vwn5_c_functional();
+    vwn->set_alpha(0.19);
+    super->add_c_functional(vwn);
+    super->add_c_functional(lyp);
+    
+    // Set GKS up after adding functionals
+    super->set_x_omega(0.0);
+    super->set_c_omega(0.0);
+    super->set_x_alpha(0.2);
+    super->set_c_alpha(0.0);
+    super->allocate();
+
+    return super;
+}
+
 boost::shared_ptr<SuperFunctional> build_lsda_superfunctional(int max_points, int deriv)
 {
     boost::shared_ptr<SuperFunctional> super;
@@ -295,6 +331,8 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::build(const std::string& ali
     std::transform(name.begin(), name.end(), name.begin(), ::tolower);
     if(!name.compare("b3lyp")) {
         super = build_b3lyp_superfunctional(max_points, deriv);
+    } else if(!name.compare("b3lypv5")) {
+        super = build_b3lypv5_superfunctional(max_points, deriv);
     } else if(!name.compare("lsda") || !name.compare("svwn") || !name.compare("svwn3")) {
         super = build_lsda_superfunctional(max_points, deriv);
 	} else if(!name.compare("svwn5")) {
