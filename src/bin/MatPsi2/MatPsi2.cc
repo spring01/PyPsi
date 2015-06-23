@@ -90,6 +90,9 @@ MatPsi2::MatPsi2(SharedMatrix cartesian, const std::string& basisname, int charg
     int nbf[] = { basis_->nbf() };
     matfac_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
     matfac_->init_with(1, nbf, nbf);
+    
+    // set default DFT functional as B3LYP
+    process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
 }
 
 void MatPsi2::create_basis() {
@@ -607,7 +610,7 @@ std::vector<SharedMatrix> MatPsi2::DFT_DensToV(SharedMatrix densAlpha, SharedMat
 
 std::vector<SharedMatrix> MatPsi2::DFT_OccOrbToV(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
     if(dftPotential_ == NULL)
-        DFT_Initialize("B3LYP");
+        DFT_Initialize(process_environment_.options.get_str("DFT_FUNCTIONAL"));
     if(dynamic_cast<UV*>(dftPotential_.get()) != NULL && occOrbBeta == NULL)
         throw PSIEXCEPTION("DFT_OccOrbToV: Unrestricted functional requires both alpha and beta orbital.");
     std::vector<SharedMatrix> & C = dftPotential_->C();
@@ -630,7 +633,6 @@ void MatPsi2::SCF_SetSCFType(std::string scfType) {
     std::transform(scfType.begin(), scfType.end(), scfType.begin(), ::toupper);
     process_environment_.options.set_global_str("REFERENCE", scfType);
     process_environment_.options.set_global_str("GUESS", "CORE");
-    process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
 }
 
 void MatPsi2::SCF_SetGuessOrb(SharedMatrix guessOrb) {
