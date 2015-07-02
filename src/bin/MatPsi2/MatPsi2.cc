@@ -477,7 +477,7 @@ void MatPsi2::JK_Initialize(std::string jktype, std::string auxBasisName) {
     if(jk_ != NULL)
         jk_->finalize();
     if(wfn_ == NULL) {
-        if(Molecule_NumElectrons() % 2) {
+        if(molecule_->multiplicity() > 1) {
             wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, basis_));
         } else {
             wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, basis_));
@@ -600,7 +600,7 @@ SharedMatrix MatPsi2::JK_DFMetric_InvJHalf() {
 void MatPsi2::DFT_Initialize(std::string functionalName) {
     std::transform(functionalName.begin(), functionalName.end(), functionalName.begin(), ::toupper);
     process_environment_.options.set_global_str("DFT_FUNCTIONAL", functionalName);
-    dftPotential_ = VBase::build_V(process_environment_, process_environment_.options,(Molecule_NumElectrons() % 2 == 0 ? "RV" : "UV"));
+    dftPotential_ = VBase::build_V(process_environment_, process_environment_.options,(molecule_->multiplicity() > 1 ? "UV" : "RV"));
     dftPotential_->initialize();
 }
 
@@ -646,13 +646,13 @@ double MatPsi2::SCF_RunSCF() {
     std::string scfType = process_environment_.options.get_str("REFERENCE");
     //~ jk_->set_do_wK(false);
     if(scfType == "RHF") {
-        if(Molecule_NumElectrons() % 2)
+        if(molecule_->multiplicity() > 1)
             throw PSIEXCEPTION("SCF_RunSCF: RHF can handle singlets only.");
         wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
     } else if(scfType == "UHF") {
         wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, jk_));
     } else if(scfType == "RKS") {
-        if(Molecule_NumElectrons() % 2)
+        if(molecule_->multiplicity() > 1)
             throw PSIEXCEPTION("SCF_RunSCF: RKS can handle singlets only.");
         //~ jk_->set_do_wK(true);
         //~ process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
@@ -776,7 +776,7 @@ SharedMatrix MatPsi2::SCF_Gradient() {
 SharedMatrix MatPsi2::SCF_GuessDensity() {
     if(jk_ == NULL)
         JK_Initialize("PKJK");
-    if(Molecule_NumElectrons() % 2) {
+    if(molecule_->multiplicity() > 1) {
         process_environment_.options.set_global_str("REFERENCE", "UHF");
         wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, jk_));
     } else {

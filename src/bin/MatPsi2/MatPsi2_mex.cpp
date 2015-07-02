@@ -371,7 +371,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         else if (nrhs==4 && mxGetM(prhs[2]) == nbf && mxGetN(prhs[2]) == nbf && mxGetM(prhs[3]) == nbf && mxGetN(prhs[3]) == nbf)
             vecOfJMats = MatPsi_obj->JK_DensToJ(InputMatrix(prhs[2]), InputMatrix(prhs[3]));
         else
-            mexErrMsgTxt("JK_DensToJ(occOrbAlpha, occOrbBeta): 1 or 2 nbf by nbf matrix(ces) input expected.");
+            mexErrMsgTxt("JK_DensToJ(densAlpha, densBeta): 1 or 2 nbf by nbf matrix(ces) input expected.");
         OutputVectorOfSymmMatrices(plhs[0], vecOfJMats);
         return;
     }
@@ -382,7 +382,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         else if (nrhs==4 && mxGetM(prhs[2]) == nbf && mxGetN(prhs[2]) == nbf && mxGetM(prhs[3]) == nbf && mxGetN(prhs[3]) == nbf)
             vecOfKMats = MatPsi_obj->JK_DensToK(InputMatrix(prhs[2]), InputMatrix(prhs[3]));
         else
-            mexErrMsgTxt("JK_DensToK(occOrbAlpha, occOrbBeta): 1 or 2 nbf by nbf matrix(ces) input expected.");
+            mexErrMsgTxt("JK_DensToK(densAlpha, densBeta): 1 or 2 nbf by nbf matrix(ces) input expected.");
         OutputVectorOfSymmMatrices(plhs[0], vecOfKMats);
         return;
     }
