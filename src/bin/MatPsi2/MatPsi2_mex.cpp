@@ -352,7 +352,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if (!strcmp("JK_Initialize", cmd)) {
         if ( (nrhs!=3 && nrhs!=4) || !mxIsChar(prhs[2]) )
             mexErrMsgTxt("JK_Initialize(\"jktype\"): String input expected.");
-        std::string auxiliaryBasisSetName;
         if (nrhs==3) {
             MatPsi_obj->JK_Initialize((std::string)mxArrayToString(prhs[2]));
         }else {

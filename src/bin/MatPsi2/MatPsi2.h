@@ -47,6 +47,8 @@ protected:
     // create basis object and one & two electron integral factories 
     void create_basis_and_integral_factories();
     
+    void create_wfn();
+    
     // exception function for DFJK utilities
     void jk_DFException(std::string functionName);
     

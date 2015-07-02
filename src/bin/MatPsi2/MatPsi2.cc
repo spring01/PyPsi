@@ -91,6 +91,13 @@ MatPsi2::MatPsi2(SharedMatrix cartesian, const std::string& basisname, int charg
     matfac_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
     matfac_->init_with(1, nbf, nbf);
     
+    // set default SCF reference according to multiplicity
+    if(molecule_->multiplicity() > 1) {
+        process_environment_.options.set_global_str("REFERENCE", "UHF");
+    } else {
+        process_environment_.options.set_global_str("REFERENCE", "RHF");
+    }
+    
     // set default DFT functional as B3LYP
     process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
 }
@@ -477,10 +484,15 @@ void MatPsi2::JK_Initialize(std::string jktype, std::string auxBasisName) {
     if(jk_ != NULL)
         jk_->finalize();
     if(wfn_ == NULL) {
-        if(molecule_->multiplicity() > 1) {
+        std::string scfType = process_environment_.options.get_str("REFERENCE");
+        if(scfType == "RHF" || scfType == "RKS") {
+            if(molecule_->multiplicity() > 1)
+                throw PSIEXCEPTION("JK_Initialize: RHF or RKS can handle singlets only.");
+            wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, basis_));
+        } else if(scfType == "UHF" || scfType == "UKS") {
             wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, basis_));
         } else {
-            wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, basis_));
+            throw PSIEXCEPTION("JK_Initialize: Reference SCF type not recognized.");
         }
         process_environment_.set_wavefunction(wfn_);
         wfn_->extern_finalize();
@@ -600,7 +612,18 @@ SharedMatrix MatPsi2::JK_DFMetric_InvJHalf() {
 void MatPsi2::DFT_Initialize(std::string functionalName) {
     std::transform(functionalName.begin(), functionalName.end(), functionalName.begin(), ::toupper);
     process_environment_.options.set_global_str("DFT_FUNCTIONAL", functionalName);
-    dftPotential_ = VBase::build_V(process_environment_, process_environment_.options,(molecule_->multiplicity() > 1 ? "UV" : "RV"));
+    std::string scfType = process_environment_.options.get_str("REFERENCE");
+    std::string dftType;
+    if(scfType == "RHF" || scfType == "RKS") {
+        if(molecule_->multiplicity() > 1)
+            throw PSIEXCEPTION("DFT_Initialize: RHF or RKS can handle singlets only.");
+        dftType = "RV";
+    } else if(scfType == "UHF" || scfType == "UKS") {
+        dftType = "UV";
+    } else {
+        throw PSIEXCEPTION("DFT_Initialize: Reference SCF type not recognized.");
+    }
+    dftPotential_ = VBase::build_V(process_environment_, process_environment_.options, dftType);
     dftPotential_->initialize();
 }
 
@@ -640,28 +663,29 @@ void MatPsi2::SCF_SetGuessOrb(SharedMatrix guessOrb) {
     guessOrbital_ = guessOrb;
 }
 
-double MatPsi2::SCF_RunSCF() {
+void MatPsi2::create_wfn() {
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     std::string scfType = process_environment_.options.get_str("REFERENCE");
-    //~ jk_->set_do_wK(false);
     if(scfType == "RHF") {
         if(molecule_->multiplicity() > 1)
-            throw PSIEXCEPTION("SCF_RunSCF: RHF can handle singlets only.");
+            throw PSIEXCEPTION("create_wfn: RHF can handle singlets only.");
         wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
     } else if(scfType == "UHF") {
         wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, jk_));
     } else if(scfType == "RKS") {
         if(molecule_->multiplicity() > 1)
-            throw PSIEXCEPTION("SCF_RunSCF: RKS can handle singlets only.");
-        //~ jk_->set_do_wK(true);
-        //~ process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
+            throw PSIEXCEPTION("create_wfn: RKS can handle singlets only.");
         wfn_ = boost::shared_ptr<scf::RKS>(new scf::RKS(process_environment_, jk_));
     } else if(scfType == "UKS") {
-        //~ jk_->set_do_wK(true);
-        //~ process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
         wfn_ = boost::shared_ptr<scf::UKS>(new scf::UKS(process_environment_, jk_));
+    } else {
+        throw PSIEXCEPTION("create_wfn: SCF type not recognized.");
     }
+}
+
+double MatPsi2::SCF_RunSCF() {
+    create_wfn();
     if(process_environment_.options.get_str("GUESS") == "ORBITAL") {
         wfn_->SetGuessOrbital(guessOrbital_);
     }
@@ -774,15 +798,7 @@ SharedMatrix MatPsi2::SCF_Gradient() {
 }
 
 SharedMatrix MatPsi2::SCF_GuessDensity() {
-    if(jk_ == NULL)
-        JK_Initialize("PKJK");
-    if(molecule_->multiplicity() > 1) {
-        process_environment_.options.set_global_str("REFERENCE", "UHF");
-        wfn_ = boost::shared_ptr<scf::UHF>(new scf::UHF(process_environment_, jk_));
-    } else {
-        process_environment_.options.set_global_str("REFERENCE", "RHF");
-        wfn_ = boost::shared_ptr<scf::RHF>(new scf::RHF(process_environment_, jk_));
-    }
+    create_wfn();
     process_environment_.set_wavefunction(wfn_);
     return wfn_->GuessDensity();
 }

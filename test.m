@@ -95,10 +95,12 @@ matpsi.DFT_Initialize('b3lyp');
 matpsi.DFT_DensToV(testMat);
 matpsi.DFT_EnergyXC();
 matpsi.Molecule_SetChargeMult(1,2);
+matpsi.SCF_SetSCFType('uks');
 matpsi.DFT_Initialize('b3lyp');
 matpsi.DFT_DensToV(testMat, testMat);
 matpsi.DFT_EnergyXC();
 matpsi.Molecule_SetChargeMult(0,1);
+matpsi.SCF_SetSCFType('rhf');
 
 % SCF
 matpsi.SCF_RunSCF();
