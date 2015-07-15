@@ -249,6 +249,22 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_OccOrbToK', this.objectHandle, varargin{:});
         end
         
+        function varargout = JK_CalcAllFromDens(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_CalcAllFromDens', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = JK_CalcAllFromOrb(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_CalcAllFromOrb', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = JK_RetrieveJ(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_RetrieveJ', this.objectHandle, varargin{:});
+        end
+        
+        function varargout = JK_RetrieveK(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_RetrieveK', this.objectHandle, varargin{:});
+        end
+        
         function varargout = JK_DFTensor_AuxPriPairs(this, varargin)
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_DFTensor_AuxPriPairs', this.objectHandle, varargin{:});
         end

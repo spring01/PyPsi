@@ -555,12 +555,7 @@ std::vector<SharedMatrix> MatPsi2::JK_OccOrbToJ(SharedMatrix occOrbAlpha, Shared
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     jk_->set_do_K(false);
-    jk_->C_left().clear();
-    jk_->C_left().push_back(occOrbAlpha);
-    if(occOrbBeta != NULL)
-        jk_->C_left().push_back(occOrbBeta);
-    
-    jk_->compute();
+    JK_CalcAllFromOrb(occOrbAlpha, occOrbBeta);
     jk_->set_do_K(true);
     return jk_->J();
 }
@@ -569,14 +564,35 @@ std::vector<SharedMatrix> MatPsi2::JK_OccOrbToK(SharedMatrix occOrbAlpha, Shared
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     jk_->set_do_J(false);
+    JK_CalcAllFromOrb(occOrbAlpha, occOrbBeta);
+    jk_->set_do_J(true);
+    return jk_->K();
+}
+
+void MatPsi2::JK_CalcAllFromDens(SharedMatrix densAlpha, SharedMatrix densBeta) {
+    JK_CalcAllFromOrb(DensToEigVectors(densAlpha), DensToEigVectors(densBeta));
+}
+
+void MatPsi2::JK_CalcAllFromOrb(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
+    if(jk_ == NULL)
+        throw PSIEXCEPTION("JK_CalcAllFromOrb: Please initialize jk_ first.");
     jk_->C_left().clear();
     jk_->C_left().push_back(occOrbAlpha);
     if(occOrbBeta != NULL)
         jk_->C_left().push_back(occOrbBeta);
-    
     jk_->compute();
-    jk_->set_do_J(true);
-    return jk_->K();
+}
+
+std::vector<SharedMatrix> MatPsi2::JK_RetrieveJ() {
+	if(jk_ == NULL)
+		throw PSIEXCEPTION("JK_RetriveJ: J/K calculation has not been done.");
+    return jk_->J();
+}
+
+std::vector<SharedMatrix> MatPsi2::JK_RetrieveK() {
+	if(jk_ == NULL)
+		throw PSIEXCEPTION("JK_RetriveK: J/K calculation has not been done.");
+    return jk_->J();
 }
 
 void MatPsi2::jk_DFException(std::string functionName) {

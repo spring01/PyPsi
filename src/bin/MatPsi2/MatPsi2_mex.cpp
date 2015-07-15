@@ -407,6 +407,32 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         OutputVectorOfSymmMatrices(plhs[0], vecOfKMats);
         return;
     }
+    if (!strcmp("JK_CalcAllFromDens", cmd)) {
+        if (nrhs==3 && mxGetM(prhs[2]) == nbf && mxGetN(prhs[2]) == nbf)
+            MatPsi_obj->JK_CalcAllFromDens(InputMatrix(prhs[2]));
+        else if (nrhs==4 && mxGetM(prhs[2]) == nbf && mxGetN(prhs[2]) == nbf && mxGetM(prhs[3]) == nbf && mxGetN(prhs[3]) == nbf)
+            MatPsi_obj->JK_CalcAllFromDens(InputMatrix(prhs[2]), InputMatrix(prhs[3]));
+        else
+            mexErrMsgTxt("JK_CalcAllFromDens(densAlpha, densBeta): 1 or 2 nbf by nbf matrix(ces) input expected.");
+        return;
+    }
+    if (!strcmp("JK_CalcAllFromOrb", cmd)) {
+        if (nrhs==3 && mxGetM(prhs[2]) == nbf)
+            MatPsi_obj->JK_CalcAllFromOrb(InputMatrix(prhs[2]));
+        else if (nrhs==4 && mxGetM(prhs[2]) == nbf && mxGetM(prhs[3]) == nbf)
+            MatPsi_obj->JK_CalcAllFromOrb(InputMatrix(prhs[2]), InputMatrix(prhs[3]));
+        else
+            mexErrMsgTxt("JK_CalcAllFromOrb(occOrbAlpha, occOrbBeta): 1 or 2 nbf by any matrix(ces) input expected.");
+        return;
+    }
+    if (!strcmp("JK_RetrieveJ", cmd)) {
+        OutputVectorOfSymmMatrices(plhs[0], MatPsi_obj->JK_RetrieveJ());
+        return;
+    }
+    if (!strcmp("JK_RetrieveK", cmd)) {
+        OutputVectorOfSymmMatrices(plhs[0], MatPsi_obj->JK_RetrieveK());
+        return;
+    }
     if (!strcmp("JK_DFTensor_AuxPriPairs", cmd)) {
         // Call the method
         OutputMatrix(plhs[0], MatPsi_obj->JK_DFTensor_AuxPriPairs());

@@ -124,11 +124,15 @@ public:
     void JK_Initialize(std::string jktype, std::string auxiliaryBasisSetName = "CC-PVDZ-JKFIT");
     const std::string& JK_Type();
     
-    // methods computing J/K/G 
+    // methods computing J/K 
     std::vector<SharedMatrix> JK_DensToJ(SharedMatrix, SharedMatrix = SharedMatrix());
     std::vector<SharedMatrix> JK_DensToK(SharedMatrix, SharedMatrix = SharedMatrix());
     std::vector<SharedMatrix> JK_OccOrbToJ(SharedMatrix, SharedMatrix = SharedMatrix());
     std::vector<SharedMatrix> JK_OccOrbToK(SharedMatrix, SharedMatrix = SharedMatrix());
+    void JK_CalcAllFromDens(SharedMatrix, SharedMatrix = SharedMatrix());
+    void JK_CalcAllFromOrb(SharedMatrix, SharedMatrix = SharedMatrix());
+    std::vector<SharedMatrix> JK_RetrieveJ();
+    std::vector<SharedMatrix> JK_RetrieveK();
     
     // specially for density-fitting JK
     SharedMatrix JK_DFTensor_AuxPriPairs();
