@@ -592,7 +592,7 @@ std::vector<SharedMatrix> MatPsi2::JK_RetrieveJ() {
 std::vector<SharedMatrix> MatPsi2::JK_RetrieveK() {
 	if(jk_ == NULL)
 		throw PSIEXCEPTION("JK_RetriveK: J/K calculation has not been done.");
-    return jk_->J();
+    return jk_->K();
 }
 
 void MatPsi2::jk_DFException(std::string functionName) {
