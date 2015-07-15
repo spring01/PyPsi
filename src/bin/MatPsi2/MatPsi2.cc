@@ -555,7 +555,7 @@ std::vector<SharedMatrix> MatPsi2::JK_OccOrbToJ(SharedMatrix occOrbAlpha, Shared
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     jk_->set_do_K(false);
-    JK_CalcAllFromOrb(occOrbAlpha, occOrbBeta);
+    JK_CalcAllFromOccOrb(occOrbAlpha, occOrbBeta);
     jk_->set_do_K(true);
     return jk_->J();
 }
@@ -564,18 +564,18 @@ std::vector<SharedMatrix> MatPsi2::JK_OccOrbToK(SharedMatrix occOrbAlpha, Shared
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     jk_->set_do_J(false);
-    JK_CalcAllFromOrb(occOrbAlpha, occOrbBeta);
+    JK_CalcAllFromOccOrb(occOrbAlpha, occOrbBeta);
     jk_->set_do_J(true);
     return jk_->K();
 }
 
 void MatPsi2::JK_CalcAllFromDens(SharedMatrix densAlpha, SharedMatrix densBeta) {
-    JK_CalcAllFromOrb(DensToEigVectors(densAlpha), DensToEigVectors(densBeta));
+    JK_CalcAllFromOccOrb(DensToEigVectors(densAlpha), DensToEigVectors(densBeta));
 }
 
-void MatPsi2::JK_CalcAllFromOrb(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
+void MatPsi2::JK_CalcAllFromOccOrb(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
     if(jk_ == NULL)
-        throw PSIEXCEPTION("JK_CalcAllFromOrb: Please initialize jk_ first.");
+        JK_Initialize("PKJK");
     jk_->C_left().clear();
     jk_->C_left().push_back(occOrbAlpha);
     if(occOrbBeta != NULL)

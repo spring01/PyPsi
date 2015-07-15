@@ -253,8 +253,8 @@ classdef MatPsi2 < handle
             [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_CalcAllFromDens', this.objectHandle, varargin{:});
         end
         
-        function varargout = JK_CalcAllFromOrb(this, varargin)
-            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_CalcAllFromOrb', this.objectHandle, varargin{:});
+        function varargout = JK_CalcAllFromOccOrb(this, varargin)
+            [varargout{1:nargout}] = MatPsi2.MatPsi2_mex('JK_CalcAllFromOccOrb', this.objectHandle, varargin{:});
         end
         
         function varargout = JK_RetrieveJ(this, varargin)

@@ -58,7 +58,7 @@ matpsi.Integrals_IndicesForK();
 % JK
 matpsi.JK_Initialize('PKJK');
 matpsi.JK_Type();
-matpsi.JK_CalcAllFromOrb(testMat);
+matpsi.JK_CalcAllFromOccOrb(testMat);
 matpsi.JK_RetrieveJ();
 matpsi.JK_RetrieveK();
 matpsi.JK_CalcAllFromDens(testMat);

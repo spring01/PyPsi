@@ -130,7 +130,7 @@ public:
     std::vector<SharedMatrix> JK_OccOrbToJ(SharedMatrix, SharedMatrix = SharedMatrix());
     std::vector<SharedMatrix> JK_OccOrbToK(SharedMatrix, SharedMatrix = SharedMatrix());
     void JK_CalcAllFromDens(SharedMatrix, SharedMatrix = SharedMatrix());
-    void JK_CalcAllFromOrb(SharedMatrix, SharedMatrix = SharedMatrix());
+    void JK_CalcAllFromOccOrb(SharedMatrix, SharedMatrix = SharedMatrix());
     std::vector<SharedMatrix> JK_RetrieveJ();
     std::vector<SharedMatrix> JK_RetrieveK();
     

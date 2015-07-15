@@ -416,13 +416,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
             mexErrMsgTxt("JK_CalcAllFromDens(densAlpha, densBeta): 1 or 2 nbf by nbf matrix(ces) input expected.");
         return;
     }
-    if (!strcmp("JK_CalcAllFromOrb", cmd)) {
+    if (!strcmp("JK_CalcAllFromOccOrb", cmd)) {
         if (nrhs==3 && mxGetM(prhs[2]) == nbf)
-            MatPsi_obj->JK_CalcAllFromOrb(InputMatrix(prhs[2]));
+            MatPsi_obj->JK_CalcAllFromOccOrb(InputMatrix(prhs[2]));
         else if (nrhs==4 && mxGetM(prhs[2]) == nbf && mxGetM(prhs[3]) == nbf)
-            MatPsi_obj->JK_CalcAllFromOrb(InputMatrix(prhs[2]), InputMatrix(prhs[3]));
+            MatPsi_obj->JK_CalcAllFromOccOrb(InputMatrix(prhs[2]), InputMatrix(prhs[3]));
         else
-            mexErrMsgTxt("JK_CalcAllFromOrb(occOrbAlpha, occOrbBeta): 1 or 2 nbf by any matrix(ces) input expected.");
+            mexErrMsgTxt("JK_CalcAllFromOccOrb(occOrbAlpha, occOrbBeta): 1 or 2 nbf by any matrix(ces) input expected.");
         return;
     }
     if (!strcmp("JK_RetrieveJ", cmd)) {
