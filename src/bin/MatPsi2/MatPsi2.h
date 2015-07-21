@@ -9,7 +9,6 @@
 #include <libscf_solver/rhf.h>
 #include <libscf_solver/ks.h>
 #include <boost/regex.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 

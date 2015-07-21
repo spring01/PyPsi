@@ -69,6 +69,11 @@ PSIO::~PSIO() {
   free(psio_unit);
   state_ = 0;
   files_keywords_.clear();
+  
+    // clear files and folder; added by spring
+    _psio_manager_->psiclean();
+    rmdir(_psio_manager_->get_default_path().c_str());
+    
 }
 
 //~ int psio_done(void) {

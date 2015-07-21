@@ -31,7 +31,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/foreach.hpp>
-#include <boost/filesystem.hpp>
 
 #include <stdexcept>
 #include <cstdio>
@@ -352,11 +351,15 @@ boost::shared_ptr<BasisSet> BasisSet::construct(Process::Environment& process_en
 
         BOOST_FOREACH(string user_file, user_list)
         {
-            boost::filesystem::path bf_path;
-            bf_path = boost::filesystem::system_complete(user_file);
-//fprintf(outfile, "Working on file %s\n", user_file.c_str());
-            // Load in the basis set and remove it from atomsymbol_to_basisname
-            vector<string> file = parser->load_file(bf_path.string(), basis.first);
+            //~ boost::filesystem::path bf_path;
+            //~ bf_path = boost::filesystem::system_complete(user_file);
+//~ //fprintf(outfile, "Working on file %s\n", user_file.c_str());
+            //~ // Load in the basis set and remove it from atomsymbol_to_basisname
+            //~ vector<string> file = parser->load_file(bf_path.string(), basis.first);
+            
+            char* user_file_full_path = realpath(user_file.c_str(), NULL);
+            vector<string> file = parser->load_file(std::string(user_file_full_path), basis.first);
+            free(user_file_full_path);
 
             BOOST_FOREACH(map_sv::value_type& atom, basis.second) {
 //fprintf(outfile, "Working on atom %s\n", atom.first.c_str());

@@ -39,15 +39,29 @@
 #include <libpsio/psio.hpp>
 #include <libparallel/parallel.h>
 
-#include <boost/filesystem.hpp>
+#include <psifiles.h>
 
 namespace psi {
 
 void PSIO::open(unsigned int unit, int status) {
     
-    // check if our working folder exists 
-    if ( !boost::filesystem::exists(_psio_manager_->get_default_path()) ) {
-        boost::filesystem::create_directories(_psio_manager_->get_default_path());
+    // initialize psio if necessary; added by spring
+    if(_psio_manager_->get_default_path() == "") {
+        std::string matpsi_tempdir_template = P_tmpdir;
+        matpsi_tempdir_template += "/matpsi2.temp.XXXXXX";
+        char* template_cstr = strdup(matpsi_tempdir_template.c_str());
+        std::string matpsi_tempdir = mkdtemp(template_cstr);
+        free(template_cstr);
+        pid_ = matpsi_tempdir.substr(matpsi_tempdir.length() - 6);
+        for (int i=1; i<=PSIO_MAXVOL; ++i) {
+            char kwd[20];
+            sprintf(kwd, "VOLUME%u", i);
+            filecfg_kwd("DEFAULT", kwd, PSIF_CHKPT, matpsi_tempdir.c_str());
+            filecfg_kwd("DEFAULT", kwd, -1, matpsi_tempdir.c_str());
+        }
+        filecfg_kwd("DEFAULT", "NAME", -1, psi_file_prefix);
+        filecfg_kwd("DEFAULT", "NVOLUME", -1, "1");
+        _psio_manager_->set_default_path(matpsi_tempdir);
     }
     
   unsigned int i;

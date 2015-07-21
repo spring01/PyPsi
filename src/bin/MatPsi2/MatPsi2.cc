@@ -60,21 +60,7 @@ MatPsi2::MatPsi2(SharedMatrix cartesian, const std::string& basisname, int charg
     Wavefunction::initialize_singletons();
     
     // initialize psio 
-    boost::filesystem::path uniqname = boost::filesystem::unique_path();
-    std::string matpsi_id = uniqname.string();
-    boost::filesystem::path tempdir = boost::filesystem::temp_directory_path();
-    std::string matpsi_tempdir_str = tempdir.string();
-    matpsi_tempdir_str += "/matpsi2.temp.";
-    matpsi_tempdir_str += matpsi_id;
     psio_ = boost::shared_ptr<PSIO>(new PSIO);
-    psio_->set_pid(matpsi_id);
-    for (int i=1; i<=PSIO_MAXVOL; ++i) {
-        char kwd[20];
-        sprintf(kwd, "VOLUME%u", i);
-        psio_->filecfg_kwd("DEFAULT", kwd, PSIF_CHKPT, matpsi_tempdir_str.c_str());
-        psio_->filecfg_kwd("DEFAULT", kwd, -1, matpsi_tempdir_str.c_str());
-    }
-    psio_->_psio_manager_->set_default_path(matpsi_tempdir_str);
     process_environment_.set_psio(psio_);
     
     // create molecule object and set its basis set name 
@@ -129,8 +115,6 @@ MatPsi2::~MatPsi2() {
         wfn_->extern_finalize();
     if(jk_ != NULL)
         jk_->finalize();
-    psio_->_psio_manager_->psiclean();
-    boost::filesystem::remove_all(psio_->_psio_manager_->get_file_path(0));
 }
 
 void MatPsi2::Settings_SetMaxNumCPUCores(int ncores) {

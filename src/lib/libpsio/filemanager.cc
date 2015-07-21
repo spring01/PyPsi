@@ -20,7 +20,7 @@
  *@END LICENSE
  */
 
-#include <boost/thread.hpp>
+//~ #include <boost/thread.hpp>
 
 #include "psio.hpp"
 //~ #include "psio.h"
@@ -30,7 +30,7 @@
 
 namespace psi{
 
-PSIOManager::PSIOManager() : default_path_("/tmp/")
+PSIOManager::PSIOManager() : default_path_("")
 {
 }
 PSIOManager::~PSIOManager()
