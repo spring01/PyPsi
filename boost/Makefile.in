@@ -27,7 +27,7 @@ dclean:
 boost.compiled:
 ifeq ($(dont_compile_boost),0)
 	if [ ! -d $(BOOSTVER) ]; then (tar zxf $(srcdir)/$(BOOSTVER)_shrinked.tar.gz); fi
-	(cd $(BOOSTVER) && ./bootstrap.sh --with-libraries=regex,system,thread && ./b2 toolset=$(CC) cflags=-fpic && cd bin.v2/libs && find . -name '*.a' -exec cp {} . \;)
+	(cd $(BOOSTVER) && ./bootstrap.sh --with-libraries=python,regex,system,thread && ./b2 toolset=$(CC) cflags=-fpic && cd bin.v2/libs && find . -name '*.a' -exec cp {} . \;)
 	touch boost.compiled
 endif
 

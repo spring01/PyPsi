@@ -4,10 +4,9 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
-mexext = $(shell mexext)
-PSITARGET = $(top_objdir)/MatPsi2/MatPsi2_mex.$(mexext)
+PSITARGET = $(top_objdir)/PyPsimodule.so
 
-LDLIBS += $(LAPACK) $(BLAS) $(BOOST_REGEX_LIB) $(BOOST_SYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_LDFLAGS) -lpthread 
+LDLIBS += $(LAPACK) $(BLAS) $(BOOST_PYTHON_LIB) $(BOOST_REGEX_LIB) $(BOOST_SYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_LDFLAGS) -lpthread $(PYTHON_LDFLAGS)
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 
 # gfortranbegin contains main, so we can't link it in or we'll get a linker freakout
@@ -36,15 +35,15 @@ ifeq ($(TARGET_OS),linux-gnu)
    END_EXPORT   = -Wl,--no-whole-archive
 endif
 
-TRUECXXSRC = MatPsi2.cc
-MEXSRC = MatPsi2_mex.cpp
+FUNCSRC = PyPsi.cc
+MODULESRC = PyPsimodule.cpp
 DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
-LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
-MEXOBJ = $(MEXSRC:%.cpp=%.o)
+MODULEOBJ = $(MODULESRC:%.cpp=%.o)
+FUNCOBJ = $(FUNCSRC:%.cc=%.o)
 
 include ../MakeRules
 
 
 install:: $(PSITARGET)
 	$(MKDIRS) $(prefix)
-	-cp `dirname $(PSITARGET)`/@MatPsi2 $(prefix) -r
+	-cp `dirname $(PSITARGET)`/@PyPsi $(prefix) -r

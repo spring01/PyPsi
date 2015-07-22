@@ -1,3 +1,4 @@
+
 #include <libmints/mints.h>
 #include <libfock/jk.h>
 #include <libfock/v.h>
@@ -19,7 +20,7 @@ using namespace std;
 using namespace psi;
 using namespace boost;
 
-class MatPsi2 {
+class PyPsi {
 protected:
     
     std::string basisname_;
@@ -52,12 +53,12 @@ protected:
     void jk_DFException(std::string functionName);
     
 public:
-    // constructor; takes in 2 strings and parse them 
-    MatPsi2(SharedMatrix cartesian, const std::string& basisname, 
+    // constructor
+    PyPsi(SharedMatrix cartesian, const std::string& basisname, 
         int charge, int multiplicity, const std::string& path);
     
     // destructor 
-    virtual ~MatPsi2();
+    virtual ~PyPsi();
     
     // CPU and memory controll 
     int Settings_MaxNumCPUCores() { return process_environment_.get_n_threads(); }
@@ -67,7 +68,6 @@ public:
     void Settings_SetMaxNumCPUCores(int ncores);
     void Settings_SetMaxMemory(std::string);
     void Settings_SetPsiDataDir(std::string path) { process_environment_.set("PSIDATADIR", path); }
-    
     
     
     //*** Molecule properties 
@@ -178,3 +178,4 @@ public:
     SharedMatrix SCF_RHF_K();
     
 };
+

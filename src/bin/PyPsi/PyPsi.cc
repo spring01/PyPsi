@@ -1,5 +1,5 @@
 
-#include "MatPsi2.h"
+#include "PyPsi.hh"
 #include <read_options.cc>
 
 namespace psi {
@@ -8,7 +8,7 @@ namespace psi {
 #else
     FILE* outfile = fopen("/dev/null", "w");
 #endif
-    char* psi_file_prefix = "matpsi2";
+    char* psi_file_prefix = "pypsi";
     std::string outfile_name = "";
     extern int read_options(const std::string &name, Options & options, 
             bool suppress_printing = false);
@@ -38,7 +38,7 @@ unsigned long int parse_memory_str(const std::string& memory_str) {
 }
 
 // Constructor
-MatPsi2::MatPsi2(SharedMatrix cartesian, const std::string& basisname, int charge, int multiplicity, const std::string& path)
+PyPsi::PyPsi(SharedMatrix cartesian, const std::string& basisname, int charge, int multiplicity, const std::string& path)
     : basisname_(basisname)
 {
     // some necessary initializations
@@ -88,7 +88,7 @@ MatPsi2::MatPsi2(SharedMatrix cartesian, const std::string& basisname, int charg
     process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
 }
 
-void MatPsi2::create_basis() {
+void PyPsi::create_basis() {
     // create basis object 
     boost::shared_ptr<PointGroup> c1group(new PointGroup("C1"));
     molecule_->set_point_group(c1group); 
@@ -98,7 +98,7 @@ void MatPsi2::create_basis() {
     molecule_->set_point_group(c1group); // creating basis set object change molecule's point group, for some reasons 
 }
 
-void MatPsi2::create_basis_and_integral_factories() {
+void PyPsi::create_basis_and_integral_factories() {
     
     create_basis();
     
@@ -110,34 +110,34 @@ void MatPsi2::create_basis_and_integral_factories() {
 }
 
 // destructor 
-MatPsi2::~MatPsi2() {
+PyPsi::~PyPsi() {
     if(wfn_ != NULL)
         wfn_->extern_finalize();
     if(jk_ != NULL)
         jk_->finalize();
 }
 
-void MatPsi2::Settings_SetMaxNumCPUCores(int ncores) {
+void PyPsi::Settings_SetMaxNumCPUCores(int ncores) {
     // set cores and update worldcomm_ 
     process_environment_.set_n_threads(ncores);
     worldcomm_ = initialize_communicator(0, NULL, process_environment_);
     process_environment_.set_worldcomm(worldcomm_);
 }
 
-void MatPsi2::Settings_SetMaxMemory(std::string memory_str) {
+void PyPsi::Settings_SetMaxMemory(std::string memory_str) {
     // set memory and update worldcomm_ 
     process_environment_.set_memory(parse_memory_str(memory_str));
     worldcomm_ = initialize_communicator(0, NULL, process_environment_);
     process_environment_.set_worldcomm(worldcomm_);
 }
 
-void MatPsi2::Molecule_Fix() {
+void PyPsi::Molecule_Fix() {
     molecule_->set_orientation_fixed();
     molecule_->set_com_fixed();
     molecule_->set_reinterpret_coordentry(false);
 }
 
-void MatPsi2::Molecule_Free() {
+void PyPsi::Molecule_Free() {
     molecule_->set_orientation_fixed(false);
     molecule_->set_com_fixed(false);
     molecule_->set_reinterpret_coordentry(true);
@@ -145,7 +145,7 @@ void MatPsi2::Molecule_Free() {
     molecule_->update_geometry();
 }
 
-void MatPsi2::Molecule_SetGeometry(SharedMatrix newGeom) {
+void PyPsi::Molecule_SetGeometry(SharedMatrix newGeom) {
     
     // store the old geometry
     Matrix oldgeom = molecule_->geometry();
@@ -170,7 +170,7 @@ void MatPsi2::Molecule_SetGeometry(SharedMatrix newGeom) {
     create_basis_and_integral_factories();
 }
 
-SharedVector MatPsi2::Molecule_AtomicNumbers() {
+SharedVector PyPsi::Molecule_AtomicNumbers() {
     SharedVector zlistvec(new Vector(molecule_->natom()));
     for(int i = 0; i < molecule_->natom(); i++) {
         zlistvec->set(i, (double)molecule_->Z(i));
@@ -178,7 +178,7 @@ SharedVector MatPsi2::Molecule_AtomicNumbers() {
     return zlistvec;
 }
 
-int MatPsi2::Molecule_NumElectrons() {
+int PyPsi::Molecule_NumElectrons() {
     int charge = molecule_->molecular_charge();
     int nelectron  = 0;
     for(int i = 0; i < molecule_->natom(); i++)
@@ -187,7 +187,7 @@ int MatPsi2::Molecule_NumElectrons() {
     return nelectron;
 }
 
-void MatPsi2::Molecule_SetChargeMult(int charge, int mult) {
+void PyPsi::Molecule_SetChargeMult(int charge, int mult) {
     SharedVector charge_mult = Molecule_ChargeMult();
     int nelectron = Molecule_NumElectrons() + charge_mult->get(0) - charge;
     if(mult - 1 > nelectron || mult%2 == nelectron%2){
@@ -197,14 +197,14 @@ void MatPsi2::Molecule_SetChargeMult(int charge, int mult) {
     molecule_->set_multiplicity(mult);
 }
 
-SharedVector MatPsi2::Molecule_ChargeMult() {
+SharedVector PyPsi::Molecule_ChargeMult() {
     SharedVector charge_mult(new Vector(2));
     charge_mult->set(0, (double)molecule_->molecular_charge());
     charge_mult->set(1, (double)molecule_->multiplicity());
     return charge_mult;
 }
 
-void MatPsi2::BasisSet_SetBasisSet(const std::string& basisname) {
+void PyPsi::BasisSet_SetBasisSet(const std::string& basisname) {
     if(jk_ != NULL)
         jk_->finalize();
     psio_->_psio_manager_->psiclean();
@@ -222,7 +222,7 @@ void MatPsi2::BasisSet_SetBasisSet(const std::string& basisname) {
     matfac_->init_with(1, nbf, nbf);
 }
 
-SharedVector MatPsi2::BasisSet_ShellTypes() {
+SharedVector PyPsi::BasisSet_ShellTypes() {
     SharedVector shellTypesVec(new Vector(basis_->nshell()));
     for(int i = 0; i < basis_->nshell(); i++) {
         shellTypesVec->set(i, (double)basis_->shell(i).am());
@@ -230,7 +230,7 @@ SharedVector MatPsi2::BasisSet_ShellTypes() {
     return shellTypesVec;
 }
 
-SharedVector MatPsi2::BasisSet_ShellNumFunctions() {
+SharedVector PyPsi::BasisSet_ShellNumFunctions() {
     SharedVector shellNfuncsVec(new Vector(basis_->nshell()));
     for(int i = 0; i < basis_->nshell(); i++) {
         shellNfuncsVec->set(i, (double)basis_->shell(i).nfunction());
@@ -238,7 +238,7 @@ SharedVector MatPsi2::BasisSet_ShellNumFunctions() {
     return shellNfuncsVec;
 }
 
-SharedVector MatPsi2::BasisSet_ShellNumPrimitives() {
+SharedVector PyPsi::BasisSet_ShellNumPrimitives() {
     SharedVector shellNprimsVec(new Vector(basis_->nshell()));
     for(int i = 0; i < basis_->nshell(); i++) {
         shellNprimsVec->set(i, (double)basis_->shell(i).nprimitive());
@@ -246,7 +246,7 @@ SharedVector MatPsi2::BasisSet_ShellNumPrimitives() {
     return shellNprimsVec;
 }
 
-SharedVector MatPsi2::BasisSet_ShellToCenter() {
+SharedVector PyPsi::BasisSet_ShellToCenter() {
     SharedVector shell2centerVec(new Vector(basis_->nshell()));
     for(int i = 0; i < basis_->nshell(); i++) {
         shell2centerVec->set(i, (double)basis_->shell_to_center(i));
@@ -254,7 +254,7 @@ SharedVector MatPsi2::BasisSet_ShellToCenter() {
     return shell2centerVec;
 }
 
-SharedVector MatPsi2::BasisSet_FuncToCenter() {
+SharedVector PyPsi::BasisSet_FuncToCenter() {
     SharedVector func2centerVec(new Vector(basis_->nbf()));
     for(int i = 0; i < basis_->nbf(); i++) {
         func2centerVec->set(i, (double)basis_->function_to_center(i));
@@ -262,7 +262,7 @@ SharedVector MatPsi2::BasisSet_FuncToCenter() {
     return func2centerVec;
 }
 
-SharedVector MatPsi2::BasisSet_FuncToShell() {
+SharedVector PyPsi::BasisSet_FuncToShell() {
     SharedVector func2shellVec(new Vector(basis_->nbf()));
     for(int i = 0; i < basis_->nbf(); i++) {
         func2shellVec->set(i, (double)basis_->function_to_shell(i));
@@ -270,7 +270,7 @@ SharedVector MatPsi2::BasisSet_FuncToShell() {
     return func2shellVec;
 }
 
-SharedVector MatPsi2::BasisSet_FuncToAngular() {
+SharedVector PyPsi::BasisSet_FuncToAngular() {
     SharedVector func2amVec(new Vector(basis_->nbf()));
     for(int i = 0; i < basis_->nbf(); i++) {
         func2amVec->set(i, (double)basis_->shell(basis_->function_to_shell(i)).am());
@@ -278,7 +278,7 @@ SharedVector MatPsi2::BasisSet_FuncToAngular() {
     return func2amVec;
 }
 
-SharedVector MatPsi2::BasisSet_PrimExp() {
+SharedVector PyPsi::BasisSet_PrimExp() {
     SharedVector primExpsVec(new Vector(basis_->nprimitive()));
     std::vector<double> temp;
     for(int i = 0; i < basis_->nshell(); i++) {
@@ -291,7 +291,7 @@ SharedVector MatPsi2::BasisSet_PrimExp() {
     return primExpsVec;
 }
 
-SharedVector MatPsi2::BasisSet_PrimCoeffUnnorm() {
+SharedVector PyPsi::BasisSet_PrimCoeffUnnorm() {
     SharedVector primCoefsVec(new Vector(basis_->nprimitive()));
     std::vector<double> temp;
     for(int i = 0; i < basis_->nshell(); i++) {
@@ -304,7 +304,7 @@ SharedVector MatPsi2::BasisSet_PrimCoeffUnnorm() {
     return primCoefsVec;
 }
 
-SharedMatrix MatPsi2::Integrals_Overlap() {
+SharedMatrix PyPsi::Integrals_Overlap() {
     SharedMatrix sMat(matfac_->create_matrix("Overlap"));
     boost::shared_ptr<OneBodyAOInt> sOBI(intfac_->ao_overlap());
     sOBI->compute(sMat);
@@ -312,7 +312,7 @@ SharedMatrix MatPsi2::Integrals_Overlap() {
     return sMat;
 }
 
-SharedMatrix MatPsi2::Integrals_Kinetic() {
+SharedMatrix PyPsi::Integrals_Kinetic() {
     SharedMatrix tMat(matfac_->create_matrix("Kinetic"));
     boost::shared_ptr<OneBodyAOInt> tOBI(intfac_->ao_kinetic());
     tOBI->compute(tMat);
@@ -320,7 +320,7 @@ SharedMatrix MatPsi2::Integrals_Kinetic() {
     return tMat;
 }
 
-SharedMatrix MatPsi2::Integrals_Potential() {
+SharedMatrix PyPsi::Integrals_Potential() {
     SharedMatrix vMat(matfac_->create_matrix("Potential"));
     boost::shared_ptr<OneBodyAOInt> vOBI(intfac_->ao_potential());
     vOBI->compute(vMat);
@@ -328,7 +328,7 @@ SharedMatrix MatPsi2::Integrals_Potential() {
     return vMat;
 }
 
-std::vector<SharedMatrix> MatPsi2::Integrals_Dipole() {
+std::vector<SharedMatrix> PyPsi::Integrals_Dipole() {
     std::vector<SharedMatrix> ao_dipole;
     SharedMatrix dipole_x(matfac_->create_matrix("Dipole x"));
     SharedMatrix dipole_y(matfac_->create_matrix("Dipole y"));
@@ -344,7 +344,7 @@ std::vector<SharedMatrix> MatPsi2::Integrals_Dipole() {
     return ao_dipole;
 }
 
-std::vector<SharedMatrix> MatPsi2::Integrals_PotentialEachCore() {
+std::vector<SharedMatrix> PyPsi::Integrals_PotentialEachCore() {
     int natom = molecule_->natom();
     std::vector<SharedMatrix> viMatVec;
     boost::shared_ptr<OneBodyAOInt> viOBI(intfac_->ao_potential());
@@ -362,7 +362,7 @@ std::vector<SharedMatrix> MatPsi2::Integrals_PotentialEachCore() {
     return viMatVec;
 }
 
-SharedMatrix MatPsi2::Integrals_PotentialPtQ(SharedMatrix Zxyz_list) {
+SharedMatrix PyPsi::Integrals_PotentialPtQ(SharedMatrix Zxyz_list) {
     boost::shared_ptr<OneBodyAOInt> viOBI(intfac_->ao_potential());
     boost::shared_ptr<PotentialInt> viPtI = boost::static_pointer_cast<PotentialInt>(viOBI);
     viPtI->set_charge_field(Zxyz_list);
@@ -372,7 +372,7 @@ SharedMatrix MatPsi2::Integrals_PotentialPtQ(SharedMatrix Zxyz_list) {
     return vZxyzListMat;
 }
 
-double MatPsi2::Integrals_ijkl(int i, int j, int k, int l) {
+double PyPsi::Integrals_ijkl(int i, int j, int k, int l) {
     int ish = basis_->function_to_shell(i);
     int jsh = basis_->function_to_shell(j);
     int ksh = basis_->function_to_shell(k);
@@ -399,12 +399,12 @@ inline int ij2I(int i, int j) {
     return i * ( i + 1 ) / 2 + j;
 }
 
-int MatPsi2::Integrals_NumUniqueTEIs() {
+int PyPsi::Integrals_NumUniqueTEIs() {
     int nbf = basis_->nbf();
     return ( nbf * ( nbf + 1 ) * ( nbf * nbf + nbf + 2 ) ) / 8;
 }
 
-void MatPsi2::Integrals_AllUniqueTEIs(double* matpt) {
+void PyPsi::Integrals_AllUniqueTEIs(double* matpt) {
     AOShellCombinationsIterator shellIter = intfac_->shells_iterator();
     int nuniq = Integrals_NumUniqueTEIs();
     const double *buffer = eri_->buffer();
@@ -419,7 +419,7 @@ void MatPsi2::Integrals_AllUniqueTEIs(double* matpt) {
     }
 }
 
-void MatPsi2::Integrals_AllTEIs(double* matpt) {
+void PyPsi::Integrals_AllTEIs(double* matpt) {
     AOShellCombinationsIterator shellIter = intfac_->shells_iterator();
     int nbf = basis_->nbf();
     const double *buffer = eri_->buffer();
@@ -445,7 +445,7 @@ void MatPsi2::Integrals_AllTEIs(double* matpt) {
     }
 }
 
-void MatPsi2::Integrals_IndicesForK(double* indices1, double* indices2) {
+void PyPsi::Integrals_IndicesForK(double* indices1, double* indices2) {
     AOShellCombinationsIterator shellIter = intfac_->shells_iterator();
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
         // Compute quartet
@@ -463,7 +463,7 @@ void MatPsi2::Integrals_IndicesForK(double* indices1, double* indices2) {
     }
 }
 
-void MatPsi2::JK_Initialize(std::string jktype, std::string auxBasisName) {
+void PyPsi::JK_Initialize(std::string jktype, std::string auxBasisName) {
     std::transform(jktype.begin(), jktype.end(), jktype.begin(), ::toupper);
     if(jk_ != NULL)
         jk_->finalize();
@@ -502,7 +502,7 @@ void MatPsi2::JK_Initialize(std::string jktype, std::string auxBasisName) {
     jk_->initialize();
 }
 
-const std::string& MatPsi2::JK_Type() {
+const std::string& PyPsi::JK_Type() {
     if(jk_ == NULL)
         throw PSIEXCEPTION("JK_Type: JK object has not been initialized.");
     return jk_->JKtype();
@@ -527,15 +527,15 @@ SharedMatrix DensToEigVectors(SharedMatrix density) {
     return eigVectors;
 }
 
-std::vector<SharedMatrix> MatPsi2::JK_DensToJ(SharedMatrix densAlpha, SharedMatrix densBeta) {
+std::vector<SharedMatrix> PyPsi::JK_DensToJ(SharedMatrix densAlpha, SharedMatrix densBeta) {
 	return JK_OccOrbToJ(DensToEigVectors(densAlpha), DensToEigVectors(densBeta)); 
 }
 
-std::vector<SharedMatrix> MatPsi2::JK_DensToK(SharedMatrix densAlpha, SharedMatrix densBeta) {
+std::vector<SharedMatrix> PyPsi::JK_DensToK(SharedMatrix densAlpha, SharedMatrix densBeta) {
 	return JK_OccOrbToK(DensToEigVectors(densAlpha), DensToEigVectors(densBeta)); 
 }
 
-std::vector<SharedMatrix> MatPsi2::JK_OccOrbToJ(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
+std::vector<SharedMatrix> PyPsi::JK_OccOrbToJ(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     jk_->set_do_K(false);
@@ -544,7 +544,7 @@ std::vector<SharedMatrix> MatPsi2::JK_OccOrbToJ(SharedMatrix occOrbAlpha, Shared
     return jk_->J();
 }
 
-std::vector<SharedMatrix> MatPsi2::JK_OccOrbToK(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
+std::vector<SharedMatrix> PyPsi::JK_OccOrbToK(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     jk_->set_do_J(false);
@@ -553,11 +553,11 @@ std::vector<SharedMatrix> MatPsi2::JK_OccOrbToK(SharedMatrix occOrbAlpha, Shared
     return jk_->K();
 }
 
-void MatPsi2::JK_CalcAllFromDens(SharedMatrix densAlpha, SharedMatrix densBeta) {
+void PyPsi::JK_CalcAllFromDens(SharedMatrix densAlpha, SharedMatrix densBeta) {
     JK_CalcAllFromOccOrb(DensToEigVectors(densAlpha), DensToEigVectors(densBeta));
 }
 
-void MatPsi2::JK_CalcAllFromOccOrb(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
+void PyPsi::JK_CalcAllFromOccOrb(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     jk_->C_left().clear();
@@ -567,19 +567,19 @@ void MatPsi2::JK_CalcAllFromOccOrb(SharedMatrix occOrbAlpha, SharedMatrix occOrb
     jk_->compute();
 }
 
-std::vector<SharedMatrix> MatPsi2::JK_RetrieveJ() {
+std::vector<SharedMatrix> PyPsi::JK_RetrieveJ() {
 	if(jk_ == NULL)
 		throw PSIEXCEPTION("JK_RetriveJ: J/K calculation has not been done.");
     return jk_->J();
 }
 
-std::vector<SharedMatrix> MatPsi2::JK_RetrieveK() {
+std::vector<SharedMatrix> PyPsi::JK_RetrieveK() {
 	if(jk_ == NULL)
 		throw PSIEXCEPTION("JK_RetriveK: J/K calculation has not been done.");
     return jk_->K();
 }
 
-void MatPsi2::jk_DFException(std::string functionName) {
+void PyPsi::jk_DFException(std::string functionName) {
     if(jk_ == NULL) {
         JK_Initialize("DFJK");
     }
@@ -588,12 +588,12 @@ void MatPsi2::jk_DFException(std::string functionName) {
     }
 }
 
-SharedMatrix MatPsi2::JK_DFTensor_AuxPriPairs() {
+SharedMatrix PyPsi::JK_DFTensor_AuxPriPairs() {
     jk_DFException("JK_DFTensor_AuxPriPairs");
     return boost::static_pointer_cast<DFJK>(jk_)->GetQmn();
 }
 
-std::vector<SharedMatrix> MatPsi2::JK_DFTensor_AuxPriPri() {
+std::vector<SharedMatrix> PyPsi::JK_DFTensor_AuxPriPri() {
     jk_DFException("JK_DFTensor_AuxPriPri");
     SharedMatrix QmnUnique = boost::static_pointer_cast<DFJK>(jk_)->GetQmn();
     std::vector<SharedMatrix> QmnFull;
@@ -604,12 +604,12 @@ std::vector<SharedMatrix> MatPsi2::JK_DFTensor_AuxPriPri() {
     return QmnFull;
 }
 
-SharedMatrix MatPsi2::JK_DFMetric_InvJHalf() {
+SharedMatrix PyPsi::JK_DFMetric_InvJHalf() {
     jk_DFException("JK_DFMetric_InvJHalf");
     return boost::static_pointer_cast<DFJK>(jk_)->GetInvJHalf();
 }
 
-void MatPsi2::DFT_Initialize(std::string functionalName) {
+void PyPsi::DFT_Initialize(std::string functionalName) {
     std::transform(functionalName.begin(), functionalName.end(), functionalName.begin(), ::toupper);
     process_environment_.options.set_global_str("DFT_FUNCTIONAL", functionalName);
     std::string scfType = process_environment_.options.get_str("REFERENCE");
@@ -627,11 +627,11 @@ void MatPsi2::DFT_Initialize(std::string functionalName) {
     dftPotential_->initialize();
 }
 
-std::vector<SharedMatrix> MatPsi2::DFT_DensToV(SharedMatrix densAlpha, SharedMatrix densBeta) {
+std::vector<SharedMatrix> PyPsi::DFT_DensToV(SharedMatrix densAlpha, SharedMatrix densBeta) {
     return DFT_OccOrbToV(DensToEigVectors(densAlpha), DensToEigVectors(densBeta));
 }
 
-std::vector<SharedMatrix> MatPsi2::DFT_OccOrbToV(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
+std::vector<SharedMatrix> PyPsi::DFT_OccOrbToV(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
     if(dftPotential_ == NULL)
         DFT_Initialize(process_environment_.options.get_str("DFT_FUNCTIONAL"));
     if(dynamic_cast<UV*>(dftPotential_.get()) != NULL && occOrbBeta == NULL)
@@ -647,23 +647,23 @@ std::vector<SharedMatrix> MatPsi2::DFT_OccOrbToV(SharedMatrix occOrbAlpha, Share
     return dftPotential_->V();
 }
 
-double MatPsi2::DFT_EnergyXC() {
+double PyPsi::DFT_EnergyXC() {
     std::map<std::string, double>& quad = dftPotential_->quadrature_values();  
     return quad["FUNCTIONAL"];
 }
 
-void MatPsi2::SCF_SetSCFType(std::string scfType) {
+void PyPsi::SCF_SetSCFType(std::string scfType) {
     std::transform(scfType.begin(), scfType.end(), scfType.begin(), ::toupper);
     process_environment_.options.set_global_str("REFERENCE", scfType);
     process_environment_.options.set_global_str("GUESS", "CORE");
 }
 
-void MatPsi2::SCF_SetGuessOrb(SharedMatrix guessOrb) {
+void PyPsi::SCF_SetGuessOrb(SharedMatrix guessOrb) {
     process_environment_.options.set_global_str("GUESS", "ORBITAL");
     guessOrbital_ = guessOrb;
 }
 
-void MatPsi2::create_wfn() {
+void PyPsi::create_wfn() {
     if(jk_ == NULL)
         JK_Initialize("PKJK");
     std::string scfType = process_environment_.options.get_str("REFERENCE");
@@ -684,7 +684,7 @@ void MatPsi2::create_wfn() {
     }
 }
 
-double MatPsi2::SCF_RunSCF() {
+double PyPsi::SCF_RunSCF() {
     create_wfn();
     if(process_environment_.options.get_str("GUESS") == "ORBITAL") {
         wfn_->SetGuessOrbital(guessOrbital_);
@@ -693,103 +693,103 @@ double MatPsi2::SCF_RunSCF() {
     return wfn_->compute_energy();
 }
 
-void MatPsi2::SCF_EnableMOM(int mom_start) {
+void PyPsi::SCF_EnableMOM(int mom_start) {
     process_environment_.options.set_global_int("MOM_START", mom_start);
 }
 
-void MatPsi2::SCF_EnableDamping(double damping_percentage) {
+void PyPsi::SCF_EnableDamping(double damping_percentage) {
     process_environment_.options.set_global_double("DAMPING_PERCENTAGE", damping_percentage);
 }
 
-void MatPsi2::SCF_DisableDIIS() {
+void PyPsi::SCF_DisableDIIS() {
     process_environment_.options.set_global_bool("DIIS", false);
     process_environment_.options.set_global_int("MAXITER", 500);
 }
 
-void MatPsi2::SCF_EnableDIIS() {
+void PyPsi::SCF_EnableDIIS() {
     process_environment_.options.set_global_int("DIIS", true);
     process_environment_.options.set_global_int("MAXITER", 100);
 }
 
-void MatPsi2::SCF_GuessSAD() {
+void PyPsi::SCF_GuessSAD() {
     process_environment_.options.set_global_str("GUESS", "SAD");
 }
 
-void MatPsi2::SCF_GuessCore() {
+void PyPsi::SCF_GuessCore() {
     process_environment_.options.set_global_str("GUESS", "CORE");
 }
 
-double MatPsi2::SCF_TotalEnergy() { 
+double PyPsi::SCF_TotalEnergy() { 
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }
     return wfn_->EHF(); 
 }
 
-SharedMatrix MatPsi2::SCF_OrbitalAlpha() { 
+SharedMatrix PyPsi::SCF_OrbitalAlpha() { 
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }
     return wfn_->Ca(); 
 }
 
-SharedMatrix MatPsi2::SCF_OrbitalBeta() { 
+SharedMatrix PyPsi::SCF_OrbitalBeta() { 
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }
     return wfn_->Cb(); 
 }
 
-SharedVector MatPsi2::SCF_OrbEigValAlpha() { 
+SharedVector PyPsi::SCF_OrbEigValAlpha() { 
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }
     return wfn_->epsilon_a(); 
 }
 
-SharedVector MatPsi2::SCF_OrbEigValBeta() { 
+SharedVector PyPsi::SCF_OrbEigValBeta() { 
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }
     return wfn_->epsilon_b(); 
 }
 
-SharedMatrix MatPsi2::SCF_DensityAlpha() { 
+SharedMatrix PyPsi::SCF_DensityAlpha() { 
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }
     return wfn_->Da(); 
 }
 
-SharedMatrix MatPsi2::SCF_DensityBeta() { 
+SharedMatrix PyPsi::SCF_DensityBeta() { 
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }
     return wfn_->Db(); 
 }
 
-SharedMatrix MatPsi2::SCF_CoreHamiltonian() {
+SharedMatrix PyPsi::SCF_CoreHamiltonian() {
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }
     return wfn_->H(); 
 }
 
-SharedMatrix MatPsi2::SCF_FockAlpha() { 
+SharedMatrix PyPsi::SCF_FockAlpha() { 
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }
     return wfn_->Fa(); 
 }
 
-SharedMatrix MatPsi2::SCF_FockBeta() { 
+SharedMatrix PyPsi::SCF_FockBeta() { 
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }
     return wfn_->Fb(); 
 }
 
-SharedMatrix MatPsi2::SCF_Gradient() {
+SharedMatrix PyPsi::SCF_Gradient() {
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }
@@ -797,13 +797,13 @@ SharedMatrix MatPsi2::SCF_Gradient() {
     return scfgrad_.compute_gradient();
 }
 
-SharedMatrix MatPsi2::SCF_GuessDensity() {
+SharedMatrix PyPsi::SCF_GuessDensity() {
     create_wfn();
     process_environment_.set_wavefunction(wfn_);
     return wfn_->GuessDensity();
 }
 
-SharedMatrix MatPsi2::SCF_RHF_J() { 
+SharedMatrix PyPsi::SCF_RHF_J() { 
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }
@@ -812,7 +812,7 @@ SharedMatrix MatPsi2::SCF_RHF_J() {
     return boost::static_pointer_cast<scf::RHF>(wfn_)->J(); 
 }
 
-SharedMatrix MatPsi2::SCF_RHF_K() { 
+SharedMatrix PyPsi::SCF_RHF_K() { 
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }

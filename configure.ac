@@ -85,7 +85,7 @@ CXXDBG='-g' AC_SUBST(CXXDBG)
 CXXOPT='-O2' AC_SUBST(CXXOPT)
 CXXDEF='' AC_SUBST(CXXDEF)
 CXXOTH='-fpic' AC_SUBST(CXXOTH)
-CXXINC='$(CPPFLAGS) $(PSICPPFLAGS)' AC_SUBST(CXXINC)
+CXXINC='$(CPPFLAGS) $(PSICPPFLAGS) $(PYTHON_INCLUDE)' AC_SUBST(CXXINC)
 
 ########
 ## PSI-specific options
@@ -134,11 +134,6 @@ case $target_os in
     F77_LIST="gfortran g77 ifort f77"
     ;;
 esac
-
-AC_ARG_WITH(mex,[  --with-mex              which Matlab MEX compiler to use],[
-MEX=$withval
-])
-AC_SUBST(MEX)
 
 AC_ARG_WITH(cc,[  --with-cc               which C compiler to use],[
 CC=$withval
@@ -303,6 +298,17 @@ AC_SUBST(LIBDIRS)
 
 AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
 
+# Check for python interpreter and libraries
+#  Version 2.6 is required because we import Python3 printing from future
+AC_PYTHON([2.6])
+AC_ARG_ENABLE([python-module],
+    [AC_HELP_STRING([--enable-python-module],
+      [Enable building PSI4 as a Python module. @<:@default=no@:>@]) ],
+    [
+      MAKE_PYTHON_MODULE=1
+      AC_DEFINE([MAKE_PYTHON_MODULE])
+      AC_SUBST([MAKE_PYTHON_MODULE])
+    ])
 
 AC_PROG_PDFLATEX
 AC_PROG_LATEX
@@ -610,12 +616,14 @@ if test "x${have_boost}" == "x0"; then
 
     BOOST_CPPFLAGS='-I$(top_objdir)/boost/$(BOOSTVER)'
     
+    BOOST_PYTHON_LIB='../../../boost/$(BOOSTVER)/stage/lib/libboost_python.a'
     BOOST_REGEX_LIB='../../../boost/$(BOOSTVER)/stage/lib/libboost_regex.a'
     BOOST_SYSTEM_LIB='../../../boost/$(BOOSTVER)/stage/lib/libboost_system.a'
     BOOST_THREAD_LIB='../../../boost/$(BOOSTVER)/stage/lib/libboost_thread.a'
 
     AC_SUBST(BOOST_CPPFLAGS)
     AC_SUBST(BOOST_LDFLAGS)
+    AC_SUBST(BOOST_PYTHON_LIB)
     AC_SUBST(BOOST_REGEX_LIB)
     AC_SUBST(BOOST_SYSTEM_LIB)
     AC_SUBST(BOOST_THREAD_LIB)
@@ -864,9 +872,10 @@ AC_MSG_RESULT([C extra flags: $COTH])
 AC_MSG_RESULT([C++ extra flags: $CXXOTH])
 
 # Set up CFLAGS and FFLAGS.
+LDFLAGS="$LDFLAGS -shared"
 CFLAGS='$(CDBG) $(COPT) $(CDEF) $(COTH) $(CINC)' AC_SUBST(CFLAGS)
 CXXFLAGS='$(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(CXXINC)' AC_SUBST(CXXFLAGS)
-MEXFLAGS='CFLAGS="\$$CFLAGS $(CFLAGS)" CXXFLAGS="\$$CXXFLAGS $(CXXFLAGS)" LDFLAGS="\$$LDFLAGS $(LDFLAGS)" -cxx -largeArrayDims' AC_SUBST(MEXFLAGS)
+MODULEFLAGS='$(CFLAGS) $(CXXFLAGS) $(LDFLAGS) $(PYTHON_LDFLAGS)' AC_SUBST(MODULEFLAGS)
 FFLAGS='$(FDBG) $(FOPT) $(FOTH) $(FSTATIC)' AC_SUBST(FFLAGS)
 
 ########
@@ -916,7 +925,7 @@ AC_CONFIG_FILES([
 
           bin/psi4-config
 
-          src/bin/MatPsi2/Makefile
+          src/bin/PyPsi/Makefile
 ])
 
 AC_CONFIG_COMMANDS([psi4-config], [chmod +x bin/psi4-config])
