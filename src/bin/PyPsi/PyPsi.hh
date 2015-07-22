@@ -12,8 +12,10 @@
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-
 #include <libscfgrad/scf_grad.h>
+
+
+#include <boost/python/numeric.hpp>
 
 
 using namespace std;
@@ -22,8 +24,6 @@ using namespace boost;
 
 class PyPsi {
 protected:
-    
-    std::string basisname_;
 
     Process::Environment process_environment_;
     boost::shared_ptr<LocalCommWrapper> worldcomm_;
@@ -54,7 +54,7 @@ protected:
     
 public:
     // constructor
-    PyPsi(SharedMatrix cartesian, const std::string& basisname, 
+    PyPsi(boost::python::numeric::array& cartesian, const std::string& basisname, 
         int charge, int multiplicity, const std::string& path);
     
     // destructor 
@@ -86,7 +86,7 @@ public:
     
     
     //*** Basis set properties 
-    std::string& BasisSet_Name() { return basisname_; } // basis set name string 
+    const std::string& BasisSet_Name() { return basis_->name(); } // basis set name string 
     void BasisSet_SetBasisSet(const std::string& basisname); // set a new basis set 
     bool BasisSet_IsSpherical() { return basis_->has_puream(); }
     int BasisSet_NumFunctions() { return basis_->nbf(); } // number of basis functions 

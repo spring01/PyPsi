@@ -2,10 +2,10 @@
 #include <boost/python/class.hpp>
 #include <boost/python/module.hpp>
 #include <boost/python/def.hpp>
-#include <iostream>
+#include <boost/python/numeric.hpp>
+
 #include <string>
 
-//~ #include "PyPsi.cc"
 #include "PyPsi.hh"
 
 using namespace psi;
@@ -13,7 +13,9 @@ using namespace psi;
 BOOST_PYTHON_MODULE(PyPsi)
 {
     using namespace boost::python;
-    class_<PyPsi>("PyPsi", init<SharedMatrix, std::string, int, int, std::string>())
+    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
+    
+    class_<PyPsi>("PyPsi", init<boost::python::numeric::array&, std::string, int, int, std::string>())
         // Add a regular member function.
         .def("Molecule_NumAtoms", &PyPsi::Molecule_NumAtoms)
         ;
