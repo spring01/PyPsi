@@ -92,7 +92,7 @@ public:
     
     
     //*** Basis set properties 
-    const std::string& BasisSet_Name() { return basis_->name(); } // basis set name string 
+    const std::string BasisSet_Name() { return basis_->name(); } // basis set name string 
     void BasisSet_SetBasisSet(const std::string& basisname); // set a new basis set 
     bool BasisSet_IsSpherical() { return basis_->has_puream(); }
     int BasisSet_NumFunctions() { return basis_->nbf(); } // number of basis functions 
@@ -103,16 +103,16 @@ public:
     SharedVector BasisSet_ShellToCenter();
     SharedVector BasisSet_FuncToCenter(); // map basis function to the index of the atom it is centred on 
     SharedVector BasisSet_FuncToShell();
-    SharedVector BasisSet_FuncToAngular(); // map basis function number to its angular momentum 
+    boost::python::numeric::array BasisSet_FuncToAngular(); // map basis function number to its angular momentum 
     SharedVector BasisSet_PrimExp();
     SharedVector BasisSet_PrimCoeffUnnorm();
     
     
     //*** Integral package
-    SharedMatrix Integrals_Overlap(); // overlap matrix S <i|j>
+    boost::python::numeric::array Integrals_Overlap(); // overlap matrix S <i|j>
     SharedMatrix Integrals_Kinetic(); // kinetic energy matrix KE 
     SharedMatrix Integrals_Potential(); // total potential energy matrix EN <i|sum(1/R)|j>
-    std::vector<SharedMatrix> Integrals_Dipole(); // dipole matrices <i|x|j>, <i|y|j>, <i|z|j>
+    boost::python::list Integrals_Dipole(); // dipole matrices <i|x|j>, <i|y|j>, <i|z|j>
     std::vector<SharedMatrix> Integrals_PotentialEachCore(); // atom-separated EN 
     SharedMatrix Integrals_PotentialPtQ(SharedMatrix Zxyz_list); // compute from a given point charge list the environment potential energy matrix ENVI 
     int Integrals_NumUniqueTEIs(); // number of unique TEIs 

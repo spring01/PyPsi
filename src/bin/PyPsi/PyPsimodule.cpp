@@ -18,6 +18,11 @@ BOOST_PYTHON_MODULE(PyPsi)
     class_<PyPsi>("PyPsi", init<boost::python::numeric::array&, std::string, int, int, std::string>())
         .def(init<boost::python::numeric::array&, std::string, optional<int, int> >())
         .def("Molecule_NumAtoms", &PyPsi::Molecule_NumAtoms)
+        .def("BasisSet_FuncToAngular", &PyPsi::BasisSet_FuncToAngular)
+        .def("BasisSet_Name", &PyPsi::BasisSet_Name)
+        .def("BasisSet_NumFunctions", &PyPsi::BasisSet_NumFunctions)
+        .def("Integrals_Dipole", &PyPsi::Integrals_Dipole)
+        .def("Integrals_Overlap", &PyPsi::Integrals_Overlap)
         .def("SCF_RunSCF", &PyPsi::SCF_RunSCF)
         ;
 }
