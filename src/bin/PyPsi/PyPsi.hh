@@ -16,6 +16,7 @@
 
 
 #include <boost/python/numeric.hpp>
+#include <boost/python.hpp>
 
 
 using namespace std;
@@ -52,8 +53,13 @@ protected:
     // exception function for DFJK utilities
     void jk_DFException(std::string functionName);
     
+    void common_init(boost::python::numeric::array& cartesian, const std::string& basisname, 
+        int charge, int multiplicity, const std::string& path);
+    
 public:
-    // constructor
+    // constructors
+    PyPsi(boost::python::numeric::array& cartesian, const std::string& basisname, 
+        int charge = 0, int multiplicity = 1);
     PyPsi(boost::python::numeric::array& cartesian, const std::string& basisname, 
         int charge, int multiplicity, const std::string& path);
     

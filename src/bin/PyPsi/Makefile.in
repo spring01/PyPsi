@@ -4,7 +4,7 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
-PSITARGET = $(top_objdir)/PyPsimodule.so
+PSITARGET = $(top_objdir)/PyPsi/PyPsimodule.so
 
 LDLIBS += $(LAPACK) $(BLAS) $(BOOST_PYTHON_LIB) $(BOOST_REGEX_LIB) $(BOOST_SYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_LDFLAGS) -lpthread $(PYTHON_LDFLAGS)
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"

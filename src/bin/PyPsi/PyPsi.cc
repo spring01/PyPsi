@@ -2,8 +2,6 @@
 #include "PyPsi.hh"
 #include <read_options.cc>
 
-#include <boost/python.hpp>
-
 namespace psi {
 #ifdef PSIDEBUG
     FILE* outfile = stdout;
@@ -50,9 +48,21 @@ SharedMatrix NumpyArray2SharedMatrix(boost::python::numeric::array& numpyMatrix)
     return matrix;
 }
 
-// Constructor
-PyPsi::PyPsi(boost::python::numeric::array& cartesian, const std::string& basisname, int charge, int multiplicity, const std::string& path)
-{
+// Constructors
+PyPsi::PyPsi(boost::python::numeric::array& cartesian, const std::string& basisname, int charge, int multiplicity) {
+    using namespace boost::python;
+    object find_module = extract<object>(import("imp").attr("find_module"));
+    boost::python::tuple module_info = extract<boost::python::tuple>(find_module("PyPsi"));
+    const std::string path = std::string(extract<char const*>(extract<str>(module_info[1])));
+    
+    common_init(cartesian, basisname, charge, multiplicity, path);
+}
+
+PyPsi::PyPsi(boost::python::numeric::array& cartesian, const std::string& basisname, int charge, int multiplicity, const std::string& path) {
+    common_init(cartesian, basisname, charge, multiplicity, path);
+}
+
+void PyPsi::common_init(boost::python::numeric::array& cartesian, const std::string& basisname, int charge, int multiplicity, const std::string& path) {
     // some necessary initializations
     process_environment_.initialize();
     

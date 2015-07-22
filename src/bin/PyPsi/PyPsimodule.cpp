@@ -16,7 +16,8 @@ BOOST_PYTHON_MODULE(PyPsi)
     boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
     
     class_<PyPsi>("PyPsi", init<boost::python::numeric::array&, std::string, int, int, std::string>())
-        // Add a regular member function.
+        .def(init<boost::python::numeric::array&, std::string, optional<int, int> >())
         .def("Molecule_NumAtoms", &PyPsi::Molecule_NumAtoms)
+        .def("SCF_RunSCF", &PyPsi::SCF_RunSCF)
         ;
 }
