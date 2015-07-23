@@ -58,10 +58,25 @@ SharedNPArray NewSharedNPArray(int numDim, const int* dims, int dataType = PyArr
     return shared_npArray;
 }
 
+SharedNPArray NewSharedNPArrayIntVector(int length) {
+    const int dims[1] = {length};
+    return NewSharedNPArray(1, dims, PyArray_INT64);
+}
+
+SharedNPArray NewSharedNPArrayDoubleVector(int length) {
+    const int dims[1] = {length};
+    return NewSharedNPArray(1, dims);
+}
+
+SharedNPArray NewSharedNPArrayDoubleMatrix(int numRows, int numColumns) {
+    const int dims[2] = {numRows, numColumns};
+    return NewSharedNPArray(2, dims);
+}
+
 SharedNPArray SharedVector2SharedNPArray(SharedVector sharedVector) {
     const int dims[1] = {sharedVector->dim()};
     SharedNPArray shared_npArray = NewSharedNPArray(1, dims);
-    for(int i = 0; i < sharedVector->dim(); i++)
+    for(int i = 0; i < dims[0]; i++)
         (*shared_npArray)[i] = sharedVector->get(i);
     return shared_npArray;
 }
@@ -109,7 +124,7 @@ PyPsi::PyPsi(boost::python::numeric::array& cartesian, const std::string& basisn
     common_init(cartesian, basisname, charge, multiplicity, path);
 }
 
-void PyPsi::common_init(boost::python::numeric::array& cartesian, const std::string& basisname, int charge, int multiplicity, const std::string& path) {
+void PyPsi::common_init(NPArray& cartesian, const std::string& basisname, int charge, int multiplicity, const std::string& path) {
     
     // to output NumPy Array
     import_array();
@@ -218,11 +233,15 @@ void PyPsi::Molecule_Free() {
     molecule_->update_geometry();
 }
 
-void PyPsi::Molecule_SetGeometry(SharedMatrix newGeom) {
+NPArray PyPsi::Molecule_Geometry() {
+    return *SharedMatrix2SharedNPArray(molecule_->geometry().clone());
+}
+
+void PyPsi::Molecule_SetGeometry(NPArray newGeom) {
     
     // store the old geometry
     Matrix oldgeom = molecule_->geometry();
-    molecule_->set_geometry(*(newGeom.get()));
+    molecule_->set_geometry(*NPArray2SharedMatrix(newGeom));
     
     // determine whether the new geometry will cause a problem (typically 2 atoms are at the same point) 
     Matrix distmat = molecule_->distance_matrix();
@@ -243,12 +262,12 @@ void PyPsi::Molecule_SetGeometry(SharedMatrix newGeom) {
     create_basis_and_integral_factories();
 }
 
-SharedVector PyPsi::Molecule_AtomicNumbers() {
-    SharedVector zlistvec(new Vector(molecule_->natom()));
+NPArray PyPsi::Molecule_AtomicNumbers() {
+    SharedNPArray zlistvec = NewSharedNPArrayIntVector(molecule_->natom());
     for(int i = 0; i < molecule_->natom(); i++) {
-        zlistvec->set(i, (double)molecule_->Z(i));
+        (*zlistvec)[i] = molecule_->Z(i);
     }
-    return zlistvec;
+    return *zlistvec;
 }
 
 int PyPsi::Molecule_NumElectrons() {
@@ -261,8 +280,8 @@ int PyPsi::Molecule_NumElectrons() {
 }
 
 void PyPsi::Molecule_SetChargeMult(int charge, int mult) {
-    SharedVector charge_mult = Molecule_ChargeMult();
-    int nelectron = Molecule_NumElectrons() + charge_mult->get(0) - charge;
+    int oldCharge = molecule_->molecular_charge();
+    int nelectron = Molecule_NumElectrons() + oldCharge - charge;
     if(mult - 1 > nelectron || mult%2 == nelectron%2){
         throw PSIEXCEPTION("Molecule_SetChargeMult: Charge and Multiplicity are not compatible.");
     }
@@ -270,11 +289,11 @@ void PyPsi::Molecule_SetChargeMult(int charge, int mult) {
     molecule_->set_multiplicity(mult);
 }
 
-SharedVector PyPsi::Molecule_ChargeMult() {
-    SharedVector charge_mult(new Vector(2));
-    charge_mult->set(0, (double)molecule_->molecular_charge());
-    charge_mult->set(1, (double)molecule_->multiplicity());
-    return charge_mult;
+NPArray PyPsi::Molecule_ChargeMult() {
+    SharedNPArray charge_mult = NewSharedNPArrayIntVector(2);
+    (*charge_mult)[0] = molecule_->molecular_charge();
+    (*charge_mult)[1] = molecule_->multiplicity();
+    return *charge_mult;
 }
 
 void PyPsi::BasisSet_SetBasisSet(const std::string& basisname) {
@@ -343,8 +362,7 @@ SharedVector PyPsi::BasisSet_FuncToShell() {
 }
 
 NPArray PyPsi::BasisSet_FuncToAngular() {
-    const int dims[1] = {basis_->nbf()};
-    SharedNPArray func2amVec = NewSharedNPArray(1, dims, PyArray_INT);
+    SharedNPArray func2amVec = NewSharedNPArrayIntVector(basis_->nbf());
     for(int i = 0; i < basis_->nbf(); i++) {
         (*func2amVec)[i] = basis_->shell(basis_->function_to_shell(i)).am();
     }

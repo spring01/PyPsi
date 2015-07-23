@@ -73,7 +73,7 @@ public:
     int Settings_MaxNumCPUCores() { return process_environment_.get_n_threads(); }
     double Settings_MaxMemoryInGB() { return (double)process_environment_.get_memory() / 1E+9; }
     std::string Settings_PsiDataDir() { return process_environment_("PSIDATADIR"); }
-    std::string Settings_TempDir() { return psio_->_psio_manager_->get_file_path(0); }
+    std::string Settings_TempDir() { return psio_->_psio_manager_->get_default_path(); }
     void Settings_SetMaxNumCPUCores(int ncores);
     void Settings_SetMaxMemory(std::string);
     void Settings_SetPsiDataDir(std::string path) { process_environment_.set("PSIDATADIR", path); }
@@ -82,12 +82,12 @@ public:
     //*** Molecule properties 
     int Molecule_NumAtoms() { return molecule_->natom(); } // number of atoms 
     int Molecule_NumElectrons(); // number of electrons 
-    SharedMatrix Molecule_Geometry() { return molecule_->geometry().clone(); } // geometry in Bohr 
-    void Molecule_SetGeometry(SharedMatrix newGeom); // set a new geometry in Bohr 
+    NPArray Molecule_Geometry(); // geometry in Bohr 
+    void Molecule_SetGeometry(NPArray newGeom); // set a new geometry in Bohr 
     double Molecule_NucRepEnergy() { return molecule_->nuclear_repulsion_energy(); } // nuclear repulsion energy 
-    SharedVector Molecule_AtomicNumbers(); // atomic number list vector 
+    NPArray Molecule_AtomicNumbers(); // atomic number list vector 
+    NPArray Molecule_ChargeMult();
     void Molecule_SetChargeMult(int charge, int mult);
-    SharedVector Molecule_ChargeMult();
     
     //*** Molecule operations 
     void Molecule_Fix();
