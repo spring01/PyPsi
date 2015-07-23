@@ -23,6 +23,9 @@ using namespace std;
 using namespace psi;
 using namespace boost;
 
+typedef boost::shared_ptr<boost::python::numeric::array> SharedNPArray;
+typedef boost::python::numeric::array NPArray;
+
 class PyPsi {
 protected:
 
@@ -103,17 +106,17 @@ public:
     SharedVector BasisSet_ShellToCenter();
     SharedVector BasisSet_FuncToCenter(); // map basis function to the index of the atom it is centred on 
     SharedVector BasisSet_FuncToShell();
-    boost::python::numeric::array BasisSet_FuncToAngular(); // map basis function number to its angular momentum 
+    NPArray BasisSet_FuncToAngular(); // map basis function number to its angular momentum 
     SharedVector BasisSet_PrimExp();
     SharedVector BasisSet_PrimCoeffUnnorm();
     
     
     //*** Integral package
-    boost::python::numeric::array Integrals_Overlap(); // overlap matrix S <i|j>
+    NPArray Integrals_Overlap(); // overlap matrix S <i|j>
     SharedMatrix Integrals_Kinetic(); // kinetic energy matrix KE 
-    SharedMatrix Integrals_Potential(); // total potential energy matrix EN <i|sum(1/R)|j>
+    NPArray Integrals_Potential(); // total potential energy matrix EN <i|sum(1/R)|j>
     boost::python::list Integrals_Dipole(); // dipole matrices <i|x|j>, <i|y|j>, <i|z|j>
-    std::vector<SharedMatrix> Integrals_PotentialEachCore(); // atom-separated EN 
+    NPArray Integrals_PotentialEachCore(); // atom-separated EN 
     SharedMatrix Integrals_PotentialPtQ(SharedMatrix Zxyz_list); // compute from a given point charge list the environment potential energy matrix ENVI 
     int Integrals_NumUniqueTEIs(); // number of unique TEIs 
     double Integrals_ijkl(int i, int j, int k, int l); // (ij|kl), chemist's notation 

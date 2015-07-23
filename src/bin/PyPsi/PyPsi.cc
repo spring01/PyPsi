@@ -39,7 +39,7 @@ unsigned long int parse_memory_str(const std::string& memory_str) {
         return (unsigned long int)(memory*unit);
 }
 
-SharedMatrix NumPyArray2SharedMatrix(boost::python::numeric::array& npArray) {
+SharedMatrix NPArray2SharedMatrix(boost::python::numeric::array& npArray) {
     int dim0 = boost::python::extract<int>(npArray.attr("shape")[0]);
     int dim1 = boost::python::extract<int>(npArray.attr("shape")[1]);
     SharedMatrix sharedMatrix(new Matrix(dim0, dim1));
@@ -50,37 +50,48 @@ SharedMatrix NumPyArray2SharedMatrix(boost::python::numeric::array& npArray) {
     return sharedMatrix;
 }
 
-boost::shared_ptr<boost::python::numeric::array>  SharedVector2NumPyArray(SharedVector sharedVector) {
-    namespace bpn = boost::python::numeric;
-    int nd = 1;
-    boost::scoped_array<Py_intptr_t> dims(new Py_intptr_t[nd]);
-    dims[0] = sharedVector->dim();
-    boost::shared_ptr<bpn::array> shared_npArray(new bpn::array(python::detail::new_reference(PyArray_ZEROS(nd, dims.get(), PyArray_DOUBLE, 0))));
+SharedNPArray NewSharedNPArray(int numDim, const int* dims, int dataType = PyArray_DOUBLE) {
+    boost::scoped_array<Py_intptr_t> dims_(new Py_intptr_t[numDim]);
+    for(int i = 0; i < numDim; i++)
+        dims_[i] = dims[i];
+    SharedNPArray shared_npArray(new boost::python::numeric::array(python::detail::new_reference(PyArray_ZEROS(numDim, dims_.get(), dataType, 0))));
+    return shared_npArray;
+}
+
+SharedNPArray SharedVector2SharedNPArray(SharedVector sharedVector) {
+    const int dims[1] = {sharedVector->dim()};
+    SharedNPArray shared_npArray = NewSharedNPArray(1, dims);
     for(int i = 0; i < sharedVector->dim(); i++)
         (*shared_npArray)[i] = sharedVector->get(i);
     return shared_npArray;
 }
 
-boost::shared_ptr<boost::python::numeric::array> SharedMatrix2NumPyArray(SharedMatrix sharedMatrix) {
-    namespace bpn = boost::python::numeric;
-    int nd = 2;
-    boost::scoped_array<Py_intptr_t> dims(new Py_intptr_t[nd]);
-    int dim0 = sharedMatrix->nrow();
-    int dim1 = sharedMatrix->ncol();
-    dims[0] = dim0;
-    dims[1] = dim1;
-    boost::shared_ptr<bpn::array> shared_npArray(new bpn::array(python::detail::new_reference(PyArray_ZEROS(nd, dims.get(), PyArray_DOUBLE, 0))));
+SharedNPArray SharedMatrix2SharedNPArray(SharedMatrix sharedMatrix) {
+    const int dims[2] = {sharedMatrix->nrow(), sharedMatrix->ncol()};
+    SharedNPArray shared_npArray = NewSharedNPArray(2, dims);
     double* matPt = sharedMatrix->get_pointer();
-    for(int i = 0; i < dim0; i++)
-        for(int j = 0; j < dim1; j++)
+    for(int i = 0; i < dims[0]; i++)
+        for(int j = 0; j < dims[1]; j++)
             (*shared_npArray)[i][j] = *matPt++;
     return shared_npArray;
 }
 
-boost::shared_ptr<boost::python::list> VectorOfSharedMatrix2PythonList(std::vector<SharedMatrix> vectorOfSharedMatrix) {
+SharedNPArray VectorOfSharedMatrix2SharedNPArray(std::vector<SharedMatrix>& vectorOfSharedMatrix) {
+    const int dims[3] = {vectorOfSharedMatrix.size(), vectorOfSharedMatrix[0]->nrow(), vectorOfSharedMatrix[0]->ncol()};
+    SharedNPArray shared_npArray = NewSharedNPArray(3, dims);
+    for(int i = 0; i < dims[0]; i++) {
+        double* matPt = vectorOfSharedMatrix[i]->get_pointer();
+        for(int j = 0; j < dims[1]; j++)
+            for(int k = 0; k < dims[2]; k++)
+                (*shared_npArray)[i][j][k] = *matPt++;
+    }
+    return shared_npArray;
+}
+
+boost::shared_ptr<boost::python::list> VectorOfSharedMatrix2PythonList(std::vector<SharedMatrix>& vectorOfSharedMatrix) {
     boost::shared_ptr<boost::python::list> shared_pythonList(new boost::python::list);
     for(int i = 0; i < vectorOfSharedMatrix.size(); i++)
-        shared_pythonList->append(*SharedMatrix2NumPyArray(vectorOfSharedMatrix[i]));
+        shared_pythonList->append(*SharedMatrix2SharedNPArray(vectorOfSharedMatrix[i]));
     return shared_pythonList;
 }
 
@@ -126,7 +137,7 @@ void PyPsi::common_init(boost::python::numeric::array& cartesian, const std::str
     process_environment_.set_psio(psio_);
     
     // create molecule object and set its basis set name 
-    molecule_ = psi::Molecule::create_molecule_from_cartesian(process_environment_, NumPyArray2SharedMatrix(cartesian), charge, multiplicity);
+    molecule_ = psi::Molecule::create_molecule_from_cartesian(process_environment_, NPArray2SharedMatrix(cartesian), charge, multiplicity);
     molecule_->set_reinterpret_coordentry(false);
     molecule_->set_basis_all_atoms(basisname);
     process_environment_.set_molecule(molecule_);
@@ -331,12 +342,13 @@ SharedVector PyPsi::BasisSet_FuncToShell() {
     return func2shellVec;
 }
 
-boost::python::numeric::array PyPsi::BasisSet_FuncToAngular() {
-    SharedVector func2amVec(new Vector(basis_->nbf()));
+NPArray PyPsi::BasisSet_FuncToAngular() {
+    const int dims[1] = {basis_->nbf()};
+    SharedNPArray func2amVec = NewSharedNPArray(1, dims, PyArray_INT);
     for(int i = 0; i < basis_->nbf(); i++) {
-        func2amVec->set(i, (double)basis_->shell(basis_->function_to_shell(i)).am());
+        (*func2amVec)[i] = basis_->shell(basis_->function_to_shell(i)).am();
     }
-    return *SharedVector2NumPyArray(func2amVec);
+    return *func2amVec;
 }
 
 SharedVector PyPsi::BasisSet_PrimExp() {
@@ -370,7 +382,7 @@ boost::python::numeric::array PyPsi::Integrals_Overlap() {
     boost::shared_ptr<OneBodyAOInt> sOBI(intfac_->ao_overlap());
     sOBI->compute(sMat);
     sMat->hermitivitize();
-    return *SharedMatrix2NumPyArray(sMat);
+    return *SharedMatrix2SharedNPArray(sMat);
 }
 
 SharedMatrix PyPsi::Integrals_Kinetic() {
@@ -381,12 +393,12 @@ SharedMatrix PyPsi::Integrals_Kinetic() {
     return tMat;
 }
 
-SharedMatrix PyPsi::Integrals_Potential() {
+NPArray PyPsi::Integrals_Potential() {
     SharedMatrix vMat(matfac_->create_matrix("Potential"));
     boost::shared_ptr<OneBodyAOInt> vOBI(intfac_->ao_potential());
     vOBI->compute(vMat);
     vMat->hermitivitize();
-    return vMat;
+    return *SharedMatrix2SharedNPArray(vMat);
 }
 
 boost::python::list PyPsi::Integrals_Dipole() {
@@ -405,7 +417,7 @@ boost::python::list PyPsi::Integrals_Dipole() {
     return *VectorOfSharedMatrix2PythonList(ao_dipole);
 }
 
-std::vector<SharedMatrix> PyPsi::Integrals_PotentialEachCore() {
+NPArray PyPsi::Integrals_PotentialEachCore() {
     int natom = molecule_->natom();
     std::vector<SharedMatrix> viMatVec;
     boost::shared_ptr<OneBodyAOInt> viOBI(intfac_->ao_potential());
@@ -420,7 +432,7 @@ std::vector<SharedMatrix> PyPsi::Integrals_PotentialEachCore() {
         viOBI->compute(viMatVec[i]);
         viMatVec[i]->hermitivitize();
     }
-    return viMatVec;
+    return *VectorOfSharedMatrix2SharedNPArray(viMatVec);
 }
 
 SharedMatrix PyPsi::Integrals_PotentialPtQ(SharedMatrix Zxyz_list) {

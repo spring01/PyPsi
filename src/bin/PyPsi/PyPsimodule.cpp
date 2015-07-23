@@ -23,6 +23,8 @@ BOOST_PYTHON_MODULE(PyPsi)
         .def("BasisSet_NumFunctions", &PyPsi::BasisSet_NumFunctions)
         .def("Integrals_Dipole", &PyPsi::Integrals_Dipole)
         .def("Integrals_Overlap", &PyPsi::Integrals_Overlap)
+        .def("Integrals_Potential", &PyPsi::Integrals_Potential)
+        .def("Integrals_PotentialEachCore", &PyPsi::Integrals_PotentialEachCore)
         .def("SCF_RunSCF", &PyPsi::SCF_RunSCF)
         ;
 }
