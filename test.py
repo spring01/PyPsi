@@ -6,7 +6,7 @@ cart = np.array([[9, 0.0, 0.1, 0.2],
                  [1, 0.3, 0.4, 1.0]])
 
 
-basisSet = "6-31g*"
+basisSet = "sto-3g"
 
 path = "./PyPsi/"
 
@@ -32,26 +32,40 @@ print("Molecule_Geometry", pypsi.Molecule_Geometry())
 geom = pypsi.Molecule_Geometry()
 print("Molecule_SetGeometry", pypsi.Molecule_SetGeometry(geom + 1), pypsi.Molecule_Geometry())
 print("Molecule_AtomicNumbers", pypsi.Molecule_AtomicNumbers())
+atomNums = pypsi.Molecule_AtomicNumbers()
 print("Molecule_ChargeMult", pypsi.Molecule_ChargeMult())
 print("Molecule_SetChargeMult", pypsi.Molecule_SetChargeMult(0, 3), pypsi.Molecule_ChargeMult())
 print("Molecule_Fix", pypsi.Molecule_Fix())
 print("Molecule_Free", pypsi.Molecule_Free())
 
-#~ print(pypsi.Molecule_NumAtoms())
-#~ print(pypsi.Molecule_NumAtoms())
-#~ print(pypsi.Molecule_NumAtoms())
-#~ print(pypsi.Molecule_NumAtoms())
-#~ 
-#~ print(pypsi.Molecule_NumAtoms())
-#~ print(pypsi.BasisSet_FuncToAngular())
-#~ 
-#~ print(pypsi.Integrals_Dipole())
-#~ print(pypsi.Integrals_Overlap())
-#~ print(pypsi.Integrals_Potential())
-#~ print(pypsi.Integrals_PotentialEachCore())
-#~ 
-#~ 
-#~ print(occOrb)
-#~ print(sum(occOrb**2))
+print("BasisSet_Name", pypsi.BasisSet_Name())
+print("BasisSet_SetBasisSet", pypsi.BasisSet_SetBasisSet("6-31g*"), pypsi.BasisSet_Name())
+print("BasisSet_IsSpherical", pypsi.BasisSet_IsSpherical())
+print("BasisSet_NumShells", pypsi.BasisSet_NumShells())
+print("BasisSet_NumFunctions", pypsi.BasisSet_NumFunctions())
+print("BasisSet_ShellTypes", pypsi.BasisSet_ShellTypes())
+print("BasisSet_ShellNumPrimitives", pypsi.BasisSet_ShellNumPrimitives())
+print("BasisSet_ShellNumFunctions", pypsi.BasisSet_ShellNumFunctions())
+print("BasisSet_ShellToCenter", pypsi.BasisSet_ShellToCenter())
+print("BasisSet_FuncToCenter", pypsi.BasisSet_FuncToCenter())
+print("BasisSet_FuncToShell", pypsi.BasisSet_FuncToShell())
+print("BasisSet_FuncToAngular", pypsi.BasisSet_FuncToAngular())
+print("BasisSet_PrimExp", pypsi.BasisSet_PrimExp())
+print("BasisSet_PrimCoeffUnnorm", pypsi.BasisSet_PrimCoeffUnnorm())
+
+print("Integrals_Overlap", pypsi.Integrals_Overlap())
+print("Integrals_Kinetic", pypsi.Integrals_Kinetic())
+print("Integrals_Potential", pypsi.Integrals_Potential())
+print("Integrals_PotentialEachCore", pypsi.Integrals_PotentialEachCore())
+print("Integrals_PotentialPtQ", pypsi.Integrals_PotentialPtQ(np.concatenate((np.reshape(atomNums, [np.size(atomNums), -1]), geom), axis=1)))
+print("Integrals_Dipole", pypsi.Integrals_Dipole())
+print("Integrals_ijkl", pypsi.Integrals_ijkl(0, 1, 2, 3))
+
+
+
+
+
+
+
 
 

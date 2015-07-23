@@ -61,9 +61,9 @@ protected:
     
 public:
     // constructors
-    PyPsi(boost::python::numeric::array& cartesian, const std::string& basisname, 
+    PyPsi(NPArray& cartesian, const std::string& basisname, 
         int charge = 0, int multiplicity = 1);
-    PyPsi(boost::python::numeric::array& cartesian, const std::string& basisname, 
+    PyPsi(NPArray& cartesian, const std::string& basisname, 
         int charge, int multiplicity, const std::string& path);
     
     // destructor 
@@ -98,26 +98,26 @@ public:
     const std::string BasisSet_Name() { return basis_->name(); } // basis set name string 
     void BasisSet_SetBasisSet(const std::string& basisname); // set a new basis set 
     bool BasisSet_IsSpherical() { return basis_->has_puream(); }
-    int BasisSet_NumFunctions() { return basis_->nbf(); } // number of basis functions 
     int BasisSet_NumShells() { return basis_->nshell(); }
-    SharedVector BasisSet_ShellTypes();
-    SharedVector BasisSet_ShellNumPrimitives();
-    SharedVector BasisSet_ShellNumFunctions();
-    SharedVector BasisSet_ShellToCenter();
-    SharedVector BasisSet_FuncToCenter(); // map basis function to the index of the atom it is centred on 
-    SharedVector BasisSet_FuncToShell();
+    int BasisSet_NumFunctions() { return basis_->nbf(); } // number of basis functions 
+    NPArray BasisSet_ShellTypes();
+    NPArray BasisSet_ShellNumPrimitives();
+    NPArray BasisSet_ShellNumFunctions();
+    NPArray BasisSet_ShellToCenter();
+    NPArray BasisSet_FuncToCenter(); // map basis function to the index of the atom it is centred on 
+    NPArray BasisSet_FuncToShell();
     NPArray BasisSet_FuncToAngular(); // map basis function number to its angular momentum 
-    SharedVector BasisSet_PrimExp();
-    SharedVector BasisSet_PrimCoeffUnnorm();
+    NPArray BasisSet_PrimExp();
+    NPArray BasisSet_PrimCoeffUnnorm();
     
     
     //*** Integral package
     NPArray Integrals_Overlap(); // overlap matrix S <i|j>
-    SharedMatrix Integrals_Kinetic(); // kinetic energy matrix KE 
+    NPArray Integrals_Kinetic(); // kinetic energy matrix KE 
     NPArray Integrals_Potential(); // total potential energy matrix EN <i|sum(1/R)|j>
-    boost::python::list Integrals_Dipole(); // dipole matrices <i|x|j>, <i|y|j>, <i|z|j>
     NPArray Integrals_PotentialEachCore(); // atom-separated EN 
-    SharedMatrix Integrals_PotentialPtQ(SharedMatrix Zxyz_list); // compute from a given point charge list the environment potential energy matrix ENVI 
+    NPArray Integrals_PotentialPtQ(NPArray& Zxyz_list); // compute from a given point charge list the environment potential energy matrix ENVI 
+    boost::python::list Integrals_Dipole(); // dipole matrices <i|x|j>, <i|y|j>, <i|z|j>
     int Integrals_NumUniqueTEIs(); // number of unique TEIs 
     double Integrals_ijkl(int i, int j, int k, int l); // (ij|kl), chemist's notation 
     // ## HIGH MEMORY COST METHODS ## 

@@ -39,7 +39,17 @@ unsigned long int parse_memory_str(const std::string& memory_str) {
         return (unsigned long int)(memory*unit);
 }
 
-SharedMatrix NPArray2SharedMatrix(boost::python::numeric::array& npArray) {
+void CheckMatrixDimension(NPArray& npArray, int numRows, int numColumns) {
+    int numDim = boost::python::extract<int>(npArray.attr("ndim"));
+    if(numDim != 2)
+        throw PSIEXCEPTION("CheckMatrixDimension: Input must be a 2d array");
+    int dim0 = boost::python::extract<int>(npArray.attr("shape")[0]);
+    int dim1 = boost::python::extract<int>(npArray.attr("shape")[1]);
+    if((dim0 != numRows && numRows != -1) || (dim1 != numColumns && numColumns != -1))
+        throw PSIEXCEPTION("CheckDimension: Input 2d array dimensions do not agree with requirements.");
+}
+
+SharedMatrix NPArrayToSharedMatrix(NPArray& npArray) {
     int dim0 = boost::python::extract<int>(npArray.attr("shape")[0]);
     int dim1 = boost::python::extract<int>(npArray.attr("shape")[1]);
     SharedMatrix sharedMatrix(new Matrix(dim0, dim1));
@@ -73,7 +83,7 @@ SharedNPArray NewSharedNPArrayDoubleMatrix(int numRows, int numColumns) {
     return NewSharedNPArray(2, dims);
 }
 
-SharedNPArray SharedVector2SharedNPArray(SharedVector sharedVector) {
+SharedNPArray SharedVectorToSharedNPArray(SharedVector sharedVector) {
     const int dims[1] = {sharedVector->dim()};
     SharedNPArray shared_npArray = NewSharedNPArray(1, dims);
     for(int i = 0; i < dims[0]; i++)
@@ -81,7 +91,7 @@ SharedNPArray SharedVector2SharedNPArray(SharedVector sharedVector) {
     return shared_npArray;
 }
 
-SharedNPArray SharedMatrix2SharedNPArray(SharedMatrix sharedMatrix) {
+SharedNPArray SharedMatrixToSharedNPArray(SharedMatrix sharedMatrix) {
     const int dims[2] = {sharedMatrix->nrow(), sharedMatrix->ncol()};
     SharedNPArray shared_npArray = NewSharedNPArray(2, dims);
     double* matPt = sharedMatrix->get_pointer();
@@ -91,7 +101,7 @@ SharedNPArray SharedMatrix2SharedNPArray(SharedMatrix sharedMatrix) {
     return shared_npArray;
 }
 
-SharedNPArray VectorOfSharedMatrix2SharedNPArray(std::vector<SharedMatrix>& vectorOfSharedMatrix) {
+SharedNPArray VectorOfSharedMatrixToSharedNPArray(std::vector<SharedMatrix>& vectorOfSharedMatrix) {
     const int dims[3] = {vectorOfSharedMatrix.size(), vectorOfSharedMatrix[0]->nrow(), vectorOfSharedMatrix[0]->ncol()};
     SharedNPArray shared_npArray = NewSharedNPArray(3, dims);
     for(int i = 0; i < dims[0]; i++) {
@@ -103,15 +113,15 @@ SharedNPArray VectorOfSharedMatrix2SharedNPArray(std::vector<SharedMatrix>& vect
     return shared_npArray;
 }
 
-boost::shared_ptr<boost::python::list> VectorOfSharedMatrix2PythonList(std::vector<SharedMatrix>& vectorOfSharedMatrix) {
+boost::shared_ptr<boost::python::list> VectorOfSharedMatrixToPythonList(std::vector<SharedMatrix>& vectorOfSharedMatrix) {
     boost::shared_ptr<boost::python::list> shared_pythonList(new boost::python::list);
     for(int i = 0; i < vectorOfSharedMatrix.size(); i++)
-        shared_pythonList->append(*SharedMatrix2SharedNPArray(vectorOfSharedMatrix[i]));
+        shared_pythonList->append(*SharedMatrixToSharedNPArray(vectorOfSharedMatrix[i]));
     return shared_pythonList;
 }
 
 // Constructors
-PyPsi::PyPsi(boost::python::numeric::array& cartesian, const std::string& basisname, int charge, int multiplicity) {
+PyPsi::PyPsi(NPArray& cartesian, const std::string& basisname, int charge, int multiplicity) {
     using namespace boost::python;
     object find_module = extract<object>(import("imp").attr("find_module"));
     boost::python::tuple module_info = extract<boost::python::tuple>(find_module("PyPsi"));
@@ -125,6 +135,8 @@ PyPsi::PyPsi(boost::python::numeric::array& cartesian, const std::string& basisn
 }
 
 void PyPsi::common_init(NPArray& cartesian, const std::string& basisname, int charge, int multiplicity, const std::string& path) {
+    
+    CheckMatrixDimension(cartesian, -1, 4);
     
     // to output NumPy Array
     import_array();
@@ -152,7 +164,7 @@ void PyPsi::common_init(NPArray& cartesian, const std::string& basisname, int ch
     process_environment_.set_psio(psio_);
     
     // create molecule object and set its basis set name 
-    molecule_ = psi::Molecule::create_molecule_from_cartesian(process_environment_, NPArray2SharedMatrix(cartesian), charge, multiplicity);
+    molecule_ = psi::Molecule::create_molecule_from_cartesian(process_environment_, NPArrayToSharedMatrix(cartesian), charge, multiplicity);
     molecule_->set_reinterpret_coordentry(false);
     molecule_->set_basis_all_atoms(basisname);
     process_environment_.set_molecule(molecule_);
@@ -234,14 +246,14 @@ void PyPsi::Molecule_Free() {
 }
 
 NPArray PyPsi::Molecule_Geometry() {
-    return *SharedMatrix2SharedNPArray(molecule_->geometry().clone());
+    return *SharedMatrixToSharedNPArray(molecule_->geometry().clone());
 }
 
 void PyPsi::Molecule_SetGeometry(NPArray newGeom) {
     
     // store the old geometry
     Matrix oldgeom = molecule_->geometry();
-    molecule_->set_geometry(*NPArray2SharedMatrix(newGeom));
+    molecule_->set_geometry(*NPArrayToSharedMatrix(newGeom));
     
     // determine whether the new geometry will cause a problem (typically 2 atoms are at the same point) 
     Matrix distmat = molecule_->distance_matrix();
@@ -313,52 +325,52 @@ void PyPsi::BasisSet_SetBasisSet(const std::string& basisname) {
     matfac_->init_with(1, nbf, nbf);
 }
 
-SharedVector PyPsi::BasisSet_ShellTypes() {
-    SharedVector shellTypesVec(new Vector(basis_->nshell()));
+NPArray PyPsi::BasisSet_ShellTypes() {
+    SharedNPArray shellTypesVec = NewSharedNPArrayIntVector(basis_->nshell());
     for(int i = 0; i < basis_->nshell(); i++) {
-        shellTypesVec->set(i, (double)basis_->shell(i).am());
+        (*shellTypesVec)[i] = basis_->shell(i).am();
     }
-    return shellTypesVec;
+    return *shellTypesVec;
 }
 
-SharedVector PyPsi::BasisSet_ShellNumFunctions() {
-    SharedVector shellNfuncsVec(new Vector(basis_->nshell()));
+NPArray PyPsi::BasisSet_ShellNumFunctions() {
+    SharedNPArray shellNfuncsVec = NewSharedNPArrayIntVector(basis_->nshell());
     for(int i = 0; i < basis_->nshell(); i++) {
-        shellNfuncsVec->set(i, (double)basis_->shell(i).nfunction());
+        (*shellNfuncsVec)[i] = basis_->shell(i).nfunction();
     }
-    return shellNfuncsVec;
+    return *shellNfuncsVec;
 }
 
-SharedVector PyPsi::BasisSet_ShellNumPrimitives() {
-    SharedVector shellNprimsVec(new Vector(basis_->nshell()));
+NPArray PyPsi::BasisSet_ShellNumPrimitives() {
+    SharedNPArray shellNprimsVec = NewSharedNPArrayIntVector(basis_->nshell());
     for(int i = 0; i < basis_->nshell(); i++) {
-        shellNprimsVec->set(i, (double)basis_->shell(i).nprimitive());
+        (*shellNprimsVec)[i] = basis_->shell(i).nprimitive();
     }
-    return shellNprimsVec;
+    return *shellNprimsVec;
 }
 
-SharedVector PyPsi::BasisSet_ShellToCenter() {
-    SharedVector shell2centerVec(new Vector(basis_->nshell()));
+NPArray PyPsi::BasisSet_ShellToCenter() {
+    SharedNPArray shell2centerVec = NewSharedNPArrayIntVector(basis_->nshell());
     for(int i = 0; i < basis_->nshell(); i++) {
-        shell2centerVec->set(i, (double)basis_->shell_to_center(i));
+        (*shell2centerVec)[i] = basis_->shell_to_center(i);
     }
-    return shell2centerVec;
+    return *shell2centerVec;
 }
 
-SharedVector PyPsi::BasisSet_FuncToCenter() {
-    SharedVector func2centerVec(new Vector(basis_->nbf()));
+NPArray PyPsi::BasisSet_FuncToCenter() {
+    SharedNPArray func2centerVec = NewSharedNPArrayIntVector(basis_->nbf());
     for(int i = 0; i < basis_->nbf(); i++) {
-        func2centerVec->set(i, (double)basis_->function_to_center(i));
+        (*func2centerVec)[i] = basis_->function_to_center(i);
     }
-    return func2centerVec;
+    return *func2centerVec;
 }
 
-SharedVector PyPsi::BasisSet_FuncToShell() {
-    SharedVector func2shellVec(new Vector(basis_->nbf()));
+NPArray PyPsi::BasisSet_FuncToShell() {
+    SharedNPArray func2shellVec = NewSharedNPArrayIntVector(basis_->nbf());
     for(int i = 0; i < basis_->nbf(); i++) {
-        func2shellVec->set(i, (double)basis_->function_to_shell(i));
+        (*func2shellVec)[i] = basis_->function_to_shell(i);
     }
-    return func2shellVec;
+    return *func2shellVec;
 }
 
 NPArray PyPsi::BasisSet_FuncToAngular() {
@@ -369,46 +381,46 @@ NPArray PyPsi::BasisSet_FuncToAngular() {
     return *func2amVec;
 }
 
-SharedVector PyPsi::BasisSet_PrimExp() {
-    SharedVector primExpsVec(new Vector(basis_->nprimitive()));
+NPArray PyPsi::BasisSet_PrimExp() {
+    SharedNPArray primExpsVec = NewSharedNPArrayDoubleVector(basis_->nprimitive());
     std::vector<double> temp;
     for(int i = 0; i < basis_->nshell(); i++) {
         std::vector<double> currExps = basis_->shell(i).exps();
         temp.insert(temp.end(), currExps.begin(), currExps.end());
     }
     for(int i = 0; i < basis_->nprimitive(); i++) {
-        primExpsVec->set(i, temp[i]);
+        (*primExpsVec)[i] = temp[i];
     }
-    return primExpsVec;
+    return *primExpsVec;
 }
 
-SharedVector PyPsi::BasisSet_PrimCoeffUnnorm() {
-    SharedVector primCoefsVec(new Vector(basis_->nprimitive()));
+NPArray PyPsi::BasisSet_PrimCoeffUnnorm() {
+    SharedNPArray primCoefsVec = NewSharedNPArrayDoubleVector(basis_->nprimitive());
     std::vector<double> temp;
     for(int i = 0; i < basis_->nshell(); i++) {
         std::vector<double> currCoefs = basis_->shell(i).original_coefs();
         temp.insert(temp.end(), currCoefs.begin(), currCoefs.end());
     }
     for(int i = 0; i < basis_->nprimitive(); i++) {
-        primCoefsVec->set(i, temp[i]);
+        (*primCoefsVec)[i] = temp[i];
     }
-    return primCoefsVec;
+    return *primCoefsVec;
 }
 
-boost::python::numeric::array PyPsi::Integrals_Overlap() {
+NPArray PyPsi::Integrals_Overlap() {
     SharedMatrix sMat(matfac_->create_matrix("Overlap"));
     boost::shared_ptr<OneBodyAOInt> sOBI(intfac_->ao_overlap());
     sOBI->compute(sMat);
     sMat->hermitivitize();
-    return *SharedMatrix2SharedNPArray(sMat);
+    return *SharedMatrixToSharedNPArray(sMat);
 }
 
-SharedMatrix PyPsi::Integrals_Kinetic() {
+NPArray PyPsi::Integrals_Kinetic() {
     SharedMatrix tMat(matfac_->create_matrix("Kinetic"));
     boost::shared_ptr<OneBodyAOInt> tOBI(intfac_->ao_kinetic());
     tOBI->compute(tMat);
     tMat->hermitivitize();
-    return tMat;
+    return *SharedMatrixToSharedNPArray(tMat);
 }
 
 NPArray PyPsi::Integrals_Potential() {
@@ -416,7 +428,7 @@ NPArray PyPsi::Integrals_Potential() {
     boost::shared_ptr<OneBodyAOInt> vOBI(intfac_->ao_potential());
     vOBI->compute(vMat);
     vMat->hermitivitize();
-    return *SharedMatrix2SharedNPArray(vMat);
+    return *SharedMatrixToSharedNPArray(vMat);
 }
 
 boost::python::list PyPsi::Integrals_Dipole() {
@@ -432,7 +444,7 @@ boost::python::list PyPsi::Integrals_Dipole() {
     ao_dipole[0]->hermitivitize();
     ao_dipole[1]->hermitivitize();
     ao_dipole[2]->hermitivitize();
-    return *VectorOfSharedMatrix2PythonList(ao_dipole);
+    return *VectorOfSharedMatrixToPythonList(ao_dipole);
 }
 
 NPArray PyPsi::Integrals_PotentialEachCore() {
@@ -450,17 +462,18 @@ NPArray PyPsi::Integrals_PotentialEachCore() {
         viOBI->compute(viMatVec[i]);
         viMatVec[i]->hermitivitize();
     }
-    return *VectorOfSharedMatrix2SharedNPArray(viMatVec);
+    return *VectorOfSharedMatrixToSharedNPArray(viMatVec);
 }
 
-SharedMatrix PyPsi::Integrals_PotentialPtQ(SharedMatrix Zxyz_list) {
+NPArray PyPsi::Integrals_PotentialPtQ(NPArray& Zxyz_list) {
+    CheckMatrixDimension(Zxyz_list, -1, 4);
     boost::shared_ptr<OneBodyAOInt> viOBI(intfac_->ao_potential());
     boost::shared_ptr<PotentialInt> viPtI = boost::static_pointer_cast<PotentialInt>(viOBI);
-    viPtI->set_charge_field(Zxyz_list);
+    viPtI->set_charge_field(NPArrayToSharedMatrix(Zxyz_list));
     SharedMatrix vZxyzListMat(matfac_->create_matrix("PotentialPointCharges"));
     viOBI->compute(vZxyzListMat);
     vZxyzListMat->hermitivitize();
-    return vZxyzListMat;
+    return *SharedMatrixToSharedNPArray(vZxyzListMat);
 }
 
 double PyPsi::Integrals_ijkl(int i, int j, int k, int l) {
