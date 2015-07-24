@@ -64,7 +64,7 @@ SharedNPArray NewSharedNPArray(int numDim, const int* dims, int dataType = PyArr
     boost::scoped_array<Py_intptr_t> dims_(new Py_intptr_t[numDim]);
     for(int i = 0; i < numDim; i++)
         dims_[i] = dims[i];
-    SharedNPArray shared_npArray(new boost::python::numeric::array(python::detail::new_reference(PyArray_ZEROS(numDim, dims_.get(), dataType, 0))));
+    SharedNPArray shared_npArray(new NPArray(python::detail::new_reference(PyArray_ZEROS(numDim, dims_.get(), dataType, 0))));
     return shared_npArray;
 }
 
@@ -113,8 +113,8 @@ SharedNPArray VectorOfSharedMatrixToSharedNPArray(std::vector<SharedMatrix>& vec
     return shared_npArray;
 }
 
-boost::shared_ptr<boost::python::list> VectorOfSharedMatrixToPythonList(std::vector<SharedMatrix>& vectorOfSharedMatrix) {
-    boost::shared_ptr<boost::python::list> shared_pythonList(new boost::python::list);
+boost::shared_ptr<PyList> VectorOfSharedMatrixToSharedPyList(const std::vector<SharedMatrix>& vectorOfSharedMatrix) {
+    boost::shared_ptr<PyList> shared_pythonList(new PyList);
     for(int i = 0; i < vectorOfSharedMatrix.size(); i++)
         shared_pythonList->append(*SharedMatrixToSharedNPArray(vectorOfSharedMatrix[i]));
     return shared_pythonList;
@@ -149,7 +149,7 @@ PyPsi::PyPsi(NPArray& cartesian, const std::string& basisname, int charge, int m
     common_init(cartesian, basisname, charge, multiplicity, find_default_path());
 }
 
-PyPsi::PyPsi(boost::python::numeric::array& cartesian, const std::string& basisname, int charge, int multiplicity, const std::string& path) {
+PyPsi::PyPsi(NPArray& cartesian, const std::string& basisname, int charge, int multiplicity, const std::string& path) {
     common_init(cartesian, basisname, charge, multiplicity, path);
 }
 
@@ -265,6 +265,7 @@ void PyPsi::Molecule_Free() {
     molecule_->set_reinterpret_coordentry(true);
     molecule_->activate_all_fragments(); // a trick to set lock_frame_ = false;
     molecule_->update_geometry();
+    molecule_->set_point_group(boost::shared_ptr<PointGroup>(new PointGroup("C1")));
 }
 
 NPArray PyPsi::Molecule_Geometry() {
@@ -432,7 +433,7 @@ NPArray PyPsi::Integrals_Potential() {
     return *SharedMatrixToSharedNPArray(vMat);
 }
 
-boost::python::list PyPsi::Integrals_Dipole() {
+PyList PyPsi::Integrals_Dipole() {
     std::vector<SharedMatrix> ao_dipole;
     SharedMatrix dipole_x(matfac_->create_matrix("Dipole x"));
     SharedMatrix dipole_y(matfac_->create_matrix("Dipole y"));
@@ -445,7 +446,7 @@ boost::python::list PyPsi::Integrals_Dipole() {
     ao_dipole[0]->hermitivitize();
     ao_dipole[1]->hermitivitize();
     ao_dipole[2]->hermitivitize();
-    return *VectorOfSharedMatrixToPythonList(ao_dipole);
+    return *VectorOfSharedMatrixToSharedPyList(ao_dipole);
 }
 
 NPArray PyPsi::Integrals_PotentialEachCore() {
@@ -632,73 +633,84 @@ SharedMatrix DensToEigVectors(SharedMatrix density) {
     return eigVectors;
 }
 
-std::vector<SharedMatrix> PyPsi::JK_DensToJ(SharedMatrix densAlpha, SharedMatrix densBeta) {
-	return JK_OccOrbToJ(DensToEigVectors(densAlpha), DensToEigVectors(densBeta)); 
+void TurnDensSetIntoFakeOccOrbSet(PyList& densSet, int nbf) {
+    int listLength = boost::python::len(densSet);
+    for(int i = 0; i < listLength; i++) {
+        NPArray dens = boost::python::extract<NPArray>(densSet[i]);
+        CheckMatrixDimension(dens, nbf, nbf);
+        SharedMatrix fakeOccOrb = DensToEigVectors(NPArrayToSharedMatrix(dens));
+        densSet[i] = *SharedMatrixToSharedNPArray(fakeOccOrb);
+    }
 }
 
-std::vector<SharedMatrix> PyPsi::JK_DensToK(SharedMatrix densAlpha, SharedMatrix densBeta) {
-	return JK_OccOrbToK(DensToEigVectors(densAlpha), DensToEigVectors(densBeta)); 
+PyList PyPsi::JK_DensToJ(PyList& densSet) {
+    TurnDensSetIntoFakeOccOrbSet(densSet, basis_->nbf());
+	return JK_OccOrbToJ(densSet); 
 }
 
-std::vector<SharedMatrix> PyPsi::JK_OccOrbToJ(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
-    if(jk_ == NULL)
-        JK_Initialize("PKJK");
+PyList PyPsi::JK_DensToK(PyList& densSet) {
+    TurnDensSetIntoFakeOccOrbSet(densSet, basis_->nbf());
+	return JK_OccOrbToK(densSet); 
+}
+
+PyList PyPsi::JK_OccOrbToJ(PyList& occOrbSet) {
+    if(jk_ == NULL) JK_Initialize("PKJK");
     jk_->set_do_K(false);
-    JK_CalcAllFromOccOrb(occOrbAlpha, occOrbBeta);
+    JK_CalcAllFromOccOrb(occOrbSet);
     jk_->set_do_K(true);
-    return jk_->J();
+    return *VectorOfSharedMatrixToSharedPyList(jk_->J());
 }
 
-std::vector<SharedMatrix> PyPsi::JK_OccOrbToK(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
-    if(jk_ == NULL)
-        JK_Initialize("PKJK");
+PyList PyPsi::JK_OccOrbToK(PyList& occOrbSet) {
+    if(jk_ == NULL) JK_Initialize("PKJK");
     jk_->set_do_J(false);
-    JK_CalcAllFromOccOrb(occOrbAlpha, occOrbBeta);
+    JK_CalcAllFromOccOrb(occOrbSet);
     jk_->set_do_J(true);
-    return jk_->K();
+    return *VectorOfSharedMatrixToSharedPyList(jk_->K());
 }
 
-void PyPsi::JK_CalcAllFromDens(SharedMatrix densAlpha, SharedMatrix densBeta) {
-    JK_CalcAllFromOccOrb(DensToEigVectors(densAlpha), DensToEigVectors(densBeta));
+void PyPsi::JK_CalcAllFromDens(PyList& densSet) {
+    TurnDensSetIntoFakeOccOrbSet(densSet, basis_->nbf());
+    JK_CalcAllFromOccOrb(densSet);
 }
 
-void PyPsi::JK_CalcAllFromOccOrb(SharedMatrix occOrbAlpha, SharedMatrix occOrbBeta) {
-    if(jk_ == NULL)
-        JK_Initialize("PKJK");
+void PyPsi::JK_CalcAllFromOccOrb(PyList& occOrbSet) {
+    int listLength = boost::python::len(occOrbSet);
+    if(listLength > 2)
+        throw PSIEXCEPTION("JK_CalcAllFromOccOrb: Input list length must be 1 or 2.");
+    int numColumns = boost::python::extract<int>(occOrbSet[0].attr("shape")[1]);
+    if(jk_ == NULL) JK_Initialize("PKJK");
     jk_->C_left().clear();
-    jk_->C_left().push_back(occOrbAlpha);
-    if(occOrbBeta != NULL)
-        jk_->C_left().push_back(occOrbBeta);
+    for(int i = 0; i < listLength; i++) {
+        NPArray occOrb = boost::python::extract<NPArray>(occOrbSet[i]);
+        CheckMatrixDimension(occOrb, basis_->nbf(), numColumns);
+        jk_->C_left().push_back(NPArrayToSharedMatrix(occOrb));
+    }
     jk_->compute();
 }
 
-std::vector<SharedMatrix> PyPsi::JK_RetrieveJ() {
-	if(jk_ == NULL)
-		throw PSIEXCEPTION("JK_RetriveJ: J/K calculation has not been done.");
-    return jk_->J();
+PyList PyPsi::JK_RetrieveJ() {
+	if(jk_ == NULL) throw PSIEXCEPTION("JK_RetriveJ: J/K calculation has not been done.");
+    return *VectorOfSharedMatrixToSharedPyList(jk_->J());
 }
 
-std::vector<SharedMatrix> PyPsi::JK_RetrieveK() {
-	if(jk_ == NULL)
-		throw PSIEXCEPTION("JK_RetriveK: J/K calculation has not been done.");
-    return jk_->K();
+PyList PyPsi::JK_RetrieveK() {
+	if(jk_ == NULL) throw PSIEXCEPTION("JK_RetriveK: J/K calculation has not been done.");
+    return *VectorOfSharedMatrixToSharedPyList(jk_->K());
 }
 
 void PyPsi::jk_DFException(std::string functionName) {
-    if(jk_ == NULL) {
-        JK_Initialize("DFJK");
-    }
-    if((!boost::iequals(jk_->JKtype(), "DFJK")) || dynamic_cast<DFJK*>(jk_.get()) == NULL) {
+    if(jk_ == NULL) JK_Initialize("DFJK");
+    if((!boost::iequals(jk_->JKtype(), "DFJK")) || dynamic_cast<DFJK*>(jk_.get()) == NULL)
         throw PSIEXCEPTION(functionName + ": Can only be used with Density-fitting JK.");
-    }
 }
 
-SharedMatrix PyPsi::JK_DFTensor_AuxPriPairs() {
+NPArray PyPsi::JK_DFTensor_AuxPriPairs() {
     jk_DFException("JK_DFTensor_AuxPriPairs");
-    return boost::static_pointer_cast<DFJK>(jk_)->GetQmn();
+    return *SharedMatrixToSharedNPArray(boost::static_pointer_cast<DFJK>(jk_)->GetQmn());
 }
 
-std::vector<SharedMatrix> PyPsi::JK_DFTensor_AuxPriPri() {
+NPArray PyPsi::JK_DFTensor_AuxPriPri() {
     jk_DFException("JK_DFTensor_AuxPriPri");
     SharedMatrix QmnUnique = boost::static_pointer_cast<DFJK>(jk_)->GetQmn();
     std::vector<SharedMatrix> QmnFull;
@@ -706,12 +718,12 @@ std::vector<SharedMatrix> PyPsi::JK_DFTensor_AuxPriPri() {
         QmnFull.push_back(SharedMatrix(new Matrix(basis_->nbf(), basis_->nbf())));
         QmnFull[Q]->set(QmnUnique->const_pointer()[Q]);
     }
-    return QmnFull;
+    return *VectorOfSharedMatrixToSharedNPArray(QmnFull);
 }
 
-SharedMatrix PyPsi::JK_DFMetric_InvJHalf() {
+NPArray PyPsi::JK_DFMetric_InvJHalf() {
     jk_DFException("JK_DFMetric_InvJHalf");
-    return boost::static_pointer_cast<DFJK>(jk_)->GetInvJHalf();
+    return *SharedMatrixToSharedNPArray(boost::static_pointer_cast<DFJK>(jk_)->GetInvJHalf());
 }
 
 void PyPsi::DFT_Initialize(std::string functionalName) {

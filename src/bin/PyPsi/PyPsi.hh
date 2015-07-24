@@ -25,6 +25,7 @@ using namespace boost;
 
 typedef boost::shared_ptr<boost::python::numeric::array> SharedNPArray;
 typedef boost::python::numeric::array NPArray;
+typedef boost::python::list PyList;
 
 class PyPsi {
 protected:
@@ -57,7 +58,7 @@ protected:
     // exception function for DFJK utilities 
     void jk_DFException(std::string functionName);
     
-    void common_init(boost::python::numeric::array& cartesian, const std::string& basisname, 
+    void common_init(NPArray& cartesian, const std::string& basisname, 
         int charge, int multiplicity, const std::string& path);
     
 public:
@@ -117,7 +118,7 @@ public:
     NPArray Integrals_Potential(); // total potential energy matrix EN <i|sum(1/R)|j>
     NPArray Integrals_PotentialEachCore(); // atom-separated EN 
     NPArray Integrals_PotentialPtQ(NPArray& Zxyz_list); // compute from a given point charge list the environment potential energy matrix ENVI 
-    boost::python::list Integrals_Dipole(); // dipole matrices <i|x|j>, <i|y|j>, <i|z|j>
+    PyList Integrals_Dipole(); // dipole matrices <i|x|j>, <i|y|j>, <i|z|j>
     int Integrals_NumUniqueTEIs(); // number of unique TEIs 
     double Integrals_ijkl(int i, int j, int k, int l); // (ij|kl), chemist's notation 
     // ## HIGH MEMORY COST METHODS ## 
@@ -133,21 +134,22 @@ public:
     const std::string JK_Type();
     
     // methods computing J/K 
-    std::vector<SharedMatrix> JK_DensToJ(SharedMatrix, SharedMatrix = SharedMatrix());
-    std::vector<SharedMatrix> JK_DensToK(SharedMatrix, SharedMatrix = SharedMatrix());
-    std::vector<SharedMatrix> JK_OccOrbToJ(SharedMatrix, SharedMatrix = SharedMatrix());
-    std::vector<SharedMatrix> JK_OccOrbToK(SharedMatrix, SharedMatrix = SharedMatrix());
-    void JK_CalcAllFromDens(SharedMatrix, SharedMatrix = SharedMatrix());
-    void JK_CalcAllFromOccOrb(SharedMatrix, SharedMatrix = SharedMatrix());
-    std::vector<SharedMatrix> JK_RetrieveJ();
-    std::vector<SharedMatrix> JK_RetrieveK();
+    PyList JK_DensToJ(PyList&);
+    PyList JK_DensToK(PyList&);
+    PyList JK_OccOrbToJ(PyList&);
+    PyList JK_OccOrbToK(PyList&);
+    void JK_CalcAllFromDens(PyList&);
+    void JK_CalcAllFromOccOrb(PyList&);
+    PyList JK_RetrieveJ();
+    PyList JK_RetrieveK();
     
     // specially for density-fitting JK
-    SharedMatrix JK_DFTensor_AuxPriPairs();
-    std::vector<SharedMatrix> JK_DFTensor_AuxPriPri();
-    SharedMatrix JK_DFMetric_InvJHalf();
+    NPArray JK_DFTensor_AuxPriPairs();
+    NPArray JK_DFTensor_AuxPriPri();
+    NPArray JK_DFMetric_InvJHalf();
     
     
+    //*** DFT related
     void DFT_Initialize(std::string);
     std::vector<SharedMatrix> DFT_DensToV(SharedMatrix, SharedMatrix = SharedMatrix());
     std::vector<SharedMatrix> DFT_OccOrbToV(SharedMatrix, SharedMatrix = SharedMatrix());

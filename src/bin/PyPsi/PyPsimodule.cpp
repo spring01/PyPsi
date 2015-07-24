@@ -17,9 +17,9 @@ BOOST_PYTHON_MODULE(PyPsi)
     using namespace boost::python;
     boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
     
-    class_<PyPsi>("PyPsi", init<boost::python::numeric::array&, std::string, int, int, std::string>())
+    class_<PyPsi>("PyPsi", init<boost::python::numeric::array&, std::string>())
         .def(init<boost::python::numeric::array&, std::string, int, int>())
-        .def(init<boost::python::numeric::array&, std::string>())
+        .def(init<boost::python::numeric::array&, std::string, int, int, std::string>())
         .def("Settings_MaxNumCPUCores", &PyPsi::Settings_MaxNumCPUCores)
         .def("Settings_SetMaxNumCPUCores", &PyPsi::Settings_SetMaxNumCPUCores)
         .def("Settings_MaxMemoryInGB", &PyPsi::Settings_MaxMemoryInGB)
@@ -62,6 +62,17 @@ BOOST_PYTHON_MODULE(PyPsi)
         
         .def("JK_Initialize", &PyPsi::JK_Initialize, JK_Initialize_overloads())
         .def("JK_Type", &PyPsi::JK_Type)
+        .def("JK_DensToJ", &PyPsi::JK_DensToJ)
+        .def("JK_DensToK", &PyPsi::JK_DensToK)
+        .def("JK_OccOrbToJ", &PyPsi::JK_OccOrbToJ)
+        .def("JK_OccOrbToK", &PyPsi::JK_OccOrbToK)
+        .def("JK_CalcAllFromDens", &PyPsi::JK_CalcAllFromDens)
+        .def("JK_CalcAllFromOccOrb", &PyPsi::JK_CalcAllFromOccOrb)
+        .def("JK_RetrieveJ", &PyPsi::JK_RetrieveJ)
+        .def("JK_RetrieveK", &PyPsi::JK_RetrieveK)
+        .def("JK_DFTensor_AuxPriPairs", &PyPsi::JK_DFTensor_AuxPriPairs)
+        .def("JK_DFTensor_AuxPriPri", &PyPsi::JK_DFTensor_AuxPriPri)
+        .def("JK_DFMetric_InvJHalf", &PyPsi::JK_DFMetric_InvJHalf)
         
         .def("SCF_RunSCF", &PyPsi::SCF_RunSCF)
         ;
