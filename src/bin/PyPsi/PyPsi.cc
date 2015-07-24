@@ -120,14 +120,33 @@ boost::shared_ptr<boost::python::list> VectorOfSharedMatrixToPythonList(std::vec
     return shared_pythonList;
 }
 
-// Constructors
-PyPsi::PyPsi(NPArray& cartesian, const std::string& basisname, int charge, int multiplicity) {
+const std::string find_default_path() {
     using namespace boost::python;
     object find_module = extract<object>(import("imp").attr("find_module"));
     boost::python::tuple module_info = extract<boost::python::tuple>(find_module("PyPsi"));
     const std::string path = std::string(extract<char const*>(extract<str>(module_info[1])));
-    
-    common_init(cartesian, basisname, charge, multiplicity, path);
+    return path;
+}
+
+int find_num_electrons(NPArray& cartesian, int charge) {
+    SharedVector atomicNumbers = NPArrayToSharedMatrix(cartesian)->get_column(0, 0);
+    int nelectron = 0;
+    for(int i = 0; i < atomicNumbers->dim(); i++) {
+        nelectron += (int)atomicNumbers->get(i);
+    }
+    nelectron -= charge;
+    return nelectron;
+}
+
+// Constructors
+PyPsi::PyPsi(NPArray& cartesian, const std::string& basisname) {
+    int nelectron = find_num_electrons(cartesian, 0);
+    int multiplicity = 1 + nelectron%2;
+    common_init(cartesian, basisname, 0, multiplicity, find_default_path());
+}
+
+PyPsi::PyPsi(NPArray& cartesian, const std::string& basisname, int charge, int multiplicity) {
+    common_init(cartesian, basisname, charge, multiplicity, find_default_path());
 }
 
 PyPsi::PyPsi(boost::python::numeric::array& cartesian, const std::string& basisname, int charge, int multiplicity, const std::string& path) {
@@ -160,10 +179,13 @@ void PyPsi::common_init(NPArray& cartesian, const std::string& basisname, int ch
     Wavefunction::initialize_singletons();
     
     // initialize psio 
-    psio_ = boost::shared_ptr<PSIO>(new PSIO);
-    process_environment_.set_psio(psio_);
+    create_psio();
     
     // create molecule object and set its basis set name 
+    int nelectron = find_num_electrons(cartesian, charge);
+    if(multiplicity - 1 > nelectron || multiplicity%2 == nelectron%2){
+        throw PSIEXCEPTION("PyPsi::common_init: Charge and Multiplicity are not compatible.");
+    }
     molecule_ = psi::Molecule::create_molecule_from_cartesian(process_environment_, NPArrayToSharedMatrix(cartesian), charge, multiplicity);
     molecule_->set_reinterpret_coordentry(false);
     molecule_->set_basis_all_atoms(basisname);
@@ -188,19 +210,19 @@ void PyPsi::common_init(NPArray& cartesian, const std::string& basisname, int ch
     process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
 }
 
-void PyPsi::create_basis() {
+void PyPsi::create_psio() {
+    psio_ = boost::shared_ptr<PSIO>(new PSIO);
+    process_environment_.set_psio(psio_);
+}
+
+void PyPsi::create_basis_and_integral_factories() {
+    
     // create basis object 
     boost::shared_ptr<PointGroup> c1group(new PointGroup("C1"));
     molecule_->set_point_group(c1group); 
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     basis_ = BasisSet::construct(process_environment_, parser, molecule_, "BASIS");  
-    
     molecule_->set_point_group(c1group); // creating basis set object change molecule's point group, for some reasons 
-}
-
-void PyPsi::create_basis_and_integral_factories() {
-    
-    create_basis();
     
     // create integral factory object 
     intfac_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basis_, basis_, basis_, basis_));
@@ -251,6 +273,8 @@ NPArray PyPsi::Molecule_Geometry() {
 
 void PyPsi::Molecule_SetGeometry(NPArray newGeom) {
     
+    CheckMatrixDimension(newGeom, molecule_->natom(), 3);
+    
     // store the old geometry
     Matrix oldgeom = molecule_->geometry();
     molecule_->set_geometry(*NPArrayToSharedMatrix(newGeom));
@@ -269,8 +293,12 @@ void PyPsi::Molecule_SetGeometry(NPArray newGeom) {
     // update other objects 
     if(jk_ != NULL)
         jk_->finalize();
-    psio_->_psio_manager_->psiclean();
     jk_.reset();
+    wfn_.reset();
+    
+    // re-initialize psio 
+    create_psio();
+    
     create_basis_and_integral_factories();
 }
 
@@ -291,38 +319,11 @@ int PyPsi::Molecule_NumElectrons() {
     return nelectron;
 }
 
-void PyPsi::Molecule_SetChargeMult(int charge, int mult) {
-    int oldCharge = molecule_->molecular_charge();
-    int nelectron = Molecule_NumElectrons() + oldCharge - charge;
-    if(mult - 1 > nelectron || mult%2 == nelectron%2){
-        throw PSIEXCEPTION("Molecule_SetChargeMult: Charge and Multiplicity are not compatible.");
-    }
-    molecule_->set_molecular_charge(charge);
-    molecule_->set_multiplicity(mult);
-}
-
 NPArray PyPsi::Molecule_ChargeMult() {
     SharedNPArray charge_mult = NewSharedNPArrayIntVector(2);
     (*charge_mult)[0] = molecule_->molecular_charge();
     (*charge_mult)[1] = molecule_->multiplicity();
     return *charge_mult;
-}
-
-void PyPsi::BasisSet_SetBasisSet(const std::string& basisname) {
-    if(jk_ != NULL)
-        jk_->finalize();
-    psio_->_psio_manager_->psiclean();
-    jk_.reset();
-    
-    molecule_->set_basis_all_atoms(basisname);
-    
-    // create basis object and one & two electron integral factories & rhf 
-    create_basis_and_integral_factories();
-    
-    // create matrix factory object 
-    int nbf[] = { basis_->nbf() };
-    matfac_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
-    matfac_->init_with(1, nbf, nbf);
 }
 
 NPArray PyPsi::BasisSet_ShellTypes() {
@@ -606,7 +607,7 @@ void PyPsi::JK_Initialize(std::string jktype, std::string auxBasisName) {
     jk_->initialize();
 }
 
-const std::string& PyPsi::JK_Type() {
+const std::string PyPsi::JK_Type() {
     if(jk_ == NULL)
         throw PSIEXCEPTION("JK_Type: JK object has not been initialized.");
     return jk_->JKtype();

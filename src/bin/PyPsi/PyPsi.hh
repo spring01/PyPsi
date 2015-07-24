@@ -45,15 +45,16 @@ protected:
     
     SharedMatrix guessOrbital_;
     
-    // create basis object 
-    void create_basis();
+    // create psio object 
+    void create_psio();
     
     // create basis object and one & two electron integral factories 
     void create_basis_and_integral_factories();
     
+    // initialize wfn_ 
     void create_wfn();
     
-    // exception function for DFJK utilities
+    // exception function for DFJK utilities 
     void jk_DFException(std::string functionName);
     
     void common_init(boost::python::numeric::array& cartesian, const std::string& basisname, 
@@ -61,8 +62,9 @@ protected:
     
 public:
     // constructors
+    PyPsi(NPArray& cartesian, const std::string& basisname);
     PyPsi(NPArray& cartesian, const std::string& basisname, 
-        int charge = 0, int multiplicity = 1);
+        int charge, int multiplicity);
     PyPsi(NPArray& cartesian, const std::string& basisname, 
         int charge, int multiplicity, const std::string& path);
     
@@ -87,7 +89,6 @@ public:
     double Molecule_NucRepEnergy() { return molecule_->nuclear_repulsion_energy(); } // nuclear repulsion energy 
     NPArray Molecule_AtomicNumbers(); // atomic number list vector 
     NPArray Molecule_ChargeMult();
-    void Molecule_SetChargeMult(int charge, int mult);
     
     //*** Molecule operations 
     void Molecule_Fix();
@@ -96,7 +97,6 @@ public:
     
     //*** Basis set properties 
     const std::string BasisSet_Name() { return basis_->name(); } // basis set name string 
-    void BasisSet_SetBasisSet(const std::string& basisname); // set a new basis set 
     bool BasisSet_IsSpherical() { return basis_->has_puream(); }
     int BasisSet_NumShells() { return basis_->nshell(); }
     int BasisSet_NumFunctions() { return basis_->nbf(); } // number of basis functions 
@@ -130,7 +130,7 @@ public:
     //*** JK related
     // use different types of JK 
     void JK_Initialize(std::string jktype, std::string auxiliaryBasisSetName = "CC-PVDZ-JKFIT");
-    const std::string& JK_Type();
+    const std::string JK_Type();
     
     // methods computing J/K 
     std::vector<SharedMatrix> JK_DensToJ(SharedMatrix, SharedMatrix = SharedMatrix());

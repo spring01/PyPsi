@@ -34,12 +34,10 @@ print("Molecule_SetGeometry", pypsi.Molecule_SetGeometry(geom + 1), pypsi.Molecu
 print("Molecule_AtomicNumbers", pypsi.Molecule_AtomicNumbers())
 atomNums = pypsi.Molecule_AtomicNumbers()
 print("Molecule_ChargeMult", pypsi.Molecule_ChargeMult())
-print("Molecule_SetChargeMult", pypsi.Molecule_SetChargeMult(0, 3), pypsi.Molecule_ChargeMult())
 print("Molecule_Fix", pypsi.Molecule_Fix())
 print("Molecule_Free", pypsi.Molecule_Free())
 
 print("BasisSet_Name", pypsi.BasisSet_Name())
-print("BasisSet_SetBasisSet", pypsi.BasisSet_SetBasisSet("6-31g*"), pypsi.BasisSet_Name())
 print("BasisSet_IsSpherical", pypsi.BasisSet_IsSpherical())
 print("BasisSet_NumShells", pypsi.BasisSet_NumShells())
 print("BasisSet_NumFunctions", pypsi.BasisSet_NumFunctions())
@@ -60,6 +58,10 @@ print("Integrals_PotentialEachCore", pypsi.Integrals_PotentialEachCore())
 print("Integrals_PotentialPtQ", pypsi.Integrals_PotentialPtQ(np.concatenate((np.reshape(atomNums, [np.size(atomNums), -1]), geom), axis=1)))
 print("Integrals_Dipole", pypsi.Integrals_Dipole())
 print("Integrals_ijkl", pypsi.Integrals_ijkl(0, 1, 2, 3))
+
+print("JK_Initialize", pypsi.JK_Initialize("dfjk"))
+pypsi.JK_Initialize("pkjk")
+print("JK_Type", pypsi.JK_Type())
 
 
 

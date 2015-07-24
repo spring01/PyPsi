@@ -8,6 +8,8 @@
 
 #include "PyPsi.hh"
 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(JK_Initialize_overloads, JK_Initialize, 1, 2)
+
 using namespace psi;
 
 BOOST_PYTHON_MODULE(PyPsi)
@@ -16,7 +18,8 @@ BOOST_PYTHON_MODULE(PyPsi)
     boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
     
     class_<PyPsi>("PyPsi", init<boost::python::numeric::array&, std::string, int, int, std::string>())
-        .def(init<boost::python::numeric::array&, std::string, optional<int, int> >())
+        .def(init<boost::python::numeric::array&, std::string, int, int>())
+        .def(init<boost::python::numeric::array&, std::string>())
         .def("Settings_MaxNumCPUCores", &PyPsi::Settings_MaxNumCPUCores)
         .def("Settings_SetMaxNumCPUCores", &PyPsi::Settings_SetMaxNumCPUCores)
         .def("Settings_MaxMemoryInGB", &PyPsi::Settings_MaxMemoryInGB)
@@ -32,12 +35,10 @@ BOOST_PYTHON_MODULE(PyPsi)
         .def("Molecule_NucRepEnergy", &PyPsi::Molecule_NucRepEnergy)
         .def("Molecule_AtomicNumbers", &PyPsi::Molecule_AtomicNumbers)
         .def("Molecule_ChargeMult", &PyPsi::Molecule_ChargeMult)
-        .def("Molecule_SetChargeMult", &PyPsi::Molecule_SetChargeMult)
         .def("Molecule_Fix", &PyPsi::Molecule_Fix)
         .def("Molecule_Free", &PyPsi::Molecule_Free)
         
         .def("BasisSet_Name", &PyPsi::BasisSet_Name)
-        .def("BasisSet_SetBasisSet", &PyPsi::BasisSet_SetBasisSet)
         .def("BasisSet_IsSpherical", &PyPsi::BasisSet_IsSpherical)
         .def("BasisSet_NumFunctions", &PyPsi::BasisSet_NumFunctions)
         .def("BasisSet_NumShells", &PyPsi::BasisSet_NumShells)
@@ -58,6 +59,9 @@ BOOST_PYTHON_MODULE(PyPsi)
         .def("Integrals_PotentialPtQ", &PyPsi::Integrals_PotentialPtQ)
         .def("Integrals_Dipole", &PyPsi::Integrals_Dipole)
         .def("Integrals_ijkl", &PyPsi::Integrals_ijkl)
+        
+        .def("JK_Initialize", &PyPsi::JK_Initialize, JK_Initialize_overloads())
+        .def("JK_Type", &PyPsi::JK_Type)
         
         .def("SCF_RunSCF", &PyPsi::SCF_RunSCF)
         ;
