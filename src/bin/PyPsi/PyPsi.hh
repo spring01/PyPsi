@@ -44,7 +44,7 @@ protected:
     boost::shared_ptr<VBase> dftPotential_;
     boost::shared_ptr<scf::HF> wfn_;
     
-    SharedMatrix guessOrbital_;
+    std::vector<SharedMatrix> guessOrbital_;
     
     // create psio object 
     void create_psio();
@@ -78,15 +78,15 @@ public:
     std::string Settings_PsiDataDir() { return process_environment_("PSIDATADIR"); }
     std::string Settings_TempDir() { return psio_->_psio_manager_->get_default_path(); }
     void Settings_SetMaxNumCPUCores(int ncores);
-    void Settings_SetMaxMemory(std::string);
-    void Settings_SetPsiDataDir(std::string path) { process_environment_.set("PSIDATADIR", path); }
+    void Settings_SetMaxMemory(const std::string&);
+    void Settings_SetPsiDataDir(const std::string& path) { process_environment_.set("PSIDATADIR", path); }
     
     
     //*** Molecule properties 
     int Molecule_NumAtoms() { return molecule_->natom(); } // number of atoms 
     int Molecule_NumElectrons(); // number of electrons 
     NPArray Molecule_Geometry(); // geometry in Bohr 
-    void Molecule_SetGeometry(NPArray newGeom); // set a new geometry in Bohr 
+    void Molecule_SetGeometry(NPArray& newGeom); // set a new geometry in Bohr 
     double Molecule_NucRepEnergy() { return molecule_->nuclear_repulsion_energy(); } // nuclear repulsion energy 
     NPArray Molecule_AtomicNumbers(); // atomic number list vector 
     NPArray Molecule_ChargeMult();
@@ -130,7 +130,7 @@ public:
     
     //*** JK related
     // use different types of JK 
-    void JK_Initialize(std::string jktype, std::string auxiliaryBasisSetName = "CC-PVDZ-JKFIT");
+    void JK_Initialize(std::string jktype, std::string auxBasisName = "CC-PVDZ-JKFIT");
     const std::string JK_Type();
     
     // methods computing J/K 
@@ -151,15 +151,15 @@ public:
     
     //*** DFT related
     void DFT_Initialize(std::string);
-    std::vector<SharedMatrix> DFT_DensToV(SharedMatrix, SharedMatrix = SharedMatrix());
-    std::vector<SharedMatrix> DFT_OccOrbToV(SharedMatrix, SharedMatrix = SharedMatrix());
+    PyList DFT_DensToV(PyList&);
+    PyList DFT_OccOrbToV(PyList&);
     double DFT_EnergyXC();
     
     
     //*** SCF related
     // method of doing RHF calculations 
     void SCF_SetSCFType(std::string scfType);
-    void SCF_SetGuessOrb(SharedMatrix guessOrb);
+    void SCF_SetGuessOrb(PyList& guessOrb);
     double SCF_RunSCF();
     
     // methods controlling RHF algorithm 

@@ -74,6 +74,13 @@ BOOST_PYTHON_MODULE(PyPsi)
         .def("JK_DFTensor_AuxPriPri", &PyPsi::JK_DFTensor_AuxPriPri)
         .def("JK_DFMetric_InvJHalf", &PyPsi::JK_DFMetric_InvJHalf)
         
+        .def("DFT_Initialize", &PyPsi::DFT_Initialize)
+        .def("DFT_DensToV", &PyPsi::DFT_DensToV)
+        .def("DFT_OccOrbToV", &PyPsi::DFT_OccOrbToV)
+        .def("DFT_EnergyXC", &PyPsi::DFT_EnergyXC)
+        
+        .def("SCF_SetSCFType", &PyPsi::SCF_SetSCFType)
+        .def("SCF_SetGuessOrb", &PyPsi::SCF_SetGuessOrb)
         .def("SCF_RunSCF", &PyPsi::SCF_RunSCF)
         ;
 }
