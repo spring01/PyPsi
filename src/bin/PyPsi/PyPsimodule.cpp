@@ -9,6 +9,8 @@
 #include "PyPsi.hh"
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(JK_Initialize_overloads, JK_Initialize, 1, 2)
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(SCF_EnableMOM_overloads, SCF_EnableMOM, 0, 1)
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(SCF_EnableDamping_overloads, SCF_EnableDamping, 0, 1)
 
 using namespace psi;
 
@@ -82,5 +84,24 @@ BOOST_PYTHON_MODULE(PyPsi)
         .def("SCF_SetSCFType", &PyPsi::SCF_SetSCFType)
         .def("SCF_SetGuessOrb", &PyPsi::SCF_SetGuessOrb)
         .def("SCF_RunSCF", &PyPsi::SCF_RunSCF)
+        .def("SCF_EnableMOM", &PyPsi::SCF_EnableMOM, SCF_EnableMOM_overloads())
+        .def("SCF_EnableDamping", &PyPsi::SCF_EnableDamping, SCF_EnableDamping_overloads())
+        .def("SCF_EnableDIIS", &PyPsi::SCF_EnableDIIS)
+        .def("SCF_DisableDIIS", &PyPsi::SCF_DisableDIIS)
+        .def("SCF_SetGuessType", &PyPsi::SCF_SetGuessType)
+        .def("SCF_TotalEnergy", &PyPsi::SCF_TotalEnergy)
+        .def("SCF_OrbitalAlpha", &PyPsi::SCF_OrbitalAlpha)
+        .def("SCF_OrbitalBeta", &PyPsi::SCF_OrbitalBeta)
+        .def("SCF_OrbEigValAlpha", &PyPsi::SCF_OrbEigValAlpha)
+        .def("SCF_OrbEigValBeta", &PyPsi::SCF_OrbEigValBeta)
+        .def("SCF_DensityAlpha", &PyPsi::SCF_DensityAlpha)
+        .def("SCF_DensityBeta", &PyPsi::SCF_DensityBeta)
+        .def("SCF_FockAlpha", &PyPsi::SCF_FockAlpha)
+        .def("SCF_FockBeta", &PyPsi::SCF_FockBeta)
+        .def("SCF_RHF_J", &PyPsi::SCF_RHF_J)
+        .def("SCF_RHF_K", &PyPsi::SCF_RHF_K)
+        .def("SCF_GuessDensity", &PyPsi::SCF_GuessDensity)
+        
+        .def("SCF_Gradient", &PyPsi::SCF_Gradient)
         ;
 }

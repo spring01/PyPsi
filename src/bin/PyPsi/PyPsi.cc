@@ -829,8 +829,8 @@ void PyPsi::SCF_EnableMOM(int mom_start) {
     process_environment_.options.set_global_int("MOM_START", mom_start);
 }
 
-void PyPsi::SCF_EnableDamping(double damping_percentage) {
-    process_environment_.options.set_global_double("DAMPING_PERCENTAGE", damping_percentage);
+void PyPsi::SCF_EnableDamping(double dampingCoeff) {
+    process_environment_.options.set_global_double("DAMPING_PERCENTAGE", 100.0 * dampingCoeff);
 }
 
 void PyPsi::SCF_DisableDIIS() {
@@ -843,114 +843,81 @@ void PyPsi::SCF_EnableDIIS() {
     process_environment_.options.set_global_int("MAXITER", 100);
 }
 
-void PyPsi::SCF_GuessSAD() {
-    process_environment_.options.set_global_str("GUESS", "SAD");
-}
-
-void PyPsi::SCF_GuessCore() {
-    process_environment_.options.set_global_str("GUESS", "CORE");
+void PyPsi::SCF_SetGuessType(const std::string& guessType) {
+    process_environment_.options.set_global_str("GUESS", guessType);
 }
 
 double PyPsi::SCF_TotalEnergy() { 
-    if(wfn_ == NULL) {
-        SCF_RunSCF();
-    }
+    if(wfn_ == NULL) SCF_RunSCF();
     return wfn_->EHF(); 
 }
 
-SharedMatrix PyPsi::SCF_OrbitalAlpha() { 
-    if(wfn_ == NULL) {
-        SCF_RunSCF();
-    }
-    return wfn_->Ca(); 
+NPArray PyPsi::SCF_OrbitalAlpha() { 
+    if(wfn_ == NULL) SCF_RunSCF();
+    return *Util_SharedMatrixToSharedNPArray(wfn_->Ca()); 
 }
 
-SharedMatrix PyPsi::SCF_OrbitalBeta() { 
-    if(wfn_ == NULL) {
-        SCF_RunSCF();
-    }
-    return wfn_->Cb(); 
+NPArray PyPsi::SCF_OrbitalBeta() { 
+    if(wfn_ == NULL) SCF_RunSCF();
+    return *Util_SharedMatrixToSharedNPArray(wfn_->Cb()); 
 }
 
-SharedVector PyPsi::SCF_OrbEigValAlpha() { 
+NPArray PyPsi::SCF_OrbEigValAlpha() { 
     if(wfn_ == NULL) {
         SCF_RunSCF();
     }
-    return wfn_->epsilon_a(); 
+    return *Util_SharedVectorToSharedNPArray(wfn_->epsilon_a()); 
 }
 
-SharedVector PyPsi::SCF_OrbEigValBeta() { 
-    if(wfn_ == NULL) {
-        SCF_RunSCF();
-    }
-    return wfn_->epsilon_b(); 
+NPArray PyPsi::SCF_OrbEigValBeta() { 
+    if(wfn_ == NULL) SCF_RunSCF();
+    return *Util_SharedVectorToSharedNPArray(wfn_->epsilon_b()); 
 }
 
-SharedMatrix PyPsi::SCF_DensityAlpha() { 
-    if(wfn_ == NULL) {
-        SCF_RunSCF();
-    }
-    return wfn_->Da(); 
+NPArray PyPsi::SCF_DensityAlpha() { 
+    if(wfn_ == NULL) SCF_RunSCF();
+    return *Util_SharedMatrixToSharedNPArray(wfn_->Da()); 
 }
 
-SharedMatrix PyPsi::SCF_DensityBeta() { 
-    if(wfn_ == NULL) {
-        SCF_RunSCF();
-    }
-    return wfn_->Db(); 
+NPArray PyPsi::SCF_DensityBeta() { 
+    if(wfn_ == NULL) SCF_RunSCF();
+    return *Util_SharedMatrixToSharedNPArray(wfn_->Db()); 
 }
 
-SharedMatrix PyPsi::SCF_CoreHamiltonian() {
-    if(wfn_ == NULL) {
-        SCF_RunSCF();
-    }
-    return wfn_->H(); 
+NPArray PyPsi::SCF_FockAlpha() { 
+    if(wfn_ == NULL) SCF_RunSCF();
+    return *Util_SharedMatrixToSharedNPArray(wfn_->Fa()); 
 }
 
-SharedMatrix PyPsi::SCF_FockAlpha() { 
-    if(wfn_ == NULL) {
-        SCF_RunSCF();
-    }
-    return wfn_->Fa(); 
+NPArray PyPsi::SCF_FockBeta() { 
+    if(wfn_ == NULL) SCF_RunSCF();
+    return *Util_SharedMatrixToSharedNPArray(wfn_->Fb()); 
 }
 
-SharedMatrix PyPsi::SCF_FockBeta() { 
-    if(wfn_ == NULL) {
-        SCF_RunSCF();
-    }
-    return wfn_->Fb(); 
-}
-
-SharedMatrix PyPsi::SCF_Gradient() {
-    if(wfn_ == NULL) {
-        SCF_RunSCF();
-    }
+NPArray PyPsi::SCF_Gradient() {
+    if(wfn_ == NULL) SCF_RunSCF();
     scfgrad::SCFGrad scfgrad_ = scfgrad::SCFGrad(process_environment_);
-    return scfgrad_.compute_gradient();
+    return *Util_SharedMatrixToSharedNPArray(scfgrad_.compute_gradient());
 }
 
-SharedMatrix PyPsi::SCF_GuessDensity() {
+NPArray PyPsi::SCF_GuessDensity() {
     create_wfn();
     process_environment_.set_wavefunction(wfn_);
-    return wfn_->GuessDensity();
+    return *Util_SharedMatrixToSharedNPArray(wfn_->GuessDensity());
 }
 
-SharedMatrix PyPsi::SCF_RHF_J() { 
-    if(wfn_ == NULL) {
-        SCF_RunSCF();
-    }
+NPArray PyPsi::SCF_RHF_J() { 
+    if(wfn_ == NULL) SCF_RunSCF();
     if(dynamic_cast<scf::RHF*>(wfn_.get()) == NULL)
         throw PSIEXCEPTION("SCF_RHF_J: This function works only for RHF.");
-    return boost::static_pointer_cast<scf::RHF>(wfn_)->J(); 
+    return *Util_SharedMatrixToSharedNPArray(boost::static_pointer_cast<scf::RHF>(wfn_)->J()); 
 }
 
-SharedMatrix PyPsi::SCF_RHF_K() { 
-    if(wfn_ == NULL) {
-        SCF_RunSCF();
-    }
+NPArray PyPsi::SCF_RHF_K() { 
+    if(wfn_ == NULL) SCF_RunSCF();
     if(dynamic_cast<scf::RHF*>(wfn_.get()) == NULL)
         throw PSIEXCEPTION("SCF_RHF_K: This function works only for RHF.");
-    return boost::static_pointer_cast<scf::RHF>(wfn_)->K(); 
+    return *Util_SharedMatrixToSharedNPArray(boost::static_pointer_cast<scf::RHF>(wfn_)->K()); 
 }
 
 

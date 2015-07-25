@@ -157,36 +157,35 @@ public:
     
     
     //*** SCF related
-    // method of doing RHF calculations 
+    // method of doing SCF calculations 
     void SCF_SetSCFType(std::string scfType);
     void SCF_SetGuessOrb(PyList& guessOrb);
     double SCF_RunSCF();
     
-    // methods controlling RHF algorithm 
-    void SCF_EnableMOM(int mom_start);
-    void SCF_EnableDamping(double damping_percentage);
+    // methods controlling SCF algorithm 
+    void SCF_EnableMOM(int mom_start = 20);
+    void SCF_EnableDamping(double damping_percentage = 0.25);
     void SCF_EnableDIIS();
     void SCF_DisableDIIS();
-    void SCF_GuessSAD();
-    void SCF_GuessCore();
+    void SCF_SetGuessType(const std::string&);
     
-    // methods extracting restricted Hartree-Fock results
+    // methods extracting SCF results
     double SCF_TotalEnergy();
-    SharedMatrix SCF_OrbitalAlpha();
-    SharedMatrix SCF_OrbitalBeta();
-    SharedVector SCF_OrbEigValAlpha();
-    SharedVector SCF_OrbEigValBeta();
-    SharedMatrix SCF_DensityAlpha();
-    SharedMatrix SCF_DensityBeta();
-    SharedMatrix SCF_CoreHamiltonian();
-    SharedMatrix SCF_FockAlpha();
-    SharedMatrix SCF_FockBeta();
-    SharedMatrix SCF_GuessDensity();
+    NPArray SCF_OrbitalAlpha();
+    NPArray SCF_OrbitalBeta();
+    NPArray SCF_OrbEigValAlpha();
+    NPArray SCF_OrbEigValBeta();
+    NPArray SCF_DensityAlpha();
+    NPArray SCF_DensityBeta();
+    NPArray SCF_FockAlpha();
+    NPArray SCF_FockBeta();
+    NPArray SCF_RHF_J();
+    NPArray SCF_RHF_K();
+    NPArray SCF_GuessDensity();
     
-    SharedMatrix SCF_Gradient();
+    NPArray SCF_Gradient();
     
-    SharedMatrix SCF_RHF_J();
-    SharedMatrix SCF_RHF_K();
+    
     
 };
 
