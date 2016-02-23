@@ -689,12 +689,12 @@ void PyPsi::JK_CalcAllFromOccOrb(PyList& occOrbSet) {
 }
 
 PyList PyPsi::JK_RetrieveJ() {
-	if(jk_ == NULL) throw PSIEXCEPTION("JK_RetriveJ: J/K calculation has not been done.");
+	if(jk_ == NULL) throw PSIEXCEPTION("JK_RetrieveJ: J/K calculation has not been done.");
     return *Util_VectorOfSharedMatrixToSharedPyList(jk_->J());
 }
 
 PyList PyPsi::JK_RetrieveK() {
-	if(jk_ == NULL) throw PSIEXCEPTION("JK_RetriveK: J/K calculation has not been done.");
+	if(jk_ == NULL) throw PSIEXCEPTION("JK_RetrieveK: J/K calculation has not been done.");
     return *Util_VectorOfSharedMatrixToSharedPyList(jk_->K());
 }
 
