@@ -1,0 +1,7 @@
+*.pyc
+do-configure
+configure
+autom4te.cache
+objdir
+obj
+
