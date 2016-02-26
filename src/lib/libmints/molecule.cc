@@ -23,7 +23,6 @@
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
-//~ #include <boost/python.hpp>
 #include <boost/foreach.hpp>
 
 #include <cmath>
@@ -193,57 +192,6 @@ Molecule::~Molecule()
 {
     clear();
     release_symmetry_information();
-    //if (old_symmetry_frame_)
-    //  delete old_symmetry_frame_;
-}
-
-Molecule& Molecule::operator=(const Molecule& other)
-{
-    // Self assignment is bad
-    if (this == &other)
-        return *this;
-
-    name_                    = other.name_;
-    all_variables_           = other.all_variables_;
-    fragments_               = other.fragments_;
-    fragment_charges_        = other.fragment_charges_;
-    fragment_multiplicities_ = other.fragment_multiplicities_;
-    fix_orientation_         = other.fix_orientation_;
-    move_to_com_             = other.move_to_com_;
-    molecular_charge_        = other.molecular_charge_;
-    multiplicity_            = other.multiplicity_;
-    units_                   = other.units_;
-    input_units_to_au_       = other.input_units_to_au_;
-    all_variables_           = other.all_variables_;
-    fragment_types_          = other.fragment_types_;
-    geometry_variables_      = other.geometry_variables_;
-    charge_specified_        = other.charge_specified_;
-    multiplicity_specified_  = other.multiplicity_specified_;
-    reinterpret_coordentries_= other.reinterpret_coordentries_;
-    lock_frame_              = other.lock_frame_;
-    zmat_                    = other.zmat_;
-
-    // These are symmetry related variables, and are filled in by the following functions
-    pg_             = boost::shared_ptr<PointGroup>();
-    nunique_        = 0;
-    nequiv_         = 0;
-    equiv_          = 0;
-    atom_to_unique_ = 0;
-    symmetry_from_input_ = other.symmetry_from_input_;
-    form_symmetry_information();
-    full_pg_        = other.full_pg_;
-    full_pg_n_      = other.full_pg_n_;
-
-    atoms_.clear();
-    // Deep copy the map of variables
-    std::vector<boost::shared_ptr<CoordEntry> >::const_iterator iter = other.full_atoms_.begin();
-    for(; iter != other.full_atoms_.end(); ++iter)
-        full_atoms_.push_back((*iter)->clone(full_atoms_, geometry_variables_));
-
-    // This is called here, so that the atoms list is populated
-    update_geometry();
-
-    return *this;
 }
 
 Molecule::Molecule(const Molecule& other)
@@ -254,24 +202,6 @@ Molecule::Molecule(const Molecule& other)
 void Molecule::set_reinterpret_coordentry(bool rc)
 {
     reinterpret_coordentries_ = rc;
-}
-
-/// Addition
-//Molecule Molecule::operator+(const Molecule& other)
-//{
-
-//}
-
-///// Subtraction
-//Molecule Molecule::operator-(const Molecule& other)
-//{
-
-//}
-
-/// Plus equals
-void Molecule::operator+=(const Molecule& other)
-{
-    throw PSIEXCEPTION("Empty method?");
 }
 
 void Molecule::clear()
@@ -436,52 +366,53 @@ Matrix Molecule::nuclear_repulsion_energy_deriv1() const
 */
 Matrix Molecule::nuclear_repulsion_energy_deriv2() const
 {
-    Matrix hess("Nuclear Repulsion Energy 2nd Derivatives", 3*natom(), 3*natom());
+    Matrix hess("Nuclear Repulsion Energy 2nd Derivatives",
+                3 * natom(), 3 * natom());
     double sx, sy, sz, x2, y2, z2, r2, r, r5, pfac;
 
-    for (int i=1; i<natom(); ++i) {
+    for (int i = 1; i < natom(); i++) {
         int ix = 3*i;
         int iy = ix+1;
         int iz = iy+1;
 
-        for (int j=0; j<i; ++j) {
-            int jx = 3*j;
-            int jy = jx+1;
-            int jz = jy+1;
+        for (int j = 0; j < i; j++) {
+            int jx = 3 * j;
+            int jy = jx + 1;
+            int jz = jy + 1;
 
             sx = x(i) - x(j);
             sy = y(i) - y(j);
             sz = z(i) - z(j);
 
-            x2 = sx*sx; y2 = sy*sy; z2 = sz*sz;
+            x2 = sx * sx; y2 = sy * sy; z2 = sz * sz;
             r2 = x2 + y2 + z2;
             r = sqrt(r2);
             r5 = r2*r2*r;
             pfac = Z(i) * Z(j) / r5;
 
-            hess.add(ix, ix, pfac * (3*x2 - r2));
-            hess.add(iy, iy, pfac * (3*y2 - r2));
-            hess.add(iz, iz, pfac * (3*z2 - r2));
-            hess.add(ix, iy, pfac*3*sx*sy);
-            hess.add(ix, iz, pfac*3*sx*sz);
-            hess.add(iy, iz, pfac*3*sy*sz);
+            hess.add(ix, ix, pfac * (3 * x2 - r2));
+            hess.add(iy, iy, pfac * (3 * y2 - r2));
+            hess.add(iz, iz, pfac * (3 * z2 - r2));
+            hess.add(ix, iy, pfac * 3 * sx * sy);
+            hess.add(ix, iz, pfac * 3 * sx * sz);
+            hess.add(iy, iz, pfac * 3 * sy * sz);
 
-            hess.add(jx, jx, pfac * (3*x2 - r2));
-            hess.add(jy, jy, pfac * (3*y2 - r2));
-            hess.add(jz, jz, pfac * (3*z2 - r2));
-            hess.add(jx, jy, pfac*3*sx*sy);
-            hess.add(jx, jz, pfac*3*sx*sz);
-            hess.add(jy, jz, pfac*3*sy*sz);
+            hess.add(jx, jx, pfac * (3 * x2 - r2));
+            hess.add(jy, jy, pfac * (3 * y2 - r2));
+            hess.add(jz, jz, pfac * (3 * z2 - r2));
+            hess.add(jx, jy, pfac * 3 * sx * sy);
+            hess.add(jx, jz, pfac * 3 * sx * sz);
+            hess.add(jy, jz, pfac * 3 * sy * sz);
 
-            hess.add(ix, jx, -pfac*(3*sx*sx-r2));
-            hess.add(ix, jy, -pfac*(3*sx*sy));
-            hess.add(ix, jz, -pfac*(3*sx*sz));
-            hess.add(iy, jx, -pfac*(3*sy*sx));
-            hess.add(iy, jy, -pfac*(3*sy*sy-r2));
-            hess.add(iy, jz, -pfac*3*sy*sz);
-            hess.add(iz, jx, -pfac*3*sz*sx);
-            hess.add(iz, jy, -pfac*3*sz*sy);
-            hess.add(iz, jz, -pfac*(3*sz*sz-r2));
+            hess.add(ix, jx, -pfac * (3 * sx * sx - r2));
+            hess.add(ix, jy, -pfac * (3 * sx * sy));
+            hess.add(ix, jz, -pfac * (3 * sx * sz));
+            hess.add(iy, jx, -pfac * (3 * sy * sx));
+            hess.add(iy, jy, -pfac * (3 * sy * sy - r2));
+            hess.add(iy, jz, -pfac * 3 * sy * sz);
+            hess.add(iz, jx, -pfac * 3 * sz * sx);
+            hess.add(iz, jy, -pfac * 3 * sz * sy);
+            hess.add(iz, jz, -pfac * (3 * sz * sz - r2));
         }
     }
 
@@ -493,10 +424,10 @@ Matrix Molecule::nuclear_repulsion_energy_deriv2() const
 void Molecule::translate(const Vector3& r)
 {
     Vector3 temp;
-    for (int i=0; i<nallatom(); ++i) {
+    for (int i = 0; i < nallatom(); i++) {
         temp = input_units_to_au_ * full_atoms_[i]->compute();
         temp += r;
-        temp = temp/input_units_to_au_;
+        temp = temp / input_units_to_au_;
         full_atoms_[i]->set_coordinates(temp[0], temp[1], temp[2]);
     }
 }
@@ -510,7 +441,7 @@ void Molecule::move_to_com()
 Matrix Molecule::geometry() const
 {
     Matrix geom(natom(), 3);
-    for (int i=0; i<natom(); ++i) {
+    for (int i = 0; i < natom(); i++) {
         geom(i, 0) = x(i);
         geom(i, 1) = y(i);
         geom(i, 2) = z(i);
@@ -522,7 +453,7 @@ Matrix Molecule::geometry() const
 Matrix Molecule::full_geometry() const
 {
     Matrix geom(nallatom(), 3);
-    for (int i=0; i<nallatom(); ++i) {
+    for (int i = 0; i < nallatom(); i++) {
         geom(i, 0) = fx(i);
         geom(i, 1) = fy(i);
         geom(i, 2) = fz(i);
@@ -690,138 +621,6 @@ int Molecule::nfrozen_core(Process::Environment& process_environment_in, const s
     }
 }
 
-void Molecule::init_with_psio(boost::shared_ptr<PSIO> psio)
-{
-    // User sent a psio object. Create a chkpt object based on it.
-    boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio.get(), PSIO_OPEN_OLD));
-    init_with_chkpt(chkpt);
-}
-
-void Molecule::init_with_chkpt(boost::shared_ptr<Chkpt> chkpt)
-{
-    lock_frame_ = false;
-    int natoms = 0;
-    double *zvals, **geom;
-    molecular_charge_       = 0;
-    multiplicity_           = 1;
-
-    natoms = chkpt->rd_natom();
-    zvals = chkpt->rd_zvals();
-    geom = chkpt->rd_geom();
-
-    for (int i=0; i<natoms; ++i) {
-        add_atom((int)zvals[i], geom[i][0], geom[i][1], geom[i][2], atomic_labels[(int)zvals[i]], an2masses[(int)zvals[i]]);
-    }
-
-    // We need to make 1 fragment with all atoms
-    fragments_.push_back(std::make_pair(0, natoms));
-    fragment_types_.push_back(Real);
-
-    // chkpt is already in AU set the conversion to 1
-    input_units_to_au_ = 1.0;
-
-    Chkpt::free(zvals);
-    Chkpt::free(geom);
-}
-
-void Molecule::init_with_xyz(const std::string& xyzfilename)
-{
-    lock_frame_ = false;
-    Element_to_Z Z;
-    Z.load_values();
-
-    if (xyzfilename.empty())
-        throw PSIEXCEPTION("Molecule::init_with_xyz: given filename is blank.");
-
-    ifstream infile(xyzfilename.c_str());
-    string line, natom_str;
-    const string bohr("bohr"), au("au");
-    bool angstrom_in_file = true;
-
-    if (!infile)
-        throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to open xyz file.");
-
-    // Read in first line
-    getline(infile, line);
-
-    // This is what we should match on the first line
-    boost::regex rx("(\\d+)\\s*(bohr|au)?", boost::regbase::normal | boost::regbase::icase);
-    boost::smatch what;
-
-    int natom;
-    // Try to match the first line
-    if (regex_match(line, what, rx)) {
-        // matched
-        // Convert the matches to what we need.
-        if (!from_string<int>(natom, what[1], std::dec))
-            throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to convert number of atoms from xyz file.");
-
-        if (what.size() == 3) {
-            string s(what[2].first, what[2].second);
-            if (boost::iequals(bohr, s) || boost::iequals(au, s)) {
-                angstrom_in_file = false;
-            }
-        }
-    }
-    else
-        throw PSIEXCEPTION("Molecule::init_with_xyz: Malformed first line\n"+line);
-
-    // Next line is a comment line, ignore it
-    getline(infile, line);
-
-    // Next line begins the useful information.
-    // This is the regex for the remaining lines
-    rx.assign("(?:\\s*)([A-Z](?:[a-z])?)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s+)(-?\\d+\\.\\d+)(?:\\s*)", boost::regbase::normal | boost::regbase::icase);
-    for (int i=0; i<natom; ++i) {
-        // Get an atom info line.
-        getline(infile, line);
-
-        // Try to match it
-        if (regex_match(line, what, rx))
-        {
-            // First is a string
-            string atomSym(what[1].first, what[1].second);
-            transform(atomSym.begin(), atomSym.end(), atomSym.begin(), ::toupper);
-
-            // Then the coordinates:
-            double x, y, z;
-            if (!from_string<double>(x, what[2], std::dec))
-                throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to convert x coordinate.\n" + line);
-            if (!from_string<double>(y, what[3], std::dec))
-                throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to convert y coordinate.\n" + line);
-            if (!from_string<double>(z, what[4], std::dec))
-                throw PSIEXCEPTION("Molecule::init_with_xyz: Unable to convert z coordinate.\n" + line);
-
-            if (angstrom_in_file) {
-                // Coordinates in Molecule must be bohr.
-                x /= pc_bohr2angstroms;
-                y /= pc_bohr2angstroms;
-                z /= pc_bohr2angstroms;
-            }
-
-            // Add it to the molecule.
-            add_atom((int)Z[atomSym], x, y, z, atomSym.c_str(), an2masses[(int)Z[atomSym]]);
-        }
-        else {
-            throw PSIEXCEPTION("Molecule::init_with_xyz: Malformed atom information line.\n"+line);
-        }
-    }
-
-    // We need to make 1 fragment with all atoms
-    fragments_.push_back(std::make_pair(0, natom));
-    fragment_types_.push_back(Real);
-    fragment_multiplicities_.push_back(0);
-    fragment_charges_.push_back(0);
-
-    // chkpt is already in AU set the conversion to 1
-    input_units_to_au_ = 1.0;
-
-    // Set the units to bohr since we did the conversion above, if needed.
-    units_ = Bohr;
-
-    update_geometry();
-}
-
 /**
  * Checks whether the user has specified the charge in the options, and returns the appropriate value.
  * @return The charge from the options keywords, if specified.  If not, the value passed to the molecule
@@ -842,304 +641,7 @@ int Molecule::multiplicity() const
     return multiplicity_;
 }
 
-boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(Process::Environment& process_environment_in, const std::string &text)
-{
-    smatch reMatches;
-    // Split the input at newlines, storing the result in "lines"
-    std::vector<std::string> lines;
-    boost::split(lines, text, boost::is_any_of("\n"));
-
-    boost::shared_ptr<Molecule> mol(new Molecule);
-    std::string units = process_environment_in.options.get_str("UNITS");
-
-    if(boost::iequals(units, "ANG") || boost::iequals(units, "ANGSTROM") || boost::iequals(units, "ANGSTROMS")) {
-        mol->set_units(Angstrom);
-    }
-    else if(boost::iequals(units, "BOHR") || boost::iequals(units, "AU") || boost::iequals(units, "A.U.")) {
-        mol->set_units(Bohr);
-    }
-    else {
-        throw PSIEXCEPTION("Unit " + units + " is not recognized");
-    }
-
-    mol->molecular_charge_ = 0;
-    mol->multiplicity_ = 1;
-
-    bool pubchemerror = false;
-    bool pubcheminput = false;
-    /*
-     * Time to look for lines that look like they describe charge and multiplicity,
-     * a variable, units, comment lines, and blank lines.  When found, process them
-     * and remove them so that only the raw geometry remains.  Iterated backwards, as
-     * elements are deleted as they are processed.
-     */
-    for (int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber) {
-        if (regex_match(lines[lineNumber], reMatches, variableDefinition_)) {
-            // A variable definition
-            double value = (reMatches[2].str() == "TDA" ?
-                                360.0*atan(sqrt(2))/M_PI : str_to_double(reMatches[2]));
-            mol->geometry_variables_[reMatches[1].str()] = value;
-            lines.erase(lines.begin() + lineNumber);
-        }
-        else if(regex_match(lines[lineNumber], reMatches, blankLine_)) {
-            // A blank line, nuke it
-            lines.erase(lines.begin() + lineNumber);
-        }
-        else if(regex_match(lines[lineNumber], reMatches, pubchemError_)) {
-            // A marker to flag that pubchem gave a problem nuke the line
-            pubchemerror = true;
-            lines.erase(lines.begin() + lineNumber);
-        }
-        else if(regex_match(lines[lineNumber], reMatches, pubchemInput_)) {
-            // A marker to flag that pubchem gave us this geometry, nuke the line
-            pubcheminput = true;
-            lines.erase(lines.begin() + lineNumber);
-        }
-        else if(regex_match(lines[lineNumber], reMatches, commentLine_)) {
-            // A comment line, just nuke it
-            lines.erase(lines.begin() + lineNumber);
-        }
-        else if(regex_match(lines[lineNumber], reMatches, unitLabel_)) {
-            // A units specifier
-            if(   boost::iequals("ang", reMatches[1].str())
-                  || boost::iequals("angstrom",   reMatches[1].str())){
-                mol->set_units(Angstrom);
-            }
-            else {
-                mol->set_units(Bohr);
-            }
-            lines.erase(lines.begin() + lineNumber);
-        }
-        else if(regex_match(lines[lineNumber], reMatches, orientCommand_)) {
-            // Fix the orientation
-            mol->set_orientation_fixed(true);
-            lines.erase(lines.begin() + lineNumber);
-        }
-        else if(regex_match(lines[lineNumber], reMatches, comCommand_)) {
-            mol->move_to_com_ = false;
-            lines.erase(lines.begin() + lineNumber);
-        }
-        else if(regex_match(lines[lineNumber], reMatches, symmetry_)) {
-            mol->symmetry_from_input_ = boost::to_lower_copy(reMatches[1].str());
-            lines.erase(lines.begin() + lineNumber);
-        }
-        else if(regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_)) {
-            int tempCharge       = str_to_int(reMatches[1]);
-            int tempMultiplicity = str_to_int(reMatches[2]);
-            if(lineNumber && !regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)) {
-                // As long as this does not follow a "--", it's a global charge/multiplicity
-                // specifier, so we process it, then nuke it
-                mol->charge_specified_       = true;
-                mol->multiplicity_specified_ = true;
-                mol->molecular_charge_       = tempCharge;
-                mol->multiplicity_           = tempMultiplicity;
-                lines.erase(lines.begin() + lineNumber);
-            }
-        }
-    }
-
-    // Now go through the rest of the lines looking for fragment markers
-    unsigned int firstAtom  = 0;
-    unsigned int atomCount = 0;
-
-    mol->input_units_to_au_ = mol->units_ == Bohr ? 1.0 : 1.0 / pc_bohr2angstroms;
-    mol->fragment_multiplicities_.push_back(mol->multiplicity_);
-    mol->fragment_charges_.push_back(mol->molecular_charge_);
-
-    for(unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
-        if(pubchemerror)
-            fprintf(outfile, "%s\n", lines[lineNumber].c_str());
-        if(regex_match(lines[lineNumber], reMatches, fragmentMarker_)) {
-            // Check that there are more lines remaining
-            if(lineNumber == lines.size() - 1)
-                throw PSIEXCEPTION("Nothing specified after the final \"--\" in geometry");
-
-            // Now we process the atom markers
-            mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
-            mol->fragment_types_.push_back(Real);
-            firstAtom = atomCount;
-
-            // Figure out how to handle the multiplicity
-            if(regex_match(lines[lineNumber+1], reMatches, chargeAndMultiplicity_)) {
-                // The user specified a charge/multiplicity for this fragment
-                mol->fragment_charges_.push_back(str_to_int(reMatches[1]));
-                mol->fragment_multiplicities_.push_back(str_to_int(reMatches[2]));
-                // Don't forget to skip over the charge multiplicity line..
-                ++lineNumber;
-            }
-            else {
-                // The user didn't give us charge/multiplicity - use the molecule default
-                mol->fragment_charges_.push_back(mol->molecular_charge_);
-                mol->fragment_multiplicities_.push_back(mol->multiplicity_);
-            }
-        }
-        else {
-            ++atomCount;
-        }
-    }
-    if(pubchemerror){
-        exit(EXIT_SUCCESS);
-    }
-    mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
-    mol->fragment_types_.push_back(Real);
-
-    // Clean up the "--" and charge/multiplicity specifiers - they're no longer needed
-    for(int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber){
-        if(   regex_match(lines[lineNumber], reMatches, fragmentMarker_)
-              || regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_))
-            lines.erase(lines.begin() + lineNumber);
-    }
-
-
-    if(!lines.size()) throw PSIEXCEPTION("No geometry specified");
-
-    std::vector<std::string> splitLine;
-    Element_to_Z zVals;
-    zVals.load_values();
-    int currentAtom = 0, rTo, aTo, dTo;
-    string atomSym, atomLabel;
-    bool zmatrix = false;
-
-    std::vector<std::string>::iterator line = lines.begin();
-    for(; line != lines.end(); ++line) {
-        // Trim leading and trailing whitespace
-        boost::algorithm::trim(*line);
-        boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
-        int numEntries = splitLine.size();
-
-        // Grab the original label the user used. (H1)
-        atomLabel = boost::to_upper_copy(splitLine[0]);
-
-        bool ghostAtom = false;
-        // Do a little check for ghost atoms
-        if(regex_match(atomLabel, reMatches, ghostAtom_)) {
-            // We don't know whether the @C or Gh(C) notation matched.  Do a quick check.
-            atomLabel = reMatches[1] == "" ? reMatches[2] : reMatches[1];
-            ghostAtom = true;
-        }
-
-        // Check that the atom symbol is valid
-        if(!regex_match(atomLabel, reMatches, atomSymbol_))
-            throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + atomLabel
-                               + " on line\n" + *(line));
-
-        // Save the actual atom symbol (H1 => H)
-        atomSym = reMatches[1].str();
-
-        double zVal = zVals[atomSym];
-        double charge = zVal;
-        // Not sure how charge is used right now, but let's zero it anyway...
-        if(ghostAtom){
-            charge = 0.0;
-            zVal = 0.0;
-        }
-
-        if(numEntries == 4){
-            // This is a Cartesian entry
-            boost::shared_ptr<CoordValue> xval(mol->get_coord_value(splitLine[1]));
-            boost::shared_ptr<CoordValue> yval(mol->get_coord_value(splitLine[2]));
-            boost::shared_ptr<CoordValue> zval(mol->get_coord_value(splitLine[3]));
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(currentAtom, zVal, charge,
-                                                                                        an2masses[(int)zVal], atomSym, atomLabel,
-                                                                                        xval, yval, zval)));
-        }
-        else if(numEntries == 1) {
-            // This is the first line of a Z-Matrix
-            zmatrix = true;
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
-                                                                                      an2masses[(int)zVal], atomSym, atomLabel)));
-        }
-        else if(numEntries == 3) {
-            // This is the second line of a Z-Matrix
-            zmatrix = true;
-            rTo = mol->get_anchor_atom(splitLine[1], *line);
-            if(rTo >= currentAtom)
-                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                   + splitLine[1] + " has not been defined yet.");
-            boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
-
-            if (mol->full_atoms_[rTo]->symbol() == "X")
-                rval->set_fixed(true);
-
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
-                                                                                      an2masses[(int)zVal], atomSym, atomLabel,
-                                                                                      mol->full_atoms_[rTo], rval)));
-        }
-        else if(numEntries == 5) {
-            // This is the third line of a Z-Matrix
-            zmatrix = true;
-            rTo = mol->get_anchor_atom(splitLine[1], *line);
-            if(rTo >= currentAtom)
-                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                   + splitLine[1] + " has not been defined yet.");
-            aTo = mol->get_anchor_atom(splitLine[3], *line);
-            if(aTo >= currentAtom)
-                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                   + splitLine[3] + " has not been defined yet.");
-            if(aTo == rTo)
-                throw PSIEXCEPTION("Atom used multiple times on line " + *line);
-            boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
-            boost::shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
-
-            if (mol->full_atoms_[rTo]->symbol() == "X")
-                rval->set_fixed(true);
-            if (mol->full_atoms_[aTo]->symbol() == "X")
-                aval->set_fixed(true);
-
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
-                                                                                      an2masses[(int)zVal], atomSym, atomLabel,
-                                                                                      mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo], aval)));
-        }
-        else if(numEntries == 7) {
-            // This is line 4 onwards of a Z-Matrix
-            //zmatrix = true;
-            rTo = mol->get_anchor_atom(splitLine[1], *line);
-            if(rTo >= currentAtom)
-                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                   + splitLine[1] + " has not been defined yet.");
-            aTo = mol->get_anchor_atom(splitLine[3], *line);
-            if(aTo >= currentAtom)
-                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                   + splitLine[3] + " has not been defined yet.");
-            dTo = mol->get_anchor_atom(splitLine[5], *line);
-            if(dTo >= currentAtom)
-                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                   + splitLine[5] + " has not been defined yet.");
-            if(aTo == rTo || rTo == dTo /* for you star wars fans */ || aTo == dTo)
-                throw PSIEXCEPTION("Atom used multiple times on line " + *line);
-
-            boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
-            boost::shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
-            boost::shared_ptr<CoordValue> dval(mol->get_coord_value(splitLine[6]));
-
-            if (mol->full_atoms_[rTo]->symbol() == "X")
-                rval->set_fixed(true);
-            if (mol->full_atoms_[aTo]->symbol() == "X")
-                aval->set_fixed(true);
-            if (mol->full_atoms_[dTo]->symbol() == "X")
-                dval->set_fixed(true);
-
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
-                                                                                      an2masses[(int)zVal], atomSym, atomLabel,
-                                                                                      mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo],
-                                                                                      aval, mol->full_atoms_[dTo], dval)));
-        }
-        else {
-            throw PSIEXCEPTION("Illegal geometry specification line : " + lines[0] +
-                               ".  You should provide either Z-Matrix or Cartesian input");
-        }
-        ++currentAtom;
-    }
-
-    mol->set_has_zmatrix(zmatrix);
-
-    if(pubcheminput)
-        mol->symmetrize_to_abelian_group(1.0e-3);
-
-    return mol;
-}
-
-boost::shared_ptr<Molecule> Molecule::create_molecule_from_cartesian(Process::Environment& process_environment_in, SharedMatrix cartesian, int charge, int multiplicity)
+boost::shared_ptr<Molecule> Molecule::create_molecule_from_cartesian(SharedMatrix cartesian, int charge, int multiplicity)
 {
 
     boost::shared_ptr<Molecule> mol(new Molecule);
@@ -1155,11 +657,6 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_cartesian(Process::En
     mol->move_to_com_ = false;
 
     mol->input_units_to_au_ = 1.0 / pc_bohr2angstroms;
-
-    mol->lock_frame_ = false;
-    int atomNum;
-    double x, y, z;
-    double** cartPtr = cartesian->pointer();
     
     const char *periodicTable[] = { "NULL",
          "H",                                                                                                  "He",
@@ -1177,14 +674,16 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_cartesian(Process::En
 
     int natom = cartesian->nrow();
 
-    for (int i=0; i<natom; ++i) {
-        atomNum = (int)cartPtr[i][0];
-        x = cartPtr[i][1];
-        y = cartPtr[i][2];
-        z = cartPtr[i][3];
+    for (int i = 0; i < natom; i++) {
+        int atomNum = (int)cartesian->get(i, 0);
         
         // Add it to the molecule.
-        mol->add_atom(atomNum, x, y, z, periodicTable[atomNum], an2masses[atomNum]);
+        mol->add_atom(atomNum,
+                      cartesian->get(i, 1),
+                      cartesian->get(i, 2),
+                      cartesian->get(i, 3),
+                      periodicTable[atomNum],
+                      an2masses[atomNum]);
     }
 
     // We need to make 1 fragment with all atoms
@@ -1192,82 +691,9 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_cartesian(Process::En
     mol->fragment_types_.push_back(Real);
     mol->fragment_multiplicities_.push_back(mol->multiplicity_);
     mol->fragment_charges_.push_back(mol->molecular_charge_);
-
-    mol->update_geometry();
+    mol->lock_frame_ = true;
 
     return mol;
-}
-
-std::string Molecule::create_psi4_string_from_molecule() const
-{
-    char buffer[120];
-    std::stringstream ss;
-
-    //~ if (WorldComm->me() == 0) {
-        if (nallatom()) {
-            // append units and any other non-default molecule keywords
-            sprintf(buffer,"    units %-s\n", units_ == Angstrom ? "Angstrom" : "Bohr");
-            ss << buffer;
-
-            if (symmetry_from_input_ != "") {
-                sprintf(buffer,"    symmetry %s\n", symmetry_from_input_.c_str());
-                ss << buffer;
-            }
-            if (move_to_com_ == false) {
-                sprintf(buffer,"    no_com\n");
-                ss << buffer;
-            }
-            if (fix_orientation_ == true) {
-                sprintf(buffer,"    no_reorient\n");
-                ss << buffer;
-            }
-
-            // append atoms and coordentries and fragment separators with charge and multiplicity
-            int Pfr = 0;
-            for(int fr=0; fr<fragments_.size(); ++fr) {
-                if ((fragment_types_[fr] == Absent) && (zmat_ == false)) {
-                    continue;
-                } 
-                sprintf(buffer, "%s    %s%d %d\n",
-                    Pfr == 0 ? "" : "    --\n",
-                    (fragment_types_[fr] == Ghost || fragment_types_[fr] == Absent) ? "#" : "",
-                    fragment_charges_[fr], fragment_multiplicities_[fr]);
-                ss << buffer;
-                Pfr++;
-                for(int at=fragments_[fr].first; at<fragments_[fr].second; ++at) {
-                    if (fragment_types_[fr] == Absent) {
-                        sprintf(buffer, "    %-8s", "X");
-                        ss << buffer;
-                    }
-                    else if (fZ(at) || fsymbol(at) == "X") {
-                        sprintf(buffer, "    %-8s", fsymbol(at).c_str());
-                        ss << buffer;
-                    }
-                    else {
-                        std::string stmp = std::string("Gh(") + fsymbol(at) + ")";
-                        sprintf(buffer, "    %-8s", stmp.c_str());
-                        ss << buffer;
-                    }
-                    sprintf(buffer, "    %s", full_atoms_[at]->string_in_input_format().c_str());
-                    ss << buffer;
-                }
-            }
-            sprintf(buffer,"\n");
-            ss << buffer;
-
-            // append any coordinate variables
-            if(geometry_variables_.size()){
-                std::map<std::string, double>::const_iterator iter;
-                for(iter = geometry_variables_.begin(); iter!=geometry_variables_.end(); ++iter){
-                    sprintf(buffer, "    %-10s=%16.10f\n", iter->first.c_str(), iter->second);
-                    ss << buffer;
-                }
-                sprintf(buffer, "\n");
-                ss << buffer;
-            }
-        }
-    //~ }
-    return ss.str();
 }
 
 void Molecule::symmetrize_to_abelian_group(double tol)
@@ -1385,97 +811,17 @@ void Molecule::deactivate_all_fragments()
     }
 }
 
-//~ void Molecule::set_active_fragments(boost::python::list reals)
-//~ {
-    //~ lock_frame_ = false;
-    //~ for(int i = 0; i < boost::python::len(reals); ++i){
-        //~ int fragment = boost::python::extract<int>(reals[i]);
-        //~ fragment_types_[fragment - 1] = Real;
-    //~ }
-//~ }
-
 void Molecule::set_active_fragment(int fragment)
 {
     lock_frame_ = false;
     fragment_types_[fragment - 1] = Real;
 }
 
-//~ void Molecule::set_ghost_fragments(boost::python::list ghosts)
-//~ {
-    //~ lock_frame_ = false;
-    //~ for(int i = 0; i < boost::python::len(ghosts); ++i){
-        //~ int fragment = boost::python::extract<int>(ghosts[i]);
-        //~ fragment_types_[fragment - 1] = Ghost;
-    //~ }
-//~ }
-
 void Molecule::set_ghost_fragment(int fragment)
 {
     lock_frame_ = false;
     fragment_types_[fragment - 1] = Ghost;
 }
-
-//~ boost::shared_ptr<Molecule> Molecule::py_extract_subsets_1(boost::python::list reals,
-                                                           //~ boost::python::list ghosts)
-//~ {
-    //~ std::vector<int> realVec;
-    //~ for(int i = 0; i < boost::python::len(reals); ++i)
-        //~ realVec.push_back(boost::python::extract<int>(reals[i] )- 1);
-//~ 
-    //~ std::vector<int> ghostVec;
-    //~ for(int i = 0; i < boost::python::len(ghosts); ++i)
-        //~ ghostVec.push_back(boost::python::extract<int>(ghosts[i]) - 1);
-//~ 
-    //~ return extract_subsets(realVec, ghostVec);
-//~ }
-
-//~ boost::shared_ptr<Molecule> Molecule::py_extract_subsets_2(boost::python::list reals,
-                                                           //~ int ghost)
-//~ {
-    //~ std::vector<int> realVec;
-    //~ for(int i = 0; i < boost::python::len(reals); ++i)
-        //~ realVec.push_back(boost::python::extract<int>(reals[i])-1);
-//~ 
-    //~ std::vector<int> ghostVec;
-    //~ if (ghost >= 1)
-        //~ ghostVec.push_back(ghost - 1 );
-//~ 
-    //~ return extract_subsets(realVec, ghostVec);
-//~ }
-//~ 
-//~ boost::shared_ptr<Molecule> Molecule::py_extract_subsets_3(int reals,
-                                                           //~ boost::python::list ghost)
-//~ {
-    //~ std::vector<int> realVec;
-    //~ realVec.push_back(reals - 1);
-    //~ std::vector<int> ghostVec;
-    //~ for(int i = 0; i < boost::python::len(ghost); ++i)
-        //~ ghostVec.push_back(boost::python::extract<int>(ghost[i]) - 1);
-//~ 
-    //~ return extract_subsets(realVec, ghostVec);
-//~ }
-//~ 
-//~ boost::shared_ptr<Molecule> Molecule::py_extract_subsets_4(int reals,
-                                                           //~ int ghost)
-//~ {
-    //~ std::vector<int> realVec;
-    //~ realVec.push_back(reals -1 );
-    //~ std::vector<int> ghostVec;
-    //~ if (ghost >= 0)
-        //~ ghostVec.push_back(ghost - 1);
-//~ 
-    //~ return extract_subsets(realVec, ghostVec);
-//~ }
-//~ 
-//~ boost::shared_ptr<Molecule> Molecule::py_extract_subsets_5(boost::python::list reals)
-//~ {
-    //~ return py_extract_subsets_2(reals, -1);
-//~ }
-//~ 
-//~ boost::shared_ptr<Molecule> Molecule::py_extract_subsets_6(int reals)
-//~ {
-    //~ return py_extract_subsets_4(reals, -1);
-//~ }
 
 boost::shared_ptr<Molecule> Molecule::extract_subsets(const std::vector<int> &real_list, const std::vector<int> &ghost_list) const
 {

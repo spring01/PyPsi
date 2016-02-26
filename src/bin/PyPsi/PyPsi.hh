@@ -1,4 +1,7 @@
 
+#ifndef _psi_src_bin_pypsi_pypsi_hh_
+#define _psi_src_bin_pypsi_pypsi_hh_
+
 #include <libmints/mints.h>
 #include <libfock/jk.h>
 #include <libfock/v.h>
@@ -19,13 +22,15 @@
 #include <boost/python.hpp>
 
 
-using namespace std;
 using namespace psi;
-using namespace boost;
 
-typedef boost::shared_ptr<boost::python::numeric::array> SharedNPArray;
 typedef boost::python::numeric::array NPArray;
+typedef boost::shared_ptr<NPArray> SharedNPArray;
+
 typedef boost::python::list PyList;
+typedef boost::shared_ptr<PyList> SharedPyList;
+
+typedef std::vector<SharedMatrix> VecSharedMat;
 
 class PyPsi {
 protected:
@@ -56,81 +61,111 @@ protected:
     void create_wfn();
     
     // exception function for DFJK utilities 
-    void jk_DFException(std::string functionName);
+    void JK_DFException(std::string functionName);
     
-    void common_init(NPArray& cartesian, const std::string& basisname, 
-        int charge, int multiplicity, const std::string& path);
+    void Construct(const NPArray& cartesian, const std::string& basisname,
+                   const int charge, const int multiplicity,
+                   const std::string& path);
     
 public:
     // constructors
-    PyPsi(NPArray& cartesian, const std::string& basisname);
-    PyPsi(NPArray& cartesian, const std::string& basisname, 
-        int charge, int multiplicity);
-    PyPsi(NPArray& cartesian, const std::string& basisname, 
-        int charge, int multiplicity, const std::string& path);
+    PyPsi(const NPArray& cartesian, const std::string& basisname);
+    PyPsi(const NPArray& cartesian, const std::string& basisname, 
+          const int charge, const int multiplicity);
+    PyPsi(const NPArray& cartesian, const std::string& basisname, 
+          const int charge, const int multiplicity, const std::string& path);
     
     // destructor 
     virtual ~PyPsi();
     
     // CPU and memory controll 
-    int Settings_MaxNumCPUCores() { return process_environment_.get_n_threads(); }
-    double Settings_MaxMemoryInGB() { return (double)process_environment_.get_memory() / 1E+9; }
-    std::string Settings_PsiDataDir() { return process_environment_("PSIDATADIR"); }
-    std::string Settings_TempDir() { return psio_->_psio_manager_->get_default_path(); }
-    void Settings_SetMaxNumCPUCores(int ncores);
+    int Settings_MaxNumCPUCores()
+    {
+        return process_environment_.get_n_threads();
+    }
+    double Settings_MaxMemoryInGB()
+    {
+        return (double)process_environment_.get_memory() / 1E+9;
+    }
+    std::string Settings_PsiDataDir()
+    {
+        return process_environment_("PSIDATADIR");
+    }
+    std::string Settings_TempDir()
+    {
+        return psio_->_psio_manager_->get_default_path();
+    }
+    void Settings_SetMaxNumCPUCores(const int ncores);
     void Settings_SetMaxMemory(const std::string&);
-    void Settings_SetPsiDataDir(const std::string& path) { process_environment_.set("PSIDATADIR", path); }
+    void Settings_SetPsiDataDir(const std::string& path)
+    {
+        process_environment_.set("PSIDATADIR", path);
+    }
     
     
     //*** Molecule properties 
-    int Molecule_NumAtoms() { return molecule_->natom(); } // number of atoms 
+    int Molecule_NumAtoms() // number of atoms 
+    {
+        return molecule_->natom();
+    }
     int Molecule_NumElectrons(); // number of electrons 
     NPArray Molecule_Geometry(); // geometry in Bohr 
-    void Molecule_SetGeometry(NPArray& newGeom); // set a new geometry in Bohr 
-    double Molecule_NucRepEnergy() { return molecule_->nuclear_repulsion_energy(); } // nuclear repulsion energy 
+    double Molecule_NucRepEnergy() // nuclear repulsion energy 
+    {
+        return molecule_->nuclear_repulsion_energy();
+    }
     NPArray Molecule_AtomicNumbers(); // atomic number list vector 
     NPArray Molecule_ChargeMult();
     
-    //*** Molecule operations 
-    void Molecule_Fix();
-    void Molecule_Free();
-    
     
     //*** Basis set properties 
-    const std::string BasisSet_Name() { return basis_->name(); } // basis set name string 
-    bool BasisSet_IsSpherical() { return basis_->has_puream(); }
-    int BasisSet_NumShells() { return basis_->nshell(); }
-    int BasisSet_NumFunctions() { return basis_->nbf(); } // number of basis functions 
+    const std::string BasisSet_Name() // basis set name string 
+    {
+        return basis_->name();
+    }
+    bool BasisSet_IsSpherical()
+    {
+        return basis_->has_puream();
+    }
+    int BasisSet_NumShells()
+    {
+        return basis_->nshell();
+    }
+    int BasisSet_NumFunctions() // number of basis functions 
+    {
+        return basis_->nbf();
+    }
     NPArray BasisSet_ShellTypes();
     NPArray BasisSet_ShellNumPrimitives();
     NPArray BasisSet_ShellNumFunctions();
     NPArray BasisSet_ShellToCenter();
-    NPArray BasisSet_FuncToCenter(); // map basis function to the index of the atom it is centred on 
+    NPArray BasisSet_FuncToCenter(); // basis function to its center atom
     NPArray BasisSet_FuncToShell();
-    NPArray BasisSet_FuncToAngular(); // map basis function number to its angular momentum 
+    NPArray BasisSet_FuncToAngular(); // basis function to its angular momentum
     NPArray BasisSet_PrimExp();
     NPArray BasisSet_PrimCoeffUnnorm();
     
     
     //*** Integral package
-    NPArray Integrals_Overlap(); // overlap matrix S <i|j>
-    NPArray Integrals_Kinetic(); // kinetic energy matrix KE 
-    NPArray Integrals_Potential(); // total potential energy matrix EN <i|sum(1/R)|j>
-    NPArray Integrals_PotentialEachCore(); // atom-separated EN 
-    NPArray Integrals_PotentialPtQ(NPArray& Zxyz_list); // compute from a given point charge list the environment potential energy matrix ENVI 
+    NPArray Integrals_Overlap(); // <i|j>
+    NPArray Integrals_Kinetic(); // <i|T|j>
+    NPArray Integrals_Potential(); // total, <i|sum(1/R)|j>
+    NPArray Integrals_PotentialEachCore(); // atom-separated, <i|1/R|j>
+    NPArray Integrals_PotentialPtQ(NPArray& Zxyz_list); // <i|1/R_p|j>
     PyList Integrals_Dipole(); // dipole matrices <i|x|j>, <i|y|j>, <i|z|j>
     int Integrals_NumUniqueTEIs(); // number of unique TEIs 
-    double Integrals_ijkl(int i, int j, int k, int l); // (ij|kl), chemist's notation 
+    double Integrals_ijkl(int i, int j, int k, int l); // (ij|kl)
     // ## HIGH MEMORY COST METHODS ## 
-    void Integrals_AllUniqueTEIs(double*); // all unique TEIs in a vector 
-    void Integrals_AllTEIs(double*); // all (repetitive) TEIs in a 4D-array 
-    void Integrals_IndicesForK(double*, double*); // pre-arrange TEI vectors for forming K 
+    void Integrals_AllUniqueTEIs(double*); // all unique TEIs in a vector
+    void Integrals_AllTEIs(double*); // all (repetitive) TEIs in a 4D-array
+    void Integrals_IndicesForK(double*, double*); // sorted TEI vecs for K
     // ## HIGH MEMORY COST METHODS ## 
     
     
     //*** JK related
     // use different types of JK 
-    void JK_Initialize(std::string jktype, std::string auxBasisName = "CC-PVDZ-JKFIT");
+    void JK_Initialize(std::string jktype,
+                       std::string auxBasisName = "CC-PVDZ-JKFIT");
     const std::string JK_Type();
     
     // methods computing J/K 
@@ -189,3 +224,4 @@ public:
     
 };
 
+#endif // _psi_src_bin_pypsi_pypsi_hh_

@@ -1,7 +1,6 @@
 #ifndef _psi_src_lib_libpsio_psio_hpp_
 #define _psi_src_lib_libpsio_psio_hpp_
 
-//#include <boost/thread/thread.hpp>
 #include <string>
 #include <map>
 #include <set>
@@ -22,8 +21,6 @@ extern FILE *outfile;
 
 class PSIO;
 class PSIOManager;
-//~ extern boost::shared_ptr<PSIO> _default_psio_lib_;
-//~ extern boost::shared_ptr<PSIOManager> _default_psio_manager_;
 
 /**
     PSIOManager is a class designed to be used as a static object to track all
@@ -156,8 +153,6 @@ public:
             * NOT to be called during regular computation
             **/
     void crashclean();
-    //~ /// The one and (should be) only instance of PSIOManager for a PSI4 instance
-    //~ static boost::shared_ptr<PSIOManager> shared_object();
 };
 
 /**
@@ -286,12 +281,6 @@ public:
 
     /// Get the default namespace (for PREFIX.NAMESPACE.UNIT file numbering)
     static std::string get_default_namespace() { return default_namespace_; }
-
-    //~ /// Change file FILENO from NS1 to NS2
-    //~ void change_file_namespace(unsigned int fileno, const std::string & ns1, const std::string & ns2);
-
-    //~ /// Return the global shared object
-    //~ static boost::shared_ptr<PSIO> shared_object();
 
     /** Read the length of the TOC for a given unit directly from the file.
        **

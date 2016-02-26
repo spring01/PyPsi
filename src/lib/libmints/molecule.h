@@ -37,12 +37,6 @@
 
 #include <boost/shared_ptr.hpp>  // something is going on requiring this header
 
-// Forward declarations for boost.python used in the extract_subsets
-namespace boost{
-//~ namespace python{
-       //~ class list;
-//~ }
-}
 
 namespace psi {
 extern FILE *outfile;
@@ -180,36 +174,6 @@ public:
       Molecule new_obj(*this);
       return new_obj;
     }
-
-    /// @{
-    /// Operators
-    /// Assignment operator.
-    Molecule& operator=(const Molecule& other);
-    /// Addition
-    Molecule operator+(const Molecule& other);
-    /// Subtraction
-    Molecule operator-(const Molecule& other);
-    /// Plus equals
-    void operator+=(const Molecule& other);
-    /// @}
-
-    /**
-     * Pull information from a chkpt object created from psio
-     * \param psio PSIO object to initialize with (will create Chkpt object).
-     */
-    void init_with_psio(boost::shared_ptr<PSIO> psio);
-
-    /**
-     * Pull information from the chkpt object passed
-     * \param chkpt Chkpt object to initialize with
-     */
-    void init_with_chkpt(boost::shared_ptr<Chkpt> chkpt);
-
-    /**
-     * Pull information from an XYZ file. Useful for debugging.
-     * \param xyzfilename Filename of xyz file.
-     */
-    void init_with_xyz(const std::string& xyzfilename);
 
     /**
      * Add an atom to the molecule
@@ -362,12 +326,6 @@ public:
     void translate(const Vector3& r);
     /// Moves molecule to center of mass
     void move_to_com();
-    /**
-     *  Reorient molecule to standard frame. See input/reorient.cc
-     *  If you want the molecule to be reoriented about the center of mass
-     *  make sure you call move_to_com() prior to calling reorient()
-     */
-//    void reorient();
 
     /// Computes and returns a matrix depicting distances between atoms.
     Matrix distance_matrix() const;
@@ -480,28 +438,12 @@ public:
     /// @}
 
     /**
-     * Given a string (including newlines to separate lines), builds a new molecule
-     * and wraps it in a smart pointer
-     *
-     * @param text: a string providing the user's input
-     */
-    static boost::shared_ptr<Molecule> create_molecule_from_string(Process::Environment& process_environment_in, const std::string &geom);
-    
-    /**
      * Given a cartesian matrix, builds a new molecule
      * and wraps it in a smart pointer
      *
      * @param cartesian: 1st column is an array of atom numbers, 2nd~4th columns are xyz coordinates
      */
-    static boost::shared_ptr<Molecule> create_molecule_from_cartesian(Process::Environment& process_environment_in, SharedMatrix cartesian, int charge, int multiplicity);
-
-    /**
-     * Regenerates a input file molecule specification string
-     * from the current state of the Molecule. Contains Cartesian
-     * geometry info, fragmentation, charges and multiplicities, 
-     * and any frame restriction.
-     */
-    std::string create_psi4_string_from_molecule() const;
+    static boost::shared_ptr<Molecule> create_molecule_from_cartesian(SharedMatrix cartesian, int charge, int multiplicity);
 
     /**
      * Sets all fragments in the molecule to be active.
@@ -513,23 +455,11 @@ public:
      */
     void deactivate_all_fragments();
 
-    //~ /**
-     //~ * Sets the specified list of fragments to be real.
-     //~ * @param reals: The list of real fragments.
-     //~ */
-    //~ void set_active_fragments(boost::python::list reals);
-
     /**
      * Sets the specified fragment to be real.
      * @param fragment: The fragment to set.
      */
     void set_active_fragment(int fragment);
-
-    //~ /**
-     //~ * Sets the specified list of fragments to be ghosts.
-     //~ * @param ghosts: The list of ghosts fragments.
-     //~ */
-    //~ void set_ghost_fragments(boost::python::list ghosts);
 
     /**
      * Sets the specified fragment to be a ghost.
@@ -546,56 +476,6 @@ public:
      */
     boost::shared_ptr<Molecule> extract_subsets(const std::vector<int> &real_list,
                                                 const std::vector<int> &ghost_list) const;
-
-    //~ /**
-     //~ * A wrapper to extract_subsets, callable from Boost
-     //~ * @param reals: A list containing the real atoms.
-     //~ * @param ghost: A list containing the ghost atoms.
-     //~ * @return The ref counted cloned molecule.
-     //~ */
-    //~ boost::shared_ptr<Molecule> py_extract_subsets_1(boost::python::list reals,
-                                                   //~ boost::python::list ghost);
-
-    //~ /**
-     //~ * A wrapper to extract_subsets, callable from Boost
-     //~ * @param reals: A list containing the real atoms.
-     //~ * @param ghost: An int containing the ghost atoms.
-     //~ * @return The ref counted cloned molecule.
-     //~ */
-    //~ boost::shared_ptr<Molecule> py_extract_subsets_2(boost::python::list reals,
-                                                   //~ int ghost = -1);
-
-    //~ /**
-     //~ * A wrapper to extract_subsets, callable from Boost
-     //~ * @param reals: An int containing the real atoms.
-     //~ * @param ghost: A list containing the ghost atoms.
-     //~ * @return The ref counted cloned molecule.
-     //~ */
-    //~ boost::shared_ptr<Molecule> py_extract_subsets_3(int reals,
-                                                   //~ boost::python::list ghost);
-
-    //~ /**
-     //~ * A wrapper to extract_subsets, callable from Boost
-     //~ * @param reals: An int containing the real atoms.
-     //~ * @param ghost: An int containing the ghost atoms.
-     //~ * @return The ref counted cloned molecule.
-     //~ */
-    //~ boost::shared_ptr<Molecule> py_extract_subsets_4(int reals,
-                                                   //~ int ghost = -1);
-
-    //~ /**
-     //~ * A wrapper to extract_subsets, callable from Boost
-     //~ * @param reals: A list containing the real atoms.
-     //~ * @return The ref counted cloned molecule.
-     //~ */
-    //~ boost::shared_ptr<Molecule> py_extract_subsets_5(boost::python::list reals);
-
-    //~ /**
-     //~ * A wrapper to extract_subsets, callable from Boost
-     //~ * @param reals: An int containing the real atoms.
-     //~ * @return The ref counted cloned molecule.
-     //~ */
-    //~ boost::shared_ptr<Molecule> py_extract_subsets_6(int reals);
 
     /// Sets whether this molecule contains at least one zmatrix entry
     void set_has_zmatrix(bool tf) {zmat_ = tf;}

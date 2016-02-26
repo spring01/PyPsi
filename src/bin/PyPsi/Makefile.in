@@ -9,15 +9,6 @@ PSITARGET = $(top_objdir)/PyPsi/PyPsimodule.so
 LDLIBS += $(LAPACK) $(BLAS) $(BOOST_PYTHON_LIB) $(BOOST_REGEX_LIB) $(BOOST_SYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_LDFLAGS) -lpthread $(PYTHON_LDFLAGS)
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 
-# gfortranbegin contains main, so we can't link it in or we'll get a linker freakout
-FILTEREDLDLIBS = $(filter-out -lgfortranbegin -mkl,$(LDLIBS))
-
-ifeq ($(CXX),icpc)
-   CFLAGS+= -mkl
-   CXXFLAGS+= -mkl
-   LDFLAGS+= -mkl
-endif
-
 # NOTE: Keep PSI_parallel last in the PSI library list (but before boost). It contains the fprintf override.
 PSILIBS = \
 -lPSI_scfgrad \

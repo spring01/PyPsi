@@ -1512,6 +1512,8 @@ void PKJK::preiterations()
     }
 
     delete [] orb_offset;
+    delete [] pk_symoffset;
+    delete [] pairpi;
 
 //    if(!file_was_open);
         psio_->close(pk_file_, 1);

@@ -1,9 +1,31 @@
  
-.PHONY:	default all install depend clean dclean targetclean
+.PHONY:	default all install clean
 
 subdirs = libint \
 		  libderiv \
 		  libciomr \
+		  libchkpt \
+		  libqt \
+		  libpsio \
+		  libiwl \
+		  libdpd \
+		  libutil \
+		  liboptions \
+		  libmints \
+		  libtrans \
+		  libparallel \
+		  libthce \
+		  lib3index \
+		  libfunctional \
+		  libdisp \
+		  libfock \
+		  libscf_solver \
+		  libdiis \
+		  libsapt_solver \
+		  libmoinfo \
+		  libscfgrad
+
+cleansubdirs = libciomr \
 		  libchkpt \
 		  libqt \
 		  libpsio \
@@ -39,34 +61,10 @@ install:
             (cd $${dir} && echo ... Making install in $${dir} ... && $(MAKE) install) || exit 1; \
           done
 
-install_inc:
-	for dir in $(subdirs); \
-          do \
-            (cd $${dir} && echo ... Making install in $${dir} ... && $(MAKE) install_inc) || exit 1; \
-          done
-
-depend:
-	for dir in $(subdirs); \
-          do \
-            (cd $${dir} && echo ... Making depend in $${dir} ... && $(MAKE) depend) || exit 1; \
-          done
-
 clean:
-	for dir in $(subdirs); \
+	for dir in $(cleansubdirs); \
           do \
             (cd $${dir} && echo ... Making clean in $${dir} ... && $(MAKE) clean) || exit 1; \
-          done
-
-dclean:
-	for dir in $(subdirs); \
-          do \
-            (cd $${dir} && echo ... Making dclean in $${dir} ... && $(MAKE) dclean) || exit 1; \
-          done
-
-targetclean:
-	for dir in $(subdirs); \
-          do \
-            (cd $${dir} && echo ... Making clean in $${dir} ... && $(MAKE) targetclean) || exit 1; \
           done
 
 

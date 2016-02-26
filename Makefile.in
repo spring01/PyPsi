@@ -1,17 +1,11 @@
 SHELL = /bin/sh
 
-MAKE_MADNESS=@BUILD_MADNESS@
-
-.PHONY:	default all install install_inc install-doc depend clean dclean targetclean tests testsclean doc plugins pluginsclean pluginstests quicktests
+.PHONY:	default all install clean
 
 default: all
 
-ifeq ($(MAKE_MADNESS),1)
-  subdirs = boost madness/src/lib/world madness/src/lib/misc madness/src/lib/tensor lib include src
-else
-  subdirs = boost lib include src
-endif
-
+subdirs = boost lib include src
+cleansubdirs = lib include src
 top_srcdir = @top_srcdir@
 srcdir = @srcdir@
 datarootdir = @datarootdir@
@@ -36,62 +30,11 @@ install:
             (cd $${dir}; echo Making install in $${dir}; $(MAKE) install) || exit 1; \
           done
 
-install_inc:
-	for dir in $(subdirs); \
-          do \
-            (cd $${dir}; echo Making install in $${dir}; $(MAKE) install_inc) || exit 1; \
-          done
-
-install-doc:
-	(cd doc; echo Installing documentation...; $(MAKE) install) || exit 1;
-
-depend:
-	for dir in $(subdirs); \
-          do \
-            (cd $${dir}; echo Making depend in $${dir}; $(MAKE) depend) || exit 1; \
-          done
-
 clean:
-	for dir in $(subdirs); \
+	for dir in $(cleansubdirs); \
           do \
             (cd $${dir}; echo Making clean in $${dir}; $(MAKE) clean) || exit 1; \
           done
-
-dclean:
-	for dir in $(subdirs); \
-          do \
-            (cd $${dir}; echo Making dclean in $${dir}; $(MAKE) dclean) || exit 1; \
-          done
-
-targetclean:
-	for dir in $(subdirs) tests doc; \
-          do \
-            (cd $${dir}; echo Making clean in $${dir}; $(MAKE) targetclean) || exit 1; \
-          done
-
-tests:
-	(cd tests; echo Running test suite...; $(MAKE)) || exit 1;
-
-testsclean:
-	(cd tests; echo Cleaning test suite...; $(MAKE) clean) || exit 1;
-
-quicktests:
-	(cd tests; echo Running minimal test suite...; $(MAKE) quicktests) || exit 1;
-
-quicktestsclean:
-	(cd tests; echo Cleaning test suite...; $(MAKE) quicktestsclean) || exit 1;
-
-doc:
-	(cd doc; echo Building documentation...; $(MAKE)) || exit 1;
-
-plugins:
-	(cd plugins; echo Building plugins...; $(MAKE)) || exit 1;
-
-pluginsclean:
-	(cd plugins; echo Cleaning plugins...; $(MAKE) clean) || exit 1;
-
-pluginstests:
-	(cd plugins; echo Testing plugins...; $(MAKE) tests) || exit 1;
 
 $(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
 	cd $(top_srcdir) && autoconf

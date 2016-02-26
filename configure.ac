@@ -630,21 +630,6 @@ if test "x${have_boost}" == "x0"; then
 fi
 
 PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
-#if test "$HAVE_MADNESS" = "1"; then
-#  PSICPPFLAGS="${PSICPPFLAGS} ${madinc}"
-#  PSICPPFLAGS='-I. ${BOOST_CPPFLAGS} -I${top_objdir}/include -I${top_srcdir}/include -I${top_srcdir}/src/lib -I${top_objdir}/src/lib ${madinc}'
-#  AC_SUBST(madlibs)
-#  AC_SUBST(madinc)
-#fi
-#if test "$HAVE_ELEMENTAL" = "1"; then
-#  echo "we have elemental			:)"
-#  PSICPPFLAGS="${PSICPPFLAGS} ${eleminc}"
-#  echo "CPPFLAGS = "
-#  echo ${PSICPPFLAGS}
-#fi
-#else
-#  PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
-#fi
 AC_SUBST(PSICPPFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(top_objdir)
@@ -656,12 +641,6 @@ AC_CHECK_FUNC(putenv,[AC_DEFINE_UNQUOTED(HAVE_PUTENV,1)])
 
 AC_CHECK_DECLS([setenv],[AC_DEFINE_UNQUOTED(HAVE_DECL_SETENV,1)])
 AC_CHECK_FUNC(setenv,[AC_DEFINE_UNQUOTED(HAVE_SETENV,1)])
-
-#AC_CHECK_LIB(m,isinf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ISINF,1)],[
-#  AC_CHECK_LIB(m,finite,[AC_DEFINE_UNQUOTED(HAVE_FUNC_FINITE,1)],[
-#    AC_MSG_ERROR([Did not find isinf() or finite() functions.])
-#  ])
-#])
 
 AC_CHECK_LIB(m,erf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ERF,1)])
 

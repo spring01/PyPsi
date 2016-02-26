@@ -572,7 +572,10 @@ int CharacterTable::make_table()
 
     if (sym_bits != bits_)
         throw PSIEXCEPTION("make_table: Symmetry operators did not match the point group given.");
-
+    
+    delete[] rot;
+    delete[] trans;
+    
     return 0;
 }
 

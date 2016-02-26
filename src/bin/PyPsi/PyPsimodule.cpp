@@ -1,16 +1,16 @@
-
+#include <string>
 #include <boost/python/class.hpp>
 #include <boost/python/module.hpp>
 #include <boost/python/def.hpp>
 #include <boost/python/numeric.hpp>
-
-#include <string>
-
 #include "PyPsi.hh"
 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(JK_Initialize_overloads, JK_Initialize, 1, 2)
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(SCF_EnableMOM_overloads, SCF_EnableMOM, 0, 1)
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(SCF_EnableDamping_overloads, SCF_EnableDamping, 0, 1)
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(JK_Initialize_overloads,
+                                       JK_Initialize, 1, 2)
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(SCF_EnableMOM_overloads,
+                                       SCF_EnableMOM, 0, 1)
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(SCF_EnableDamping_overloads,
+                                       SCF_EnableDamping, 0, 1)
 
 using namespace psi;
 
@@ -33,12 +33,9 @@ BOOST_PYTHON_MODULE(PyPsi)
         .def("Molecule_NumAtoms", &PyPsi::Molecule_NumAtoms)
         .def("Molecule_NumElectrons", &PyPsi::Molecule_NumElectrons)
         .def("Molecule_Geometry", &PyPsi::Molecule_Geometry)
-        .def("Molecule_SetGeometry", &PyPsi::Molecule_SetGeometry)
         .def("Molecule_NucRepEnergy", &PyPsi::Molecule_NucRepEnergy)
         .def("Molecule_AtomicNumbers", &PyPsi::Molecule_AtomicNumbers)
         .def("Molecule_ChargeMult", &PyPsi::Molecule_ChargeMult)
-        .def("Molecule_Fix", &PyPsi::Molecule_Fix)
-        .def("Molecule_Free", &PyPsi::Molecule_Free)
         
         .def("BasisSet_Name", &PyPsi::BasisSet_Name)
         .def("BasisSet_IsSpherical", &PyPsi::BasisSet_IsSpherical)
