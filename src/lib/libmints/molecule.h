@@ -443,7 +443,8 @@ public:
      *
      * @param cartesian: 1st column is an array of atom numbers, 2nd~4th columns are xyz coordinates
      */
-    static boost::shared_ptr<Molecule> create_molecule_from_cartesian(SharedMatrix cartesian, int charge, int multiplicity);
+    static boost::shared_ptr<Molecule> create(SharedMatrix cartesian,
+                                              int charge, int multiplicity);
 
     /**
      * Sets all fragments in the molecule to be active.

@@ -641,7 +641,8 @@ int Molecule::multiplicity() const
     return multiplicity_;
 }
 
-boost::shared_ptr<Molecule> Molecule::create_molecule_from_cartesian(SharedMatrix cartesian, int charge, int multiplicity)
+boost::shared_ptr<Molecule> Molecule::create(SharedMatrix cartesian,
+                                             int charge, int multiplicity)
 {
 
     boost::shared_ptr<Molecule> mol(new Molecule);

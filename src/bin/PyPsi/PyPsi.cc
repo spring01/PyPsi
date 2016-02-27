@@ -9,8 +9,7 @@ namespace psi {
 #else
     FILE *outfile = fopen("/dev/null", "w");
 #endif
-    static char psi_file_prefix_real[] = "pypsi";
-    char *psi_file_prefix = psi_file_prefix_real;
+    char *psi_file_prefix = (char*)"pypsi";
     std::string outfile_name = "";
     extern int read_options(const std::string& name, Options& options, 
                             bool suppress_printing = false);
@@ -168,6 +167,8 @@ void PyPsi::Construct(const NPArray& cartesian, const std::string& basisname,
                       const int charge, const int multiplicity,
                       const std::string& path)
 {
+    using namespace boost;
+    
     CheckMatDim(cartesian, -1, 4);
     
     // to output NumPy Array
@@ -198,12 +199,11 @@ void PyPsi::Construct(const NPArray& cartesian, const std::string& basisname,
     int nelectron = FindNumElectrons(cartesian, charge);
     if (multiplicity > nelectron + 1 || multiplicity % 2 == nelectron % 2)
         throw PSIEXCEPTION("PyPsi::common_init: charge/mult not compatible.");
-    molecule_ = Molecule::create_molecule_from_cartesian(
-                NPArrayToSharedMatrix(cartesian), charge, multiplicity);
+    molecule_ = Molecule::create(NPArrayToSharedMatrix(cartesian),
+                                 charge, multiplicity);
     molecule_->set_reinterpret_coordentry(false);
     molecule_->set_basis_all_atoms(basisname);
-    boost::shared_ptr<PointGroup> c1group(new PointGroup("C1"));
-    molecule_->set_point_group(c1group); 
+    molecule_->set_point_group(shared_ptr<PointGroup>(new PointGroup("C1"))); 
     process_environment_.set_molecule(molecule_);
     
     // create basis object and one & two electron integral factories & rhf 
@@ -211,7 +211,7 @@ void PyPsi::Construct(const NPArray& cartesian, const std::string& basisname,
     
     // create matrix factory object 
     int nbf[] = {basis_->nbf()};
-    matfac_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
+    matfac_ = shared_ptr<MatrixFactory>(new MatrixFactory);
     matfac_->init_with(1, nbf, nbf);
     
     // set default SCF reference according to multiplicity
@@ -660,7 +660,8 @@ PyList PyPsi::JK_DensToK(PyList& densSet)
 
 PyList PyPsi::JK_OccOrbToJ(PyList& occOrbSet)
 {
-    if (jk_ == NULL) JK_Initialize("PKJK");
+    if (jk_ == NULL)
+        JK_Initialize("PKJK");
     jk_->set_do_K(false);
     JK_CalcAllFromOccOrb(occOrbSet);
     jk_->set_do_K(true);
@@ -669,7 +670,8 @@ PyList PyPsi::JK_OccOrbToJ(PyList& occOrbSet)
 
 PyList PyPsi::JK_OccOrbToK(PyList& occOrbSet)
 {
-    if (jk_ == NULL) JK_Initialize("PKJK");
+    if (jk_ == NULL)
+        JK_Initialize("PKJK");
     jk_->set_do_J(false);
     JK_CalcAllFromOccOrb(occOrbSet);
     jk_->set_do_J(true);
@@ -801,8 +803,7 @@ PyList PyPsi::DFT_OccOrbToV(PyList& occOrbSet)
 
 double PyPsi::DFT_EnergyXC()
 {
-    std::map<std::string, double>& quad = dftPotential_->quadrature_values();  
-    return quad["FUNCTIONAL"];
+    return dftPotential_->quadrature_values()["FUNCTIONAL"];
 }
 
 void PyPsi::SCF_SetSCFType(std::string scfType)
@@ -960,8 +961,8 @@ NPArray PyPsi::SCF_Gradient()
 {
     if (wfn_ == NULL)
         SCF_RunSCF();
-    scfgrad::SCFGrad scfgrad_ = scfgrad::SCFGrad(process_environment_);
-    return *SharedMatrixToSharedNPArray(scfgrad_.compute_gradient());
+    return *SharedMatrixToSharedNPArray
+        (scfgrad::SCFGrad(process_environment_).compute_gradient());
 }
 
 NPArray PyPsi::SCF_GuessDensity()
