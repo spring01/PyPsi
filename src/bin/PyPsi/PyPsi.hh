@@ -46,6 +46,7 @@ protected:
     boost::shared_ptr<TwoBodyAOInt> eri_;
     boost::shared_ptr<MatrixFactory> matfac_;
     boost::shared_ptr<JK> jk_;
+    boost::shared_ptr<DFJK> dfjk_;
     boost::shared_ptr<VBase> dftPotential_;
     boost::shared_ptr<scf::HF> wfn_;
     
@@ -63,16 +64,16 @@ protected:
     // exception function for DFJK utilities 
     void JK_DFException(std::string functionName);
     
-    void Construct(const NPArray& cartesian, const std::string& basisname,
+    void Construct(const NPArray& xyz, const std::string& basis,
                    const int charge, const int multiplicity,
                    const std::string& path);
     
 public:
     // constructors
-    PyPsi(const NPArray& cartesian, const std::string& basisname);
-    PyPsi(const NPArray& cartesian, const std::string& basisname, 
+    PyPsi(const NPArray& xyz, const std::string& basis);
+    PyPsi(const NPArray& xyz, const std::string& basis, 
           const int charge, const int multiplicity);
-    PyPsi(const NPArray& cartesian, const std::string& basisname, 
+    PyPsi(const NPArray& xyz, const std::string& basis, 
           const int charge, const int multiplicity, const std::string& path);
     
     // destructor 
@@ -150,11 +151,11 @@ public:
     NPArray Integrals_Overlap(); // <i|j>
     NPArray Integrals_Kinetic(); // <i|T|j>
     NPArray Integrals_Potential(); // total, <i|sum(1/R)|j>
-    NPArray Integrals_PotentialEachCore(); // atom-separated, <i|1/R|j>
-    NPArray Integrals_PotentialPtQ(NPArray& Zxyz_list); // <i|1/R_p|j>
+    PyList Integrals_PotentialEachCore(); // atom-separated, <i|1/R|j>
+    NPArray Integrals_PotentialPtQ(NPArray&); // <i|1/R_p|j>
     PyList Integrals_Dipole(); // dipole matrices <i|x|j>, <i|y|j>, <i|z|j>
     int Integrals_NumUniqueTEIs(); // number of unique TEIs 
-    double Integrals_ijkl(int i, int j, int k, int l); // (ij|kl)
+    double Integrals_ijkl(int, int, int, int); // (ij|kl)
     // ## HIGH MEMORY COST METHODS ## 
     void Integrals_AllUniqueTEIs(double*); // all unique TEIs in a vector
     void Integrals_AllTEIs(double*); // all (repetitive) TEIs in a 4D-array
@@ -165,7 +166,7 @@ public:
     //*** JK related
     // use different types of JK 
     void JK_Initialize(std::string jktype,
-                       std::string auxBasisName = "CC-PVDZ-JKFIT");
+                       std::string auxBasis = "CC-PVDZ-JKFIT");
     const std::string JK_Type();
     
     // methods computing J/K 
@@ -180,7 +181,6 @@ public:
     
     // specially for density-fitting JK
     NPArray JK_DFTensor_AuxPriPairs();
-    NPArray JK_DFTensor_AuxPriPri();
     NPArray JK_DFMetric_InvJHalf();
     
     
@@ -193,15 +193,11 @@ public:
     
     //*** SCF related
     // method of doing SCF calculations 
-    void SCF_SetSCFType(std::string scfType);
-    void SCF_SetGuessOrb(PyList& guessOrb);
+    void SCF_SetSCFType(std::string);
+    void SCF_SetGuessOrb(PyList&);
     double SCF_RunSCF();
     
     // methods controlling SCF algorithm 
-    void SCF_EnableMOM(int mom_start = 20);
-    void SCF_EnableDamping(double damping_percentage = 0.25);
-    void SCF_EnableDIIS();
-    void SCF_DisableDIIS();
     void SCF_SetGuessType(const std::string&);
     
     // methods extracting SCF results
@@ -214,8 +210,6 @@ public:
     NPArray SCF_DensityBeta();
     NPArray SCF_FockAlpha();
     NPArray SCF_FockBeta();
-    NPArray SCF_RHF_J();
-    NPArray SCF_RHF_K();
     NPArray SCF_GuessDensity();
     
     NPArray SCF_Gradient();

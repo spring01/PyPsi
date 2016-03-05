@@ -2,14 +2,14 @@
 import numpy as np
 import PyPsi
 
-cart = np.array([[9, 0.0, 0.1, 0.2], 
+xyz = np.array([[9, 0.0, 0.1, 0.2], 
                  [1, 0.3, 0.4, 1.0]])
 
-basisSet = "6-31g*"
+basis = "6-31g*"
 path = "./PyPsi/"
 
-pypsi = PyPsi.PyPsi(cart, basisSet)
-pypsi3 = PyPsi.PyPsi(cart, basisSet, 0, 3)
+pypsi = PyPsi.PyPsi(xyz, basis)
+pypsi3 = PyPsi.PyPsi(xyz, basis, 0, 3)
 
 occOrb = np.random.rand(17, 5) - 0.5
 occOrb = occOrb / np.tile(np.sqrt(sum(occOrb**2)), [np.shape(occOrb)[0], 1])
@@ -69,7 +69,6 @@ print("JK_DensToJ", pypsi.JK_DensToJ([dens]))
 print("JK_DensToK", pypsi.JK_DensToK([dens, dens]))
 pypsi.JK_Initialize("dfjk")
 print("JK_DFTensor_AuxPriPairs", pypsi.JK_DFTensor_AuxPriPairs())
-print("JK_DFTensor_AuxPriPri", pypsi.JK_DFTensor_AuxPriPri())
 print("JK_DFMetric_InvJHalf", pypsi.JK_DFMetric_InvJHalf())
 pypsi.JK_Initialize("pkjk")
 
@@ -84,13 +83,6 @@ allOrb = pypsi.SCF_OrbitalAlpha()
 print("SCF_SetSCFType", pypsi.SCF_SetSCFType("rks"))
 print("SCF_SetGuessOrb", pypsi.SCF_SetGuessOrb([allOrb]))
 print("SCF_RunSCF", pypsi.SCF_RunSCF())
-print("SCF_EnableMOM", pypsi.SCF_EnableMOM())
-print("SCF_EnableMOM", pypsi.SCF_EnableMOM(10))
-print("SCF_EnableDamping", pypsi.SCF_EnableDamping())
-print("SCF_EnableDamping", pypsi.SCF_EnableDamping(0.5))
-print("SCF_EnableDamping", pypsi.SCF_EnableDamping(0))
-print("SCF_DisableDIIS", pypsi.SCF_DisableDIIS())
-print("SCF_EnableDIIS", pypsi.SCF_EnableDIIS())
 print("SCF_SetGuessType", pypsi.SCF_SetGuessType("SAD"))
 print("SCF_SetGuessType", pypsi.SCF_SetGuessType("CORE"))
 print("SCF_TotalEnergy", pypsi.SCF_TotalEnergy())
@@ -102,8 +94,6 @@ print("SCF_DensityAlpha", pypsi.SCF_DensityAlpha())
 print("SCF_DensityBeta", pypsi.SCF_DensityBeta())
 print("SCF_FockAlpha", pypsi.SCF_FockAlpha())
 print("SCF_FockBeta", pypsi.SCF_FockBeta())
-print("SCF_RHF_J", pypsi.SCF_RHF_J())
-print("SCF_RHF_K", pypsi.SCF_RHF_K())
 print("SCF_GuessDensity", pypsi.SCF_GuessDensity())
 print("SCF_RunSCF", pypsi.SCF_RunSCF())
 

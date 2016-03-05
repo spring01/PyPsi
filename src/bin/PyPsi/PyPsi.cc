@@ -103,21 +103,6 @@ static SharedNPArray SharedMatrixToSharedNPArray(SharedMatrix sharedMat)
                                                    sharedMat->get_pointer()))));
 }
 
-static SharedNPArray VecSharedMatToSharedNPArray(VecSharedMat& vecSharedMat)
-{
-    const int dims[3] = {vecSharedMat.size(),
-                         vecSharedMat[0]->nrow(),
-                         vecSharedMat[0]->ncol()};
-    SharedNPArray sharedNPArray = NewSharedNPArray(3, dims);
-    for (int i = 0; i < dims[0]; i++) {
-        double* matPt = vecSharedMat[i]->get_pointer();
-        for (int j = 0; j < dims[1]; j++)
-            for (int k = 0; k < dims[2]; k++)
-                (*sharedNPArray)[i][j][k] = *matPt++;
-    }
-    return sharedNPArray;
-}
-
 static SharedPyList VecSharedMatToSharedPyList(const VecSharedMat& vecSharedMat)
 {
     SharedPyList sharedPyList(new PyList);
@@ -134,10 +119,10 @@ static std::string FindDefaultPath()
     return std::string(extract<char const*>(extract<str>(info[1])));
 }
 
-static int FindNumElectrons(const NPArray& cartesian, const int charge)
+static int FindNumElectrons(const NPArray& xyz, const int charge)
 {
-    CheckMatDim(cartesian, -1, 4);
-    SharedVector atomNums = NPArrayToSharedMatrix(cartesian)->get_column(0, 0);
+    CheckMatDim(xyz, -1, 4);
+    SharedVector atomNums = NPArrayToSharedMatrix(xyz)->get_column(0, 0);
     int nelectron = 0;
     for (int i = 0; i < atomNums->dim(); i++)
         nelectron += (int)atomNums->get(i);
@@ -145,31 +130,31 @@ static int FindNumElectrons(const NPArray& cartesian, const int charge)
 }
 
 // Constructors
-PyPsi::PyPsi(const NPArray& cartesian, const std::string& basisname)
+PyPsi::PyPsi(const NPArray& xyz, const std::string& basis)
 {
-    Construct(cartesian, basisname,
-              0, 1 + FindNumElectrons(cartesian, 0) % 2, FindDefaultPath());
+    Construct(xyz, basis,
+              0, 1 + FindNumElectrons(xyz, 0) % 2, FindDefaultPath());
 }
 
-PyPsi::PyPsi(const NPArray& cartesian, const std::string& basisname,
+PyPsi::PyPsi(const NPArray& xyz, const std::string& basis,
              const int charge, const int multiplicity)
 {
-    Construct(cartesian, basisname, charge, multiplicity, FindDefaultPath());
+    Construct(xyz, basis, charge, multiplicity, FindDefaultPath());
 }
 
-PyPsi::PyPsi(const NPArray& cartesian, const std::string& basisname,
+PyPsi::PyPsi(const NPArray& xyz, const std::string& basis,
              const int charge, const int multiplicity, const std::string& path)
 {
-    Construct(cartesian, basisname, charge, multiplicity, path);
+    Construct(xyz, basis, charge, multiplicity, path);
 }
 
-void PyPsi::Construct(const NPArray& cartesian, const std::string& basisname,
+void PyPsi::Construct(const NPArray& xyz, const std::string& basis,
                       const int charge, const int multiplicity,
                       const std::string& path)
 {
     using namespace boost;
     
-    CheckMatDim(cartesian, -1, 4);
+    CheckMatDim(xyz, -1, 4);
     
     // to output NumPy Array
     import_array();
@@ -196,13 +181,13 @@ void PyPsi::Construct(const NPArray& cartesian, const std::string& basisname,
     create_psio();
     
     // create molecule object and set its basis set name 
-    int nelectron = FindNumElectrons(cartesian, charge);
+    int nelectron = FindNumElectrons(xyz, charge);
     if (multiplicity > nelectron + 1 || multiplicity % 2 == nelectron % 2)
         throw PSIEXCEPTION("PyPsi::common_init: charge/mult not compatible.");
-    molecule_ = Molecule::create(NPArrayToSharedMatrix(cartesian),
+    molecule_ = Molecule::create(NPArrayToSharedMatrix(xyz),
                                  charge, multiplicity);
     molecule_->set_reinterpret_coordentry(false);
-    molecule_->set_basis_all_atoms(basisname);
+    molecule_->set_basis_all_atoms(basis);
     molecule_->set_point_group(shared_ptr<PointGroup>(new PointGroup("C1"))); 
     process_environment_.set_molecule(molecule_);
     
@@ -435,12 +420,11 @@ PyList PyPsi::Integrals_Dipole()
     return *VecSharedMatToSharedPyList(ao_dipole);
 }
 
-NPArray PyPsi::Integrals_PotentialEachCore()
+PyList PyPsi::Integrals_PotentialEachCore()
 {
     using namespace boost;
-    std::vector<SharedMatrix> viMatVec;
-    shared_ptr<OneBodyAOInt> viOBI(intfac_->ao_potential());
-    shared_ptr<PotentialInt> viPtI = static_pointer_cast<PotentialInt>(viOBI);
+    VecSharedMat viMatVec;
+    shared_ptr<PotentialInt> viPtI((PotentialInt*)intfac_->ao_potential());
     SharedMatrix Zxyz = viPtI->charge_field();
     SharedMatrix Zxyz_rowi(new Matrix(1, 4));
     const int natom = molecule_->natom();
@@ -449,21 +433,20 @@ NPArray PyPsi::Integrals_PotentialEachCore()
         Zxyz_rowi->set_row(0, 0, Zxyz_rowi_vec);
         viPtI->set_charge_field(Zxyz_rowi);
         viMatVec.push_back(matfac_->create_shared_matrix("PotentialEachCore"));
-        viOBI->compute(viMatVec[i]);
+        viPtI->compute(viMatVec[i]);
         viMatVec[i]->hermitivitize();
     }
-    return *VecSharedMatToSharedNPArray(viMatVec);
+    return *VecSharedMatToSharedPyList(viMatVec);
 }
 
 NPArray PyPsi::Integrals_PotentialPtQ(NPArray& Zxyz_list)
 {
     using namespace boost;
     CheckMatDim(Zxyz_list, -1, 4);
-    shared_ptr<OneBodyAOInt> viOBI(intfac_->ao_potential());
-    shared_ptr<PotentialInt> viPtI = static_pointer_cast<PotentialInt>(viOBI);
+    shared_ptr<PotentialInt> viPtI((PotentialInt*)intfac_->ao_potential());
     viPtI->set_charge_field(NPArrayToSharedMatrix(Zxyz_list));
     SharedMatrix vZxyzListMat(matfac_->create_matrix("PotentialPointCharges"));
-    viOBI->compute(vZxyzListMat);
+    viPtI->compute(vZxyzListMat);
     vZxyzListMat->hermitivitize();
     return *SharedMatrixToSharedNPArray(vZxyzListMat);
 }
@@ -565,7 +548,7 @@ void PyPsi::Integrals_IndicesForK(double* indices1, double* indices2)
     }
 }
 
-void PyPsi::JK_Initialize(std::string jktype, std::string auxBasisName)
+void PyPsi::JK_Initialize(std::string jktype, std::string auxBasis)
 {
     using namespace boost;
     using namespace scf;
@@ -593,12 +576,13 @@ void PyPsi::JK_Initialize(std::string jktype, std::string auxBasisName)
         jk_ = shared_ptr<JK>(new PKJK(process_environment_, basis_, psio_));
     } else if (jktype == "DFJK") {
         shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-        molecule_->set_basis_all_atoms(auxBasisName, "DF_BASIS_SCF");
+        molecule_->set_basis_all_atoms(auxBasis, "DF_BASIS_SCF");
         shared_ptr<BasisSet> auxiliary
             = BasisSet::construct(process_environment_, parser,
                                   molecule_, "DF_BASIS_SCF");
-        jk_ = shared_ptr<JK>(new DFJK(process_environment_, basis_,
-                                      auxiliary, psio_));
+        dfjk_ = shared_ptr<DFJK>(new DFJK(process_environment_, basis_,
+                                          auxiliary, psio_));
+        jk_ = shared_ptr<JK>(dfjk_);
         molecule_->set_basis_all_atoms(basis_->name());
     } else if (jktype == "ICJK") {
         jk_ = shared_ptr<JK>(new ICJK(process_environment_, basis_));
@@ -719,37 +703,20 @@ void PyPsi::JK_DFException(std::string functionName)
 {
     if (jk_ == NULL)
         JK_Initialize("DFJK");
-    if ((!boost::iequals(jk_->JKtype(), "DFJK"))
-        || !dynamic_cast<DFJK*>(jk_.get()))
-        throw PSIEXCEPTION(functionName
-                           + ": Can only be used with Density-fitting JK.");
+    if (!boost::iequals(jk_->JKtype(), "DFJK") || dfjk_ == NULL)
+        throw PSIEXCEPTION(functionName + ": Only for Density-fitting JK.");
 }
 
 NPArray PyPsi::JK_DFTensor_AuxPriPairs()
 {
     JK_DFException("JK_DFTensor_AuxPriPairs");
-    return *SharedMatrixToSharedNPArray
-        (boost::static_pointer_cast<DFJK>(jk_)->GetQmn());
-}
-
-NPArray PyPsi::JK_DFTensor_AuxPriPri()
-{
-    JK_DFException("JK_DFTensor_AuxPriPri");
-    SharedMatrix QmnUnique = boost::static_pointer_cast<DFJK>(jk_)->GetQmn();
-    VecSharedMat QmnFull;
-    const int nbf = basis_->nbf();
-    for (int Q = 0; Q < QmnUnique->nrow(); Q++) {
-        QmnFull.push_back(SharedMatrix(new Matrix(nbf, nbf)));
-        QmnFull[Q]->set(QmnUnique->const_pointer()[Q]);
-    }
-    return *VecSharedMatToSharedNPArray(QmnFull);
+    return *SharedMatrixToSharedNPArray(dfjk_->GetQmn());
 }
 
 NPArray PyPsi::JK_DFMetric_InvJHalf()
 {
     JK_DFException("JK_DFMetric_InvJHalf");
-    return *SharedMatrixToSharedNPArray
-        (boost::static_pointer_cast<DFJK>(jk_)->GetInvJHalf());
+    return *SharedMatrixToSharedNPArray(dfjk_->GetInvJHalf());
 }
 
 void PyPsi::DFT_Initialize(std::string functional)
@@ -783,14 +750,13 @@ PyList PyPsi::DFT_DensToV(PyList& densSet)
 
 PyList PyPsi::DFT_OccOrbToV(PyList& occOrbSet)
 {
-    int listLength = boost::python::len(occOrbSet);
-    if (listLength != 1 && listLength != 2)
-        throw PSIEXCEPTION("DFT_OccOrbToV: Input list length must be 1 or 2.");
     if (dftPotential_ == NULL)
         DFT_Initialize(process_environment_.options.get_str("DFT_FUNCTIONAL"));
-    if (dynamic_cast<UV*>(dftPotential_.get()) != NULL && listLength == 1)
-        throw PSIEXCEPTION("DFT_OccOrbToV: "
-            "Unrestricted functional requires both alpha and beta orbital.");
+    int listLength = boost::python::len(occOrbSet);
+    if (dynamic_cast<UV*>(dftPotential_.get()) != NULL && listLength != 2)
+        throw PSIEXCEPTION("DFT_OccOrbToV: UV needs 2 orbital sets.");
+    else if (dynamic_cast<RV*>(dftPotential_.get()) != NULL && listLength != 1)
+        throw PSIEXCEPTION("DFT_OccOrbToV: RV needs only 1 orbital set.");
     dftPotential_->C().clear();
     for (int i = 0; i < listLength; i++) {
         NPArray occOrb = boost::python::extract<NPArray>(occOrbSet[i]);
@@ -818,7 +784,7 @@ void PyPsi::SCF_SetGuessOrb(PyList& guessOrbSet)
     using namespace boost::python;
     int listLength = len(guessOrbSet);
     if (listLength != 1 && listLength != 2)
-        throw PSIEXCEPTION("DFT_OccOrbToV: Input list length must be 1 or 2.");
+        throw PSIEXCEPTION("Input list length must be 1 or 2.");
     process_environment_.options.set_global_str("GUESS", "ORBITAL");
     NPArray guessOrbAlpha = extract<NPArray>(guessOrbSet[0]);
     CheckMatDim(guessOrbAlpha, basis_->nbf(), -1);
@@ -842,18 +808,18 @@ void PyPsi::create_wfn()
     std::string scfType = process_environment_.options.get_str("REFERENCE");
     if (scfType == "RHF") {
         if (molecule_->multiplicity() > 1)
-            throw PSIEXCEPTION("create_wfn: RHF can handle singlets only.");
+            throw PSIEXCEPTION("RHF can handle singlets only.");
         wfn_ = shared_ptr<RHF>(new RHF(process_environment_, jk_));
     } else if (scfType == "UHF") {
         wfn_ = shared_ptr<UHF>(new UHF(process_environment_, jk_));
     } else if (scfType == "RKS") {
         if (molecule_->multiplicity() > 1)
-            throw PSIEXCEPTION("create_wfn: RKS can handle singlets only.");
+            throw PSIEXCEPTION("RKS can handle singlets only.");
         wfn_ = shared_ptr<RKS>(new RKS(process_environment_, jk_));
     } else if (scfType == "UKS") {
         wfn_ = shared_ptr<UKS>(new UKS(process_environment_, jk_));
     } else {
-        throw PSIEXCEPTION("create_wfn: SCF type not recognized.");
+        throw PSIEXCEPTION("SCF type not recognized.");
     }
 }
 
@@ -864,29 +830,6 @@ double PyPsi::SCF_RunSCF()
         wfn_->SetGuessOrbital(guessOrbital_);
     process_environment_.set_wavefunction(wfn_);
     return wfn_->compute_energy();
-}
-
-void PyPsi::SCF_EnableMOM(int mom_start)
-{
-    process_environment_.options.set_global_int("MOM_START", mom_start);
-}
-
-void PyPsi::SCF_EnableDamping(double dampingCoeff)
-{
-    process_environment_.options.set_global_double("DAMPING_PERCENTAGE",
-                                                   100.0 * dampingCoeff);
-}
-
-void PyPsi::SCF_DisableDIIS()
-{
-    process_environment_.options.set_global_bool("DIIS", false);
-    process_environment_.options.set_global_int("MAXITER", 500);
-}
-
-void PyPsi::SCF_EnableDIIS()
-{
-    process_environment_.options.set_global_int("DIIS", true);
-    process_environment_.options.set_global_int("MAXITER", 100);
 }
 
 void PyPsi::SCF_SetGuessType(const std::string& guessType)
@@ -970,26 +913,6 @@ NPArray PyPsi::SCF_GuessDensity()
     create_wfn();
     process_environment_.set_wavefunction(wfn_);
     return *SharedMatrixToSharedNPArray(wfn_->GuessDensity());
-}
-
-NPArray PyPsi::SCF_RHF_J()
-{ 
-    if (wfn_ == NULL)
-        SCF_RunSCF();
-    if (dynamic_cast<scf::RHF*>(wfn_.get()) == NULL)
-        throw PSIEXCEPTION("SCF_RHF_J: This function works only for RHF.");
-    return *SharedMatrixToSharedNPArray
-        (boost::static_pointer_cast<scf::RHF>(wfn_)->J()); 
-}
-
-NPArray PyPsi::SCF_RHF_K()
-{ 
-    if (wfn_ == NULL)
-        SCF_RunSCF();
-    if (dynamic_cast<scf::RHF*>(wfn_.get()) == NULL)
-        throw PSIEXCEPTION("SCF_RHF_K: This function works only for RHF.");
-    return *SharedMatrixToSharedNPArray
-        (boost::static_pointer_cast<scf::RHF>(wfn_)->K()); 
 }
 
 
