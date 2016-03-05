@@ -685,14 +685,14 @@ void PyPsi::JK_CalcAllFromOccOrb(PyList& occOrbSet)
     jk_->compute();
 }
 
-PyList PyPsi::JK_RetrieveJ()
+PyList PyPsi::JK_GetJ()
 {
 	if (jk_ == NULL)
         throw PSIEXCEPTION("JK_RetrieveJ: J/K calculation has not been done.");
     return *VecSharedMatToSharedPyList(jk_->J());
 }
 
-PyList PyPsi::JK_RetrieveK()
+PyList PyPsi::JK_GetK()
 {
 	if (jk_ == NULL)
         throw PSIEXCEPTION("JK_RetrieveK: J/K calculation has not been done.");

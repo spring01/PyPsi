@@ -176,8 +176,8 @@ public:
     PyList JK_OccOrbToK(PyList&);
     void JK_CalcAllFromDens(PyList&);
     void JK_CalcAllFromOccOrb(PyList&);
-    PyList JK_RetrieveJ();
-    PyList JK_RetrieveK();
+    PyList JK_GetJ();
+    PyList JK_GetK();
     
     // specially for density-fitting JK
     NPArray JK_DFTensor_AuxPriPairs();
