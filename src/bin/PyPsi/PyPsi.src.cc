@@ -238,8 +238,6 @@ PyPsi::~PyPsi()
         wfn_->extern_finalize();
     if (jk_ != NULL)
         jk_->finalize();
-    if (!psi::outfile)
-        fclose(psi::outfile);
 }
 
 void PyPsi::Settings_SetMaxNumCPUCores(const int ncores)
