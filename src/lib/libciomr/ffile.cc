@@ -34,7 +34,8 @@
 
 namespace psi {
 
-extern char* psi_file_prefix;
+//~ extern char* psi_file_prefix;
+#define psi_file_prefix "pypsi"
 
 /*!
 ** ffile(): Open a PSI ASCII file for reading/writing.  Returns a

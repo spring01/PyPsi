@@ -302,6 +302,10 @@ public:
     void PSIOError(unsigned int unit, unsigned int errval);
 
 private:
+    
+    /// file prefix
+    char *psi_file_prefix;
+    
     /// vector of units
     psio_ud *psio_unit;
 

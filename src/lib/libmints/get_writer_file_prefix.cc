@@ -73,15 +73,15 @@ std::string get_writer_file_prefix(Process::Environment& process_environment_in)
   boost::regex outfileBase("(\\w+)(\\.out|\\.dat)", boost::regbase::normal | boost::regbase::icase);
   boost::smatch reMatches;
 
-  // outfile_name is in psi4-dec.h and is a global std::string with the
-  // name of the output file
-  std::string prefix;
-  if (regex_match(outfile_name, reMatches, outfileBase)) {
-    prefix = reMatches[1].str();
-  }
-  else {
-    prefix = outfile_name;
-  }
+  //~ // outfile_name is in psi4-dec.h and is a global std::string with the
+  //~ // name of the output file
+  std::string prefix = "";
+  //~ if (regex_match(outfile_name, reMatches, outfileBase)) {
+    //~ prefix = reMatches[1].str();
+  //~ }
+  //~ else {
+    //~ prefix = outfile_name;
+  //~ }
 
   std::string molecule_name = process_environment_in.molecule()->name();
   if (molecule_name != "") {

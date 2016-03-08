@@ -28,7 +28,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <sstream>
-//~ #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <psi4-dec.h>
@@ -49,6 +48,7 @@ psio_address PSIO_ZERO = { 0, 0 };
 
 PSIO::PSIO()
 {
+    psi_file_prefix = "pypsi";
     _psio_manager_ = boost::shared_ptr<PSIOManager>(new PSIOManager);
     int i, j;
 

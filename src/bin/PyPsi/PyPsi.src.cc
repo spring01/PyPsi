@@ -3,17 +3,7 @@
 #include <read_options.cc>
 #include "numpy/noprefix.h"
 
-namespace psi {
-#ifdef PSIDEBUG
-    FILE *outfile = stdout;
-#else
-    FILE *outfile = fopen("/dev/null", "w");
-#endif
-    char *psi_file_prefix = (char*)"pypsi";
-    std::string outfile_name = "";
-    extern int read_options(const std::string& name, Options& options, 
-                            bool suppress_printing = false);
-}
+FILE *psi::outfile;
 
 static unsigned long ParseMemoryStr(const std::string& mem_str)
 {
@@ -156,6 +146,12 @@ void *PyPsi::Construct(const NPArray& xyz, const std::string& basis,
 {
     using namespace boost;
     
+    #ifdef PSIDEBUG
+        psi::outfile = stdout;
+    #else
+        psi::outfile = fopen("/dev/null", "w");
+    #endif
+    
     CheckMatDim(xyz, -1, 4);
     
     // to output NumPy Array
@@ -242,6 +238,8 @@ PyPsi::~PyPsi()
         wfn_->extern_finalize();
     if (jk_ != NULL)
         jk_->finalize();
+    if (!psi::outfile)
+        fclose(psi::outfile);
 }
 
 void PyPsi::Settings_SetMaxNumCPUCores(const int ncores)
