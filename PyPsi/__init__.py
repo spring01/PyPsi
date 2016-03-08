@@ -1,1 +1,1 @@
-from PyPsi import PyPsi
+from .PyPsi import PyPsi

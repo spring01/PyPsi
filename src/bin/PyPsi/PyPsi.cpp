@@ -3,7 +3,7 @@
 #include <boost/python/module.hpp>
 #include <boost/python/def.hpp>
 #include <boost/python/numeric.hpp>
-#include "PyPsi.hh"
+#include "PyPsi.src.hh"
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(JK_Initialize_overloads,
                                        JK_Initialize, 1, 2)

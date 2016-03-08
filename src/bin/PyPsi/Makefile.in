@@ -4,7 +4,7 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
-PSITARGET = $(top_objdir)/PyPsi/PyPsimodule.so
+PSITARGET = $(top_objdir)/PyPsi/PyPsi.so
 
 LDLIBS += $(LAPACK) $(BLAS) $(BOOST_PYTHON_LIB) $(BOOST_REGEX_LIB) $(BOOST_SYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_LDFLAGS) -lpthread $(PYTHON_LDFLAGS)
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
@@ -26,8 +26,8 @@ ifeq ($(TARGET_OS),linux-gnu)
    END_EXPORT   = -Wl,--no-whole-archive
 endif
 
-FUNCSRC = PyPsi.cc
-MODULESRC = PyPsimodule.cpp
+FUNCSRC = PyPsi.src.cc
+MODULESRC = PyPsi.cpp
 DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
 MODULEOBJ = $(MODULESRC:%.cpp=%.o)
 FUNCOBJ = $(FUNCSRC:%.cc=%.o)

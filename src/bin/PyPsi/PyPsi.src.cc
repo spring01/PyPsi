@@ -1,5 +1,5 @@
 
-#include "PyPsi.hh"
+#include "PyPsi.src.hh"
 #include <read_options.cc>
 #include "numpy/noprefix.h"
 
@@ -148,9 +148,11 @@ PyPsi::PyPsi(const NPArray& xyz, const std::string& basis,
     Construct(xyz, basis, charge, multiplicity, path);
 }
 
-void PyPsi::Construct(const NPArray& xyz, const std::string& basis,
-                      const int charge, const int multiplicity,
-                      const std::string& path)
+#define NUMPY_IMPORT_ARRAY_RETVAL NULL
+
+void *PyPsi::Construct(const NPArray& xyz, const std::string& basis,
+                       const int charge, const int multiplicity,
+                       const std::string& path)
 {
     using namespace boost;
     
@@ -207,6 +209,8 @@ void PyPsi::Construct(const NPArray& xyz, const std::string& basis,
     
     // set default DFT functional to B3LYP
     process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
+    
+    return NULL;
 }
 
 void PyPsi::create_psio()

@@ -1,6 +1,6 @@
 
-#ifndef _psi_src_bin_pypsi_pypsi_hh_
-#define _psi_src_bin_pypsi_pypsi_hh_
+#ifndef _psi_src_bin_pypsi_pypsi_src_hh_
+#define _psi_src_bin_pypsi_pypsi_src_hh_
 
 #include <libmints/mints.h>
 #include <libfock/jk.h>
@@ -64,9 +64,9 @@ protected:
     // exception function for DFJK utilities 
     void JK_DFException(std::string functionName);
     
-    void Construct(const NPArray& xyz, const std::string& basis,
-                   const int charge, const int multiplicity,
-                   const std::string& path);
+    void *Construct(const NPArray& xyz, const std::string& basis,
+                    const int charge, const int multiplicity,
+                    const std::string& path);
     
 public:
     // constructors
@@ -218,4 +218,4 @@ public:
     
 };
 
-#endif // _psi_src_bin_pypsi_pypsi_hh_
+#endif // _psi_src_bin_pypsi_pypsi_src_hh_
