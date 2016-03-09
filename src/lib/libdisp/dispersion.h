@@ -74,7 +74,7 @@ public:
     Dispersion();
     virtual ~Dispersion();
 
-    static boost::shared_ptr<Dispersion> build(Process::Environment& process_environment_in, const std::string & type, double s6 = 0.0, 
+    static boost::shared_ptr<Dispersion> build(Options& options, const std::string & type, double s6 = 0.0, 
         double p1 = 0.0, double p2 = 0.0, double p3 = 0.0);
 
     std::string name() const { return name_; }

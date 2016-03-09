@@ -593,6 +593,22 @@ void PyPsi::JK_Initialize(std::string jktype, std::string auxBasis)
     }
     jk_->set_memory(process_environment_.get_memory());
     jk_->set_cutoff(0.0);
+    
+    if ((process_environment_.options.get_str("REFERENCE") == "UKS" ||
+         process_environment_.options.get_str("REFERENCE") == "RKS")) {
+
+        // Need a temporary functional
+        boost::shared_ptr<SuperFunctional> functional = 
+            SuperFunctional::current(process_environment_.options);
+        
+        // K matrices
+        jk_->set_do_K(functional->is_x_hybrid());
+        // wK matrices 
+        jk_->set_do_wK(functional->is_x_lrc());
+        // w Value
+        jk_->set_omega(functional->x_omega());
+    }
+    
     jk_->initialize();
 }
 

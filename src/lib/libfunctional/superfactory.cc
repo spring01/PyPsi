@@ -25,6 +25,7 @@
 #include <psi4-dec.h>
 #include "superfunctional.h"
 #include "functional.h"
+#include <libdisp/dispersion.h>
 
 
 namespace psi {
@@ -35,7 +36,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::current(Options& options, in
         npoints = options.get_int("DFT_BLOCK_MAX_POINTS");
 
     boost::shared_ptr<SuperFunctional> super;
-    super = SuperFunctional::build(options.get_str("DFT_FUNCTIONAL"), npoints, deriv);
+    super = SuperFunctional::build(options, npoints, deriv);
     if (options["DFT_OMEGA"].has_changed() && super->is_x_lrc())
         super->set_x_omega(options.get_double("DFT_OMEGA"));
     if (options["DFT_ALPHA"].has_changed())
@@ -268,13 +269,102 @@ boost::shared_ptr<SuperFunctional> build_svwn5_superfunctional(int max_points, i
     return super;
 }
 
+boost::shared_ptr<SuperFunctional> build_wb97xd_superfunctional(Options& options, int max_points, int deriv)
+{
+
+    // Call this first
+    boost::shared_ptr<SuperFunctional> super = SuperFunctional::blank();
+    super->set_max_points(max_points);
+    super->set_deriv(deriv);
+
+    // => User-Customization <= //
+
+    // No spaces, keep it short and according to convention
+    super->set_name("wB97X-D");
+    // Tab in, trailing newlines
+    super->set_description("    Parameterized Hybrid LRC B97 GGA XC Functional with Dispersion\n");
+    // Tab in, trailing newlines
+    super->set_citation("    J.-D. Chai and M. Head-Gordon, Phys. Chem. Chem. Phys., 10, 6615-6620, 2008\n");
+
+    // Add member functionals
+    double alpha = 2.22036E-1;
+    double omega = 0.2;
+    boost::shared_ptr<Functional> wb97x_x = Functional::build_base("wB97_X");
+    wb97x_x->set_name("wB97X_X");
+    wb97x_x->set_alpha(1.0 / (1.0 - alpha));
+
+    wb97x_x->set_parameter("B97_gamma", 0.004);
+    wb97x_x->set_parameter("B97_a0", 7.77964E-1);     // Table 1: c_{x\sigma,0}
+    wb97x_x->set_parameter("B97_a1", 6.61160E-1);     // Table 1: c_{x\sigma,1}
+    wb97x_x->set_parameter("B97_a2", 5.74541E-1);     // Table 1: c_{x\sigma,2}
+    wb97x_x->set_parameter("B97_a3", -5.25671E0);     // Table 1: c_{x\sigma,3}
+    wb97x_x->set_parameter("B97_a4", 1.16386E1);      // Table 1: c_{x\sigma,4}
+
+    boost::shared_ptr<Functional> wb97x_c = Functional::build_base("B_C");
+    wb97x_c->set_name("wB97X_C");
+
+    wb97x_c->set_parameter("B97_os_gamma", 0.006);
+    wb97x_c->set_parameter("B97_os_a0", 1.0);         // Table 1: c_{c\alpha\beta,0}
+    wb97x_c->set_parameter("B97_os_a1", 1.79413E0);   // Table 1: c_{c\alpha\beta,1}
+    wb97x_c->set_parameter("B97_os_a2", -1.20477E1);  // Table 1: c_{c\alpha\beta,2}
+    wb97x_c->set_parameter("B97_os_a3", 1.40847E1);   // Table 1: c_{c\alpha\beta,3}
+    wb97x_c->set_parameter("B97_os_a4", -8.50809E0);  // Table 1: c_{c\alpha\beta,4}
+
+    wb97x_c->set_parameter("B97_ss_gamma", 0.2);
+    wb97x_c->set_parameter("B97_ss_a0", 1.0);         // Table 1: c_{c\sigma\sigma,0}
+    wb97x_c->set_parameter("B97_ss_a1", -6.90539E0);  // Table 1: c_{c\sigma\sigma,1}
+    wb97x_c->set_parameter("B97_ss_a2", 3.13343E1);   // Table 1: c_{c\sigma\sigma,2}
+    wb97x_c->set_parameter("B97_ss_a3", -5.10533E1);  // Table 1: c_{c\sigma\sigma,3}
+    wb97x_c->set_parameter("B97_ss_a4", 2.64423E1);   // Table 1: c_{c\sigma\sigma,4}
+
+    super->add_x_functional(wb97x_x);
+    super->add_c_functional(wb97x_c);
+
+    // Set GKS up after adding functionals
+    super->set_x_omega(omega);   // Table 1: omega
+    super->set_c_omega(0.0);
+    super->set_x_alpha(alpha);   // Table 1: c_x
+    super->set_c_alpha(0.0);
+
+    // => -D2 (CHG Damping Function) <= //
+    super->set_dispersion(Dispersion::build(options, "-CHG", 1.0, 0.0, 0.0, 0.0));
+
+    // => End User-Customization <= //
+
+    // Call this last
+    super->allocate();
+    return super;
+}
+
+/// building blocks
+boost::shared_ptr<SuperFunctional> build_s_x_superfunctional(Options& options, int max_points, int deriv)
+{
+    boost::shared_ptr<SuperFunctional> super;
+    
+    // add a S_X functional; added by spring
+    super = SuperFunctional::blank();
+    super->set_max_points(max_points);
+    super->set_deriv(deriv);
+    super->set_name("S_X");
+    super->set_description("    S_X Functional\n");
+    super->set_citation("    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999\n");
+    
+    // Add member functionals
+    super->add_x_functional(build_s_x_functional());
+
+    // Call this last
+    super->allocate();
+
+    return super;
+}
+
 // superfunctional builder
-boost::shared_ptr<SuperFunctional> SuperFunctional::build(const std::string& alias, int max_points, int deriv)
+boost::shared_ptr<SuperFunctional> SuperFunctional::build(Options& options, int max_points, int deriv)
 {
     boost::shared_ptr<SuperFunctional> super;
     
     // build a superfunctional; added by spring
-    std::string name = alias;
+    std::string name = options.get_str("DFT_FUNCTIONAL");
     std::transform(name.begin(), name.end(), name.begin(), ::tolower);
     if(!name.compare("b3lyp")) {
         super = build_b3lyp_superfunctional(max_points, deriv);
@@ -284,6 +374,8 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::build(const std::string& ali
         super = build_lsda_superfunctional(max_points, deriv);
 	} else if(!name.compare("svwn5")) {
         super = build_svwn5_superfunctional(max_points, deriv);
+	} else if(!name.compare("wb97xd")) {
+        super = build_wb97xd_superfunctional(options, max_points, deriv);
 	} else {
         throw PSIEXCEPTION("Superfunctional not supported yet.");
     }

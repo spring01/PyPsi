@@ -13,7 +13,7 @@ CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 PSILIBS = \
 -lPSI_scfgrad \
 -lPSI_scf_solver -lPSI_fock \
--lPSI_functional -lPSI_3index \
+-lPSI_functional -lPSI_disp -lPSI_3index \
 -lPSI_mints -lPSI_trans -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt \
 -lPSI_ciomr -lPSI_options -lPSI_util \
 -lPSI_deriv -lPSI_int -lPSI_diis \

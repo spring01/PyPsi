@@ -373,8 +373,8 @@ void HF::damp_update()
 
 void HF::integrals()
 {
-    if (print_ && process_environment_.get_worldcomm()->me() == 0)
-        fprintf(outfile, "  ==> Integral Setup <==\n\n");
+    //~ if (print_ && process_environment_.get_worldcomm()->me() == 0)
+        //~ fprintf(outfile, "  ==> Integral Setup <==\n\n");
 
     //~ // Build the JK from options, symmetric type
     //~ try {
@@ -400,19 +400,19 @@ void HF::integrals()
     //~ jk_->set_memory((ULI)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(process_environment_.get_memory() / 8L)));
 
     // DFT sometimes needs custom stuff
-    if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
-
-        // Need a temporary functional
-        boost::shared_ptr<SuperFunctional> functional = 
-            SuperFunctional::current(options_);
-        
-        // K matrices
-        jk_->set_do_K(functional->is_x_hybrid());
-        // wK matrices 
-        jk_->set_do_wK(functional->is_x_lrc());
-        // w Value
-        jk_->set_omega(functional->x_omega());
-    }
+    //~ if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
+//~ 
+        //~ // Need a temporary functional
+        //~ boost::shared_ptr<SuperFunctional> functional = 
+            //~ SuperFunctional::current(options_);
+        //~ 
+        //~ // K matrices
+        //~ jk_->set_do_K(functional->is_x_hybrid());
+        //~ // wK matrices 
+        //~ jk_->set_do_wK(functional->is_x_lrc());
+        //~ // w Value
+        //~ jk_->set_omega(functional->x_omega());
+    //~ }
 
     //~ // Initialize
     //~ jk_->initialize(); 

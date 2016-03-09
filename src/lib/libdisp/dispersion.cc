@@ -42,15 +42,7 @@
 #include <sstream>
 #include <vector>
 #include <boost/shared_ptr.hpp>
-//~ #include <boost/python.hpp>
-//~ #include <boost/python/object.hpp>
 #include <liboptions/liboptions.h>
-
-//~ #define PY_TRY(ptr, command)  \
-     //~ if(!(ptr = command)){    \
-         //~ PyErr_Print();       \
-         //~ exit(1);             \
-     //~ }
 
 using namespace boost;
 using namespace std;
@@ -63,9 +55,8 @@ Dispersion::Dispersion()
 Dispersion::~Dispersion()
 {
 }
-boost::shared_ptr<Dispersion> Dispersion::build(Process::Environment& process_environment_in, const std::string & name, double s6, double p1, double p2, double p3)
+boost::shared_ptr<Dispersion> Dispersion::build(Options& options, const std::string & name, double s6, double p1, double p2, double p3)
 {
-    Options& options = process_environment_in.options;
     if (options["DFT_DISPERSION_PARAMETERS"].has_changed()) {
         int temp = options["DFT_DISPERSION_PARAMETERS"].size();
         if (temp > 0) { s6 = options["DFT_DISPERSION_PARAMETERS"][0].to_double(); }
