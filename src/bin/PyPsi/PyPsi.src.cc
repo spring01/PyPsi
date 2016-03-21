@@ -146,12 +146,12 @@ void *PyPsi::Construct(const NPArray& xyz, const std::string& basis,
 {
     using namespace boost;
     
-    #ifdef PSIDEBUG
-        psi::outfile = stdout;
-    #else
-        // psi::outfile = fopen("/dev/null", "w");
-        psi::outfile = stdin;
-    #endif
+#ifdef PSIDEBUG
+    psi::outfile = stdout;
+#else
+    if (!psi::outfile)
+        psi::outfile = fopen("/dev/null", "w");
+#endif
     
     CheckMatDim(xyz, -1, 4);
     
