@@ -712,7 +712,8 @@ void PyPsi::JK_CalcAllFromDens(PyList& densSet)
         jk_->D().clear();
         for (int i = 0; i < listLength; i++) {
             NPArray dens = boost::python::extract<NPArray>(densSet[i]);
-            CheckMatDim(dens, basis_->nbf(), basis_->nbf());
+            int nbf = basis_->nbf();
+            CheckMatDim(dens, nbf, nbf);
             jk_->D().push_back(NPArrayToSharedMatrix(dens));
         }
         jk_->compute_from_D();
@@ -795,8 +796,26 @@ void PyPsi::DFT_Initialize(std::string functional)
 
 PyList PyPsi::DFT_DensToV(PyList& densSet)
 {
-    TurnDensSetIntoFakeOccOrbSet(densSet, basis_->nbf());
-    return DFT_OccOrbToV(densSet);
+    //~ TurnDensSetIntoFakeOccOrbSet(densSet, basis_->nbf());
+    //~ return DFT_OccOrbToV(densSet);
+    if (dftPotential_ == NULL)
+        DFT_Initialize(process_environment_.options.get_str("DFT_FUNCTIONAL"));
+    int listLength = boost::python::len(densSet);
+    if (dynamic_cast<UV*>(dftPotential_.get()) != NULL && listLength != 2)
+        throw PSIEXCEPTION("DFT_DensToV: UV needs 2 density matrices.");
+    else if (dynamic_cast<RV*>(dftPotential_.get()) != NULL && listLength != 1)
+        throw PSIEXCEPTION("DFT_DensToV: RV needs only 1 density matrix.");
+    dftPotential_->D().clear();
+    dftPotential_->C().clear();
+    int nbf = basis_->nbf();
+    for (int i = 0; i < listLength; i++) {
+        NPArray dens = boost::python::extract<NPArray>(densSet[i]);
+        CheckMatDim(dens, nbf, nbf);
+        dftPotential_->D().push_back(NPArrayToSharedMatrix(dens));
+        dftPotential_->C().push_back(NPArrayToSharedMatrix(dens));
+    }
+    dftPotential_->compute_from_D();
+    return *VecSharedMatToSharedPyList(dftPotential_->V());
 }
 
 PyList PyPsi::DFT_OccOrbToV(PyList& occOrbSet)

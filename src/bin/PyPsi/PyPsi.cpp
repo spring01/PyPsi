@@ -14,7 +14,7 @@ BOOST_PYTHON_MODULE(PyPsi)
 {
     using namespace boost::python;
     NPArray::set_module_and_type("numpy", "ndarray");
-    
+
     class_<PyPsi>("PyPsi", init<boost::python::numeric::array&, std::string>())
         .def(init<NPArray&, std::string, int, int>())
         .def(init<NPArray&, std::string, int, int, std::string>())
@@ -25,14 +25,14 @@ BOOST_PYTHON_MODULE(PyPsi)
         .def("Settings_PsiDataDir", &PyPsi::Settings_PsiDataDir)
         .def("Settings_SetPsiDataDir", &PyPsi::Settings_SetPsiDataDir)
         .def("Settings_TempDir", &PyPsi::Settings_TempDir)
-        
+
         .def("Molecule_NumAtoms", &PyPsi::Molecule_NumAtoms)
         .def("Molecule_NumElectrons", &PyPsi::Molecule_NumElectrons)
         .def("Molecule_Geometry", &PyPsi::Molecule_Geometry)
         .def("Molecule_NucRepEnergy", &PyPsi::Molecule_NucRepEnergy)
         .def("Molecule_AtomicNumbers", &PyPsi::Molecule_AtomicNumbers)
         .def("Molecule_ChargeMult", &PyPsi::Molecule_ChargeMult)
-        
+
         .def("BasisSet_Name", &PyPsi::BasisSet_Name)
         .def("BasisSet_IsSpherical", &PyPsi::BasisSet_IsSpherical)
         .def("BasisSet_NumFunctions", &PyPsi::BasisSet_NumFunctions)
@@ -46,7 +46,7 @@ BOOST_PYTHON_MODULE(PyPsi)
         .def("BasisSet_FuncToAngular", &PyPsi::BasisSet_FuncToAngular)
         .def("BasisSet_PrimExp", &PyPsi::BasisSet_PrimExp)
         .def("BasisSet_PrimCoeffUnnorm", &PyPsi::BasisSet_PrimCoeffUnnorm)
-        
+
         .def("Integrals_Overlap", &PyPsi::Integrals_Overlap)
         .def("Integrals_Kinetic", &PyPsi::Integrals_Kinetic)
         .def("Integrals_Potential", &PyPsi::Integrals_Potential)
@@ -54,7 +54,7 @@ BOOST_PYTHON_MODULE(PyPsi)
         .def("Integrals_PotentialPtQ", &PyPsi::Integrals_PotentialPtQ)
         .def("Integrals_Dipole", &PyPsi::Integrals_Dipole)
         .def("Integrals_ijkl", &PyPsi::Integrals_ijkl)
-        
+
         .def("JK_Initialize", &PyPsi::JK_Initialize, JK_Initialize_overloads())
         .def("JK_Type", &PyPsi::JK_Type)
         .def("JK_DensToJ", &PyPsi::JK_DensToJ)
@@ -67,12 +67,12 @@ BOOST_PYTHON_MODULE(PyPsi)
         .def("JK_GetK", &PyPsi::JK_GetK)
         .def("JK_DFTensor_AuxPriPairs", &PyPsi::JK_DFTensor_AuxPriPairs)
         .def("JK_DFMetric_InvJHalf", &PyPsi::JK_DFMetric_InvJHalf)
-        
+
         .def("DFT_Initialize", &PyPsi::DFT_Initialize)
         .def("DFT_DensToV", &PyPsi::DFT_DensToV)
         .def("DFT_OccOrbToV", &PyPsi::DFT_OccOrbToV)
         .def("DFT_EnergyXC", &PyPsi::DFT_EnergyXC)
-        
+
         .def("SCF_SetSCFType", &PyPsi::SCF_SetSCFType)
         .def("SCF_SetGuessOrb", &PyPsi::SCF_SetGuessOrb)
         .def("SCF_RunSCF", &PyPsi::SCF_RunSCF)
@@ -87,7 +87,7 @@ BOOST_PYTHON_MODULE(PyPsi)
         .def("SCF_FockAlpha", &PyPsi::SCF_FockAlpha)
         .def("SCF_FockBeta", &PyPsi::SCF_FockBeta)
         .def("SCF_GuessDensity", &PyPsi::SCF_GuessDensity)
-        
+
         .def("SCF_Gradient", &PyPsi::SCF_Gradient)
         ;
 }

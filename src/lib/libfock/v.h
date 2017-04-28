@@ -50,7 +50,7 @@ protected:
     int debug_;
     /// Print flag
     int print_;
-    
+
     Process::Environment& process_environment_;
     /// Options object, used to build grid
     Options& options_;
@@ -62,20 +62,20 @@ protected:
     boost::shared_ptr<PointFunctions> properties_;
     /// Integration grid, built by KSPotential
     boost::shared_ptr<DFTGrid> grid_;
-    /// Quadrature values obtained during integration 
+    /// Quadrature values obtained during integration
     std::map<std::string, double> quad_values_;
 
     /// AO2USO matrix (if not C1)
     SharedMatrix AO2USO_;
 
-    /// Vector of V matrices (built by form_D) 
+    /// Vector of V matrices (built by form_D)
     std::vector<SharedMatrix> V_;
     /// Vector of C1 V matrices (built by USO2AO)
     std::vector<SharedMatrix> V_AO_;
 
     /// Vector of occupied C matrices (used for D and KE density)
     std::vector<SharedMatrix> C_;
-    /// Vector of D matrices (built by form_D) 
+    /// Vector of D matrices (built by form_D)
     std::vector<SharedMatrix> D_;
     /// Vector of C1 C matrices (built by USO2AO)
     std::vector<SharedMatrix> C_AO_;
@@ -86,11 +86,11 @@ protected:
     std::vector<SharedMatrix> Caocc_;
     /// Vector of Cavir matrices (TDDFT)
     std::vector<SharedMatrix> Cavir_;
-    /// Vector of Perturbation matrices (TDDFT, ia) 
+    /// Vector of Perturbation matrices (TDDFT, ia)
     std::vector<SharedMatrix> P_;
-    /// Vector of Perturbation matrices (TDDFT, SO) 
+    /// Vector of Perturbation matrices (TDDFT, SO)
     std::vector<SharedMatrix> P_SO_;
-    /// Vector of Perturbation matrices (TDDFT, AO) 
+    /// Vector of Perturbation matrices (TDDFT, AO)
     std::vector<SharedMatrix> P_AO_;
 
     virtual void compute_D();
@@ -106,7 +106,7 @@ public:
         boost::shared_ptr<BasisSet> primary,
         Options& options);
     virtual ~VBase();
-    
+
     static boost::shared_ptr<VBase> build_V(Process::Environment& process_environment_in, Options& options, const std::string& type = "RV");
 
     boost::shared_ptr<BasisSet> basis() const { return primary_; }
@@ -121,7 +121,7 @@ public:
     std::vector<SharedMatrix>& Cavir() { return Cavir_; }
     std::vector<SharedMatrix>& P() { return P_; }
     const std::vector<SharedMatrix>& V() const { return V_; }
-    const std::vector<SharedMatrix>& D() const { return D_; }
+    std::vector<SharedMatrix>& D() { return D_; }
 
     /// Throws by default
     virtual SharedMatrix compute_gradient();
@@ -131,6 +131,7 @@ public:
 
     virtual void initialize();
     virtual void compute();
+    virtual void compute_from_D();
     virtual void finalize();
 
     virtual void print_header() const;
