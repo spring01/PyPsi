@@ -154,7 +154,7 @@ class JK {
 protected:
 
     Process::Environment& process_environment_;
-    
+
     std::string JKtype_;
 
     // => Utility Variables <= //
@@ -355,6 +355,14 @@ public:
      */
     void compute();
     /**
+     * Compute D/J/K for the current D
+     * Update values in your reference to
+     * D BEFORE calling this,
+     * renew your references to the matrices
+     * in D/J/K AFTER calling this.
+     */
+    void compute_from_D();
+    /**
      * Method to clear off memory without
      * totally destroying the object. The
      * object can be rebuilt later by calling
@@ -419,24 +427,24 @@ public:
      * may be changed in each call of compute();
      * @return D vector of D matrices
      */
-    const std::vector<SharedMatrix >& D() const { return D_; }
+    std::vector<SharedMatrix >& D() { return D_; }
 
     /**
     * Print header information regarding JK
     * type on output file
     */
     virtual void print_header() const = 0;
-    
-    // do we need this one? 
+
+    // do we need this one?
     void remove_symmetry() {
         AO2USO_ = SharedMatrix(new Matrix("AO->SO matrix", primary_->nbf(), primary_->nbf()));
         AO2USO_->identity();
     }
-    
+
     const std::string& JKtype() { return JKtype_; }
     boost::shared_ptr<BasisSet> GetPrimary() { return primary_; }
-    
-    
+
+
 };
 
 // => APPLIED CLASSES <= //
@@ -448,7 +456,7 @@ public:
  * integral technology
  */
 class DiskJK : public JK {
-    
+
     boost::shared_ptr<PSIO> psio_;
 
     /// Absolute AO index to relative SO index
@@ -671,7 +679,7 @@ protected:
     SharedMatrix Qlmn_;
     /// (Q|w|mn) for wK (or chunk for disk-based)
     SharedMatrix Qrmn_;
-    
+
     /// Main (A|mn) Tensor; added by spring
     SharedMatrix Amn_;
     /// J^(-1/2) metric; added by spring
@@ -778,7 +786,7 @@ public:
     void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
 
     // => Accessors <= //
-    
+
     SharedMatrix GetAmn() { return Amn_; }
     SharedMatrix GetInvJHalf() { return invJHalf_; }
     SharedMatrix GetQmn() { return Qmn_; }
@@ -793,7 +801,7 @@ public:
 /**
  * Class CDJK
  *
- * JK implementation using 
+ * JK implementation using
  * cholesky decomposition technology
  */
 class CDJK : public DFJK {
@@ -916,8 +924,8 @@ protected:
     void build_auxiliary_partition();
     void build_Bpq();
     void bump(boost::shared_ptr<Matrix> J,
-              const std::vector<double>& bump_atoms, 
-              const std::vector<int>& auxiliary_atoms, 
+              const std::vector<double>& bump_atoms,
+              const std::vector<int>& auxiliary_atoms,
               bool bump_diagonal);
     void build_J(boost::shared_ptr<Matrix> Z,
                  const std::vector<boost::shared_ptr<Matrix> >& D,
@@ -925,7 +933,7 @@ protected:
     void build_K(boost::shared_ptr<Matrix> Z,
                  const std::vector<boost::shared_ptr<Matrix> >& D,
                  const std::vector<boost::shared_ptr<Matrix> >& K);
-    
+
 public:
     // => Constructors < = //
 
@@ -954,7 +962,7 @@ public:
      */
     void set_condition(double condition) { condition_ = condition; }
     /**
-     * Metric for FastDF fitting 
+     * Metric for FastDF fitting
      * @param metric, COULOMB or EWALD,
      *       defaults to COULOMB
      */
@@ -976,7 +984,7 @@ public:
      */
     void set_df_bump_R1(double R1) { bump_R1_ = R1; }
     /**
-     * Range-Separation parameter for EWALD metric fitting 
+     * Range-Separation parameter for EWALD metric fitting
      * @param theta, theta ~ 0 is COULOMB, theta ~ INF is OVERLAP,
      *       defaults to 1.0
      */
@@ -1009,7 +1017,7 @@ public:
 /**
  * Class ICJK
  *
- * In-Core JK implementation 
+ * In-Core JK implementation
  */
 class ICJK : public JK {
 protected:
@@ -1018,16 +1026,16 @@ protected:
     SharedMatrix reshaped_eri_j_;
     SharedMatrix reshaped_eri_k_;
     int bigN_;
-    
+
     virtual bool C1() const { return false; }
     virtual void preiterations();
     virtual void compute_JK();
     virtual void postiterations();
-    
+
 public:
     ICJK(Process::Environment& process_environment_in, boost::shared_ptr<BasisSet> primary);
     virtual ~ICJK();
-    
+
     virtual void print_header() const;
 
 };

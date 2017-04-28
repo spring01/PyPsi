@@ -24,8 +24,8 @@ static unsigned long ParseMemoryStr(const std::string& mem_str)
         unit = 1000000ul;
     else
         unit = 1000000000ul;
-    if ((unsigned long)(mem * unit) < 100000000ul) // less than 100 mb 
-        return 100000000ul; // if less than 100mb then return 100 mb 
+    if ((unsigned long)(mem * unit) < 100000000ul) // less than 100 mb
+        return 100000000ul; // if less than 100mb then return 100 mb
     else
         return (unsigned long)(mem * unit);
 }
@@ -145,41 +145,41 @@ void *PyPsi::Construct(const NPArray& xyz, const std::string& basis,
                        const std::string& path)
 {
     using namespace boost;
-    
+
 #ifdef PSIDEBUG
     psi::outfile = stdout;
 #else
     if (!psi::outfile)
         psi::outfile = fopen("/dev/null", "w");
 #endif
-    
+
     CheckMatDim(xyz, -1, 4);
-    
+
     // to output NumPy Array
     import_array();
-    
+
     // some necessary initializations
     process_environment_.initialize();
-    
-    // set cores and memory 
+
+    // set cores and memory
     process_environment_.set_n_threads(1);
     process_environment_.set_memory(ParseMemoryStr("1000mb"));
     worldcomm_ = initialize_communicator(0, NULL, process_environment_);
     process_environment_.set_worldcomm(worldcomm_);
-    
-    // read in options 
+
+    // read in options
     process_environment_.options.set_read_globals(true);
     read_options("", process_environment_.options, true);
     process_environment_.options.set_read_globals(false);
     process_environment_.set("PSIDATADIR", path);
     process_environment_.options.set_global_int("MAXITER", 100);
-    
+
     Wavefunction::initialize_singletons();
-    
-    // initialize psio 
+
+    // initialize psio
     create_psio();
-    
-    // create molecule object and set its basis set name 
+
+    // create molecule object and set its basis set name
     int nelectron = FindNumElectrons(xyz, charge);
     if (multiplicity > nelectron + 1 || multiplicity % 2 == nelectron % 2)
         throw PSIEXCEPTION("PyPsi::common_init: charge/mult not compatible.");
@@ -187,26 +187,26 @@ void *PyPsi::Construct(const NPArray& xyz, const std::string& basis,
                                  charge, multiplicity);
     molecule_->set_reinterpret_coordentry(false);
     molecule_->set_basis_all_atoms(basis);
-    molecule_->set_point_group(shared_ptr<PointGroup>(new PointGroup("C1"))); 
+    molecule_->set_point_group(shared_ptr<PointGroup>(new PointGroup("C1")));
     process_environment_.set_molecule(molecule_);
-    
-    // create basis object and one & two electron integral factories & rhf 
+
+    // create basis object and one & two electron integral factories & rhf
     create_basis_and_integral_factories();
-    
-    // create matrix factory object 
+
+    // create matrix factory object
     int nbf[] = {basis_->nbf()};
     matfac_ = shared_ptr<MatrixFactory>(new MatrixFactory);
     matfac_->init_with(1, nbf, nbf);
-    
+
     // set default SCF reference according to multiplicity
     if (molecule_->multiplicity() > 1)
         process_environment_.options.set_global_str("REFERENCE", "UHF");
     else
         process_environment_.options.set_global_str("REFERENCE", "RHF");
-    
+
     // set default DFT functional to B3LYP
     process_environment_.options.set_global_str("DFT_FUNCTIONAL", "B3LYP");
-    
+
     return NULL;
 }
 
@@ -219,20 +219,20 @@ void PyPsi::create_psio()
 void PyPsi::create_basis_and_integral_factories()
 {
     using namespace boost;
-    // create basis object 
+    // create basis object
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     basis_ = BasisSet::construct(process_environment_, parser,
-                                 molecule_, "BASIS");  
-    
-    // create integral factory object 
+                                 molecule_, "BASIS");
+
+    // create integral factory object
     intfac_ = shared_ptr<IntegralFactory>
         (new IntegralFactory(basis_, basis_, basis_, basis_));
-    
+
     // create two electron integral generator
     eri_ = shared_ptr<TwoBodyAOInt>(intfac_->eri());
 }
 
-// destructor 
+// destructor
 PyPsi::~PyPsi()
 {
     if (wfn_ != NULL)
@@ -243,7 +243,7 @@ PyPsi::~PyPsi()
 
 void PyPsi::Settings_SetMaxNumCPUCores(const int ncores)
 {
-    // set cores and update worldcomm_ 
+    // set cores and update worldcomm_
     process_environment_.set_n_threads(ncores);
     worldcomm_ = initialize_communicator(0, NULL, process_environment_);
     process_environment_.set_worldcomm(worldcomm_);
@@ -251,7 +251,7 @@ void PyPsi::Settings_SetMaxNumCPUCores(const int ncores)
 
 void PyPsi::Settings_SetMaxMemory(const std::string& memory_str)
 {
-    // set memory and update worldcomm_ 
+    // set memory and update worldcomm_
     process_environment_.set_memory(ParseMemoryStr(memory_str));
     worldcomm_ = initialize_communicator(0, NULL, process_environment_);
     process_environment_.set_worldcomm(worldcomm_);
@@ -412,7 +412,7 @@ PyList PyPsi::Integrals_Dipole()
     ao_dipole.push_back(matfac_->create_shared_matrix("Dipole x"));
     ao_dipole.push_back(matfac_->create_shared_matrix("Dipole y"));
     ao_dipole.push_back(matfac_->create_shared_matrix("Dipole z"));
-    
+
     boost::shared_ptr<OneBodyAOInt> dipoleOBI(intfac_->ao_dipole());
     dipoleOBI->compute(ao_dipole);
     ao_dipole[0]->hermitivitize();
@@ -594,22 +594,22 @@ void PyPsi::JK_Initialize(std::string jktype, std::string auxBasis)
     }
     jk_->set_memory(process_environment_.get_memory());
     jk_->set_cutoff(0.0);
-    
+
     if ((process_environment_.options.get_str("REFERENCE") == "UKS" ||
          process_environment_.options.get_str("REFERENCE") == "RKS")) {
 
         // Need a temporary functional
-        boost::shared_ptr<SuperFunctional> functional = 
+        boost::shared_ptr<SuperFunctional> functional =
             SuperFunctional::current(process_environment_.options);
-        
+
         // K matrices
         jk_->set_do_K(functional->is_x_hybrid());
-        // wK matrices 
+        // wK matrices
         jk_->set_do_wK(functional->is_x_lrc());
         // w Value
         jk_->set_omega(functional->x_omega());
     }
-    
+
     jk_->initialize();
 }
 
@@ -649,14 +649,32 @@ static void TurnDensSetIntoFakeOccOrbSet(PyList& densSet, int nbf)
 
 PyList PyPsi::JK_DensToJ(PyList& densSet)
 {
-    TurnDensSetIntoFakeOccOrbSet(densSet, basis_->nbf());
-	return JK_OccOrbToJ(densSet); 
+    if (boost::iequals(jk_->JKtype(), "DFJK")) {
+        TurnDensSetIntoFakeOccOrbSet(densSet, basis_->nbf());
+        return JK_OccOrbToJ(densSet);
+    } else {
+        if (jk_ == NULL)
+            JK_Initialize("PKJK");
+        jk_->set_do_K(false);
+        JK_CalcAllFromDens(densSet);
+        jk_->set_do_K(true);
+        return *VecSharedMatToSharedPyList(jk_->J());
+    }
 }
 
 PyList PyPsi::JK_DensToK(PyList& densSet)
 {
-    TurnDensSetIntoFakeOccOrbSet(densSet, basis_->nbf());
-	return JK_OccOrbToK(densSet); 
+    if (boost::iequals(jk_->JKtype(), "DFJK")) {
+        TurnDensSetIntoFakeOccOrbSet(densSet, basis_->nbf());
+        return JK_OccOrbToK(densSet);
+    } else {
+        if (jk_ == NULL)
+            JK_Initialize("PKJK");
+        jk_->set_do_J(false);
+        JK_CalcAllFromDens(densSet);
+        jk_->set_do_J(true);
+        return *VecSharedMatToSharedPyList(jk_->K());
+    }
 }
 
 PyList PyPsi::JK_OccOrbToJ(PyList& occOrbSet)
@@ -681,8 +699,24 @@ PyList PyPsi::JK_OccOrbToK(PyList& occOrbSet)
 
 void PyPsi::JK_CalcAllFromDens(PyList& densSet)
 {
-    TurnDensSetIntoFakeOccOrbSet(densSet, basis_->nbf());
-    JK_CalcAllFromOccOrb(densSet);
+    if (boost::iequals(jk_->JKtype(), "DFJK")) {
+        TurnDensSetIntoFakeOccOrbSet(densSet, basis_->nbf());
+        JK_CalcAllFromOccOrb(densSet);
+    } else {
+        int listLength = boost::python::len(densSet);
+        if (listLength != 1 && listLength != 2)
+            throw PSIEXCEPTION("JK_CalcAllFromDens: "
+                               "Input list length must be 1 or 2.");
+        if (jk_ == NULL)
+            JK_Initialize("PKJK");
+        jk_->D().clear();
+        for (int i = 0; i < listLength; i++) {
+            NPArray dens = boost::python::extract<NPArray>(densSet[i]);
+            CheckMatDim(dens, basis_->nbf(), basis_->nbf());
+            jk_->D().push_back(NPArrayToSharedMatrix(dens));
+        }
+        jk_->compute_from_D();
+    }
 }
 
 void PyPsi::JK_CalcAllFromOccOrb(PyList& occOrbSet)
@@ -705,14 +739,14 @@ void PyPsi::JK_CalcAllFromOccOrb(PyList& occOrbSet)
 PyList PyPsi::JK_GetJ()
 {
 	if (jk_ == NULL)
-        throw PSIEXCEPTION("JK_RetrieveJ: J/K calculation has not been done.");
+        throw PSIEXCEPTION("JK_GetJ: J/K calculation has not been done.");
     return *VecSharedMatToSharedPyList(jk_->J());
 }
 
 PyList PyPsi::JK_GetK()
 {
 	if (jk_ == NULL)
-        throw PSIEXCEPTION("JK_RetrieveK: J/K calculation has not been done.");
+        throw PSIEXCEPTION("JK_GetK: J/K calculation has not been done.");
     return *VecSharedMatToSharedPyList(jk_->K());
 }
 
@@ -855,66 +889,66 @@ void PyPsi::SCF_SetGuessType(const std::string& guessType)
 }
 
 double PyPsi::SCF_TotalEnergy()
-{ 
+{
     if (wfn_ == NULL)
         SCF_RunSCF();
-    return wfn_->EHF(); 
+    return wfn_->EHF();
 }
 
 NPArray PyPsi::SCF_OrbitalAlpha()
-{ 
+{
     if (wfn_ == NULL)
         SCF_RunSCF();
-    return *SharedMatrixToSharedNPArray(wfn_->Ca()); 
+    return *SharedMatrixToSharedNPArray(wfn_->Ca());
 }
 
 NPArray PyPsi::SCF_OrbitalBeta()
-{ 
+{
     if (wfn_ == NULL)
         SCF_RunSCF();
-    return *SharedMatrixToSharedNPArray(wfn_->Cb()); 
+    return *SharedMatrixToSharedNPArray(wfn_->Cb());
 }
 
 NPArray PyPsi::SCF_OrbEigValAlpha()
-{ 
+{
     if (wfn_ == NULL)
         SCF_RunSCF();
-    return *SharedVectorToSharedNPArray(wfn_->epsilon_a()); 
+    return *SharedVectorToSharedNPArray(wfn_->epsilon_a());
 }
 
 NPArray PyPsi::SCF_OrbEigValBeta()
-{ 
+{
     if (wfn_ == NULL)
         SCF_RunSCF();
-    return *SharedVectorToSharedNPArray(wfn_->epsilon_b()); 
+    return *SharedVectorToSharedNPArray(wfn_->epsilon_b());
 }
 
 NPArray PyPsi::SCF_DensityAlpha()
-{ 
+{
     if (wfn_ == NULL)
         SCF_RunSCF();
-    return *SharedMatrixToSharedNPArray(wfn_->Da()); 
+    return *SharedMatrixToSharedNPArray(wfn_->Da());
 }
 
 NPArray PyPsi::SCF_DensityBeta()
-{ 
+{
     if (wfn_ == NULL)
         SCF_RunSCF();
-    return *SharedMatrixToSharedNPArray(wfn_->Db()); 
+    return *SharedMatrixToSharedNPArray(wfn_->Db());
 }
 
 NPArray PyPsi::SCF_FockAlpha()
-{ 
+{
     if (wfn_ == NULL)
         SCF_RunSCF();
-    return *SharedMatrixToSharedNPArray(wfn_->Fa()); 
+    return *SharedMatrixToSharedNPArray(wfn_->Fa());
 }
 
 NPArray PyPsi::SCF_FockBeta()
-{ 
+{
     if (wfn_ == NULL)
         SCF_RunSCF();
-    return *SharedMatrixToSharedNPArray(wfn_->Fb()); 
+    return *SharedMatrixToSharedNPArray(wfn_->Fb());
 }
 
 NPArray PyPsi::SCF_Gradient()
